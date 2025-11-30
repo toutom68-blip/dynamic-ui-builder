@@ -1,73 +1,191 @@
-# Welcome to your Lovable project
+# Dynamic Component System
 
-## Project info
+A comprehensive, fully configurable component library built with React, TypeScript, and Tailwind CSS. Every component accepts extensive styling and behavior props for maximum flexibility and reusability.
 
-**URL**: https://lovable.dev/projects/2393bf36-6b3c-4920-918c-2bfae7296ba9
+## Project Structure
 
-## How can I edit this code?
+```
+├── frontend/          # Main React application (in src/)
+│   ├── modules/       # Feature-based modules
+│   │   ├── shared/    # Shared components, layouts, and utilities
+│   │   └── demo/      # Demo module showcasing components
+│   ├── types/         # TypeScript type definitions
+│   ├── utils/         # Utility functions
+│   └── hooks/         # Custom React hooks
+├── backend/           # Backend code (planned - use Lovable Cloud)
+└── mobile/            # Mobile configurations (planned - PWA or Capacitor)
+```
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+### Fully Configurable Components
+Every component supports extensive customization through props:
+- **Styling**: fontSize, fontColor, fontFamily, backgroundColor, backgroundImage
+- **Borders**: borderColor, borderWidth, borderRadius, borderStyle
+- **Layout**: width, height, padding, margin
+- **Behavior**: disabled, hidden, onClick, onChange
+- **Custom**: styleClass, content, htmlContent
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2393bf36-6b3c-4920-918c-2bfae7296ba9) and start prompting.
+### Component Library
+- **DynamicInput** - Text inputs with full styling control
+- **DynamicButton** - Buttons with variants, icons, and loading states
+- **DynamicDropdown** - Single and multi-select dropdowns with search
+- **DynamicGrid** - Data tables with sorting, infinite scroll, and row actions
+- **DynamicFileUploader** - Single/multi file uploads with previews
+- **DynamicImage** - Images with editing capabilities
+- **DynamicSubMenu** - Hierarchical navigation menus
+- **DynamicForm** - Complete form builder with validation
 
-Changes made via Lovable will be committed automatically to this repo.
+### Layout System
+Configurable layout components:
+- **Header** - Top navigation with full style control
+- **Footer** - Bottom content area
+- **Sidebar** - Side navigation panel
+- **Content** - Main content wrapper
+- **MainLayout** - Complete layout orchestration
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
+```bash
+npm install
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Development
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Build
+```bash
+npm run build
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Usage Examples
 
-**Use GitHub Codespaces**
+### Basic Component Usage
+```tsx
+import { DynamicInput, DynamicButton } from '@/modules/shared/components';
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+<DynamicInput
+  type="email"
+  placeholder="Enter email"
+  fontSize="16px"
+  backgroundColor="hsl(var(--muted))"
+  borderRadius="8px"
+  onChange={(value) => console.log(value)}
+/>
 
-## What technologies are used for this project?
+<DynamicButton
+  variant="primary"
+  size="lg"
+  icon={<Icon />}
+  onClick={() => alert('Clicked!')}
+>
+  Submit
+</DynamicButton>
+```
 
-This project is built with:
+### Layout Configuration
+```tsx
+import { MainLayout } from '@/modules/shared/layout/MainLayout';
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+<MainLayout
+  headerProps={{
+    backgroundColor: "#ffffff",
+    content: <YourHeader />
+  }}
+  sidebarProps={{
+    hidden: false,
+    width: "280px"
+  }}
+  footerProps={{
+    backgroundColor: "#1a1a1a",
+    fontColor: "#ffffff"
+  }}
+>
+  <YourContent />
+</MainLayout>
+```
 
-## How can I deploy this project?
+### Dynamic Form
+```tsx
+import { DynamicForm } from '@/modules/shared/components';
 
-Simply open [Lovable](https://lovable.dev/projects/2393bf36-6b3c-4920-918c-2bfae7296ba9) and click on Share -> Publish.
+const fields = [
+  {
+    fieldType: 'input',
+    name: 'email',
+    label: 'Email',
+    required: true,
+    validation: { required: true }
+  },
+  // ... more fields
+];
 
-## Can I connect a custom domain to my Lovable project?
+<DynamicForm
+  fields={fields}
+  layout="grid"
+  columns={2}
+  onSubmit={(values) => console.log(values)}
+/>
+```
 
-Yes, you can!
+## Architecture
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Modular Design
+- **Module-based organization** - Features are grouped in logical modules
+- **Shared module** - Common components and utilities accessible across the app
+- **Custom hooks** - Reusable logic extracted into hooks
+- **Type safety** - Full TypeScript coverage with comprehensive interfaces
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Design System
+A complete design system in `index.css` and `tailwind.config.ts`:
+- Semantic color tokens (primary, secondary, muted, accent, destructive)
+- Layout-specific variables (header, footer, sidebar, content)
+- Typography system (heading and body fonts)
+- Consistent shadows, transitions, and borders
+
+### Styling Architecture
+- **No inline overrides** - All styles defined in the design system
+- **Semantic tokens** - Colors referenced through CSS variables
+- **Utility builder** - Centralized style building in `styleBuilder.ts`
+- **Component variants** - Defined variants for different use cases
+
+## Backend Integration (Coming Soon)
+
+Enable backend functionality with **Lovable Cloud**:
+- User authentication
+- Database storage
+- File uploads
+- Serverless functions
+- API integrations
+
+## Mobile Conversion (Coming Soon)
+
+Convert to mobile app using:
+- **PWA** - Installable web app for all devices
+- **Capacitor** - Native iOS/Android apps with full device access
+
+## Tech Stack
+
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first styling
+- **Vite** - Build tool
+- **shadcn/ui** - Base component library
+- **React Router** - Navigation
+- **TanStack Query** - Data fetching
+- **Lucide React** - Icons
+
+## Documentation
+
+Visit the [Lovable Docs](https://docs.lovable.dev/) for more information about:
+- Component customization
+- Backend setup
+- Mobile deployment
+- Best practices
+
+## License
+
+This is a Lovable-generated project. Customize and deploy as needed.
