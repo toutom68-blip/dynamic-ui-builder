@@ -22,10 +22,12 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          hover: "hsl(var(--secondary-hover))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -47,6 +49,24 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        layout: {
+          header: {
+            bg: "hsl(var(--header-bg))",
+            fg: "hsl(var(--header-fg))",
+          },
+          footer: {
+            bg: "hsl(var(--footer-bg))",
+            fg: "hsl(var(--footer-fg))",
+          },
+          sidebar: {
+            bg: "hsl(var(--sidebar-bg))",
+            fg: "hsl(var(--sidebar-fg))",
+            active: "hsl(var(--sidebar-active))",
+          },
+          content: {
+            bg: "hsl(var(--content-bg))",
+          },
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -57,6 +77,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      fontFamily: {
+        heading: "var(--font-heading)",
+        body: "var(--font-body)",
       },
       borderRadius: {
         lg: "var(--radius)",
