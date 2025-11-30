@@ -28,7 +28,7 @@ export const DynamicDropdown: React.FC<DropdownProps> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedValues, setSelectedValues] = useState<(string | number)[]>(
+  const [selectedValues, setSelectedValues] = useState < (string | number)[] > (
     Array.isArray(value) ? value : value ? [value] : []
   );
 
@@ -36,8 +36,8 @@ export const DynamicDropdown: React.FC<DropdownProps> = ({
 
   const filteredOptions = searchable
     ? options.filter((opt) =>
-        opt.label.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : options;
 
   const handleSingleSelect = (val: string) => {

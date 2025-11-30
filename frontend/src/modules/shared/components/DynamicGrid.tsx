@@ -28,7 +28,7 @@ export const DynamicGrid: React.FC<GridProps> = ({
   const { style, className } = buildComponentStyles(baseProps, '');
   const [displayedData, setDisplayedData] = useState(data.slice(0, pageSize));
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const observerTarget = useRef < HTMLDivElement > (null);
 
   useEffect(() => {
     setDisplayedData(data.slice(0, pageSize));
