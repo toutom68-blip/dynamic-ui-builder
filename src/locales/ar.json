@@ -56,7 +56,20 @@
     "microsoft": "مايكروسوفت",
     "twitter": "تويتر",
     "github": "GitHub",
-    "apple": "آبل"
+    "apple": "آبل",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "resetPasswordTitle": "إعادة تعيين كلمة المرور",
+    "resetPasswordDescription": "أدخل بريدك الإلكتروني أو رقم هاتفك لتلقي رمز إعادة التعيين",
+    "sendResetCode": "إرسال رمز التعيين",
+    "backToLogin": "العودة إلى تسجيل الدخول",
+    "resetCodeSent": "تم إرسال رمز إعادة التعيين بنجاح",
+    "resetCodeSentEmail": "تم إرسال الرمز إلى بريدك الإلكتروني",
+    "resetCodeSentPhone": "تم إرسال الرمز إلى هاتفك",
+    "enterResetCode": "أدخل رمز إعادة التعيين",
+    "newPassword": "كلمة المرور الجديدة",
+    "resetSuccess": "تم إعادة تعيين كلمة المرور بنجاح",
+    "resetError": "فشل في إعادة تعيين كلمة المرور",
+    "invalidResetCode": "رمز إعادة التعيين غير صالح"
   },
   "nav": {
     "home": "الرئيسية",

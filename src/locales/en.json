@@ -56,7 +56,20 @@
     "microsoft": "Microsoft",
     "twitter": "Twitter",
     "github": "GitHub",
-    "apple": "Apple"
+    "apple": "Apple",
+    "resetPassword": "Reset Password",
+    "resetPasswordTitle": "Reset Your Password",
+    "resetPasswordDescription": "Enter your email or phone to receive a reset code",
+    "sendResetCode": "Send Reset Code",
+    "backToLogin": "Back to Login",
+    "resetCodeSent": "Reset code sent successfully",
+    "resetCodeSentEmail": "Reset code sent to your email",
+    "resetCodeSentPhone": "Reset code sent to your phone",
+    "enterResetCode": "Enter reset code",
+    "newPassword": "New Password",
+    "resetSuccess": "Password reset successfully",
+    "resetError": "Failed to reset password",
+    "invalidResetCode": "Invalid reset code"
   },
   "nav": {
     "home": "Home",

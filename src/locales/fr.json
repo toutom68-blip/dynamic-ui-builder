@@ -56,7 +56,20 @@
     "microsoft": "Microsoft",
     "twitter": "Twitter",
     "github": "GitHub",
-    "apple": "Apple"
+    "apple": "Apple",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "resetPasswordTitle": "Réinitialisez votre mot de passe",
+    "resetPasswordDescription": "Entrez votre email ou téléphone pour recevoir un code de réinitialisation",
+    "sendResetCode": "Envoyer le code",
+    "backToLogin": "Retour à la connexion",
+    "resetCodeSent": "Code de réinitialisation envoyé avec succès",
+    "resetCodeSentEmail": "Code envoyé à votre email",
+    "resetCodeSentPhone": "Code envoyé à votre téléphone",
+    "enterResetCode": "Entrez le code de réinitialisation",
+    "newPassword": "Nouveau mot de passe",
+    "resetSuccess": "Mot de passe réinitialisé avec succès",
+    "resetError": "Échec de la réinitialisation du mot de passe",
+    "invalidResetCode": "Code de réinitialisation invalide"
   },
   "nav": {
     "home": "Accueil",

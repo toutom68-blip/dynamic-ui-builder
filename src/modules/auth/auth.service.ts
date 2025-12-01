@@ -82,4 +82,28 @@ export const authService = {
     const response = await api.post<User>(`/api/auth/social/${provider}`);
     return response.data;
   },
+
+  async sendPasswordResetCode(identifier: string): Promise<void> {
+    // Determine if identifier is email or phone
+    const isEmail = identifier.indexOf('@') !== -1;
+    const data = isEmail ? { email: identifier } : { phoneNbr: identifier };
+    await api.post('/api/auth/password-reset/send', data);
+  },
+
+  async verifyResetCode(identifier: string, code: string): Promise<{ token: string }> {
+    const isEmail = identifier.indexOf('@') !== -1;
+    const data = isEmail 
+      ? { email: identifier, code } 
+      : { phoneNbr: identifier, code };
+    const response = await api.post<{ token: string }>('/api/auth/password-reset/verify', data);
+    return response.data;
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const encodedPassword = await this.encodePassword(newPassword);
+    await api.post('/api/auth/password-reset/complete', { 
+      token, 
+      password: encodedPassword 
+    });
+  },
 };
