@@ -42,6 +42,13 @@ const Auth = () => {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpValue, setOtpValue] = useState('');
   const [phoneForOtp, setPhoneForOtp] = useState('');
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetIdentifier, setResetIdentifier] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [resetStep, setResetStep] = useState<'request' | 'verify' | 'newPassword'>('request');
+  const [resetToken, setResetToken] = useState('');
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -162,6 +169,97 @@ const Auth = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSendResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetIdentifier) {
+      toast.error(getIdentifierRequiredError());
+      return;
+    }
+    if (!validateIdentifier(resetIdentifier)) {
+      toast.error(getIdentifierError());
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authService.sendPasswordResetCode(resetIdentifier);
+      const isEmail = resetIdentifier.indexOf('@') !== -1;
+      toast.success(isEmail ? t('auth.resetCodeSentEmail') : t('auth.resetCodeSentPhone'));
+      setResetStep('verify');
+    } catch (error) {
+      toast.error(t('auth.resetError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetCode || resetCode.length !== 6) {
+      toast.error(t('auth.otpRequired'));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await authService.verifyResetCode(resetIdentifier, resetCode);
+      setResetToken(response.token);
+      setResetStep('newPassword');
+      toast.success(t('common.success'));
+    } catch (error) {
+      toast.error(t('auth.invalidResetCode'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newPassword) {
+      toast.error(t('auth.passwordRequired'));
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error(t('auth.passwordMinLength'));
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error(t('auth.passwordMismatch'));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authService.resetPassword(resetToken, newPassword);
+      toast.success(t('auth.resetSuccess'));
+      // Reset all state
+      setShowResetPassword(false);
+      setResetIdentifier('');
+      setResetCode('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setResetStep('request');
+      setResetToken('');
+    } catch (error) {
+      toast.error(t('auth.resetError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setShowResetPassword(false);
+    setResetIdentifier('');
+    setResetCode('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setResetStep('request');
+    setResetToken('');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -360,6 +458,116 @@ const Auth = () => {
     );
   };
 
+  const renderPasswordReset = () => {
+    if (resetStep === 'request') {
+      return (
+        <form onSubmit={handleSendResetCode} className="space-y-4">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold">{t('auth.resetPasswordTitle')}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('auth.resetPasswordDescription')}
+            </p>
+          </div>
+          {renderMethodSelector()}
+          {renderIdentifierInput('reset-identifier', resetIdentifier, setResetIdentifier)}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t('auth.sendResetCode')}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleBackToLogin}
+            className="w-full"
+          >
+            {t('auth.backToLogin')}
+          </Button>
+        </form>
+      );
+    }
+
+    if (resetStep === 'verify') {
+      return (
+        <form onSubmit={handleVerifyResetCode} className="space-y-4">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold">{t('auth.resetPasswordTitle')}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('auth.enterResetCode')}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reset-code">{t('auth.enterResetCode')}</Label>
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={resetCode}
+                onChange={(value) => setResetCode(value)}
+                disabled={isLoading}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t('common.confirm')}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleBackToLogin}
+            className="w-full"
+          >
+            {t('auth.backToLogin')}
+          </Button>
+        </form>
+      );
+    }
+
+    // resetStep === 'newPassword'
+    return (
+      <form onSubmit={handleResetPassword} className="space-y-4">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold">{t('auth.resetPasswordTitle')}</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t('auth.newPassword')}
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="new-password">{t('auth.newPassword')}</Label>
+          <Input
+            id="new-password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm-new-password">{t('auth.confirmPassword')}</Label>
+          <Input
+            id="confirm-new-password"
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {t('auth.resetPassword')}
+        </Button>
+      </form>
+    );
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -372,11 +580,14 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
-              <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
-            </TabsList>
+          {showResetPassword ? (
+            renderPasswordReset()
+          ) : (
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+                <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
+              </TabsList>
             
             <TabsContent value="login">
               {showOtpInput ? (
@@ -403,6 +614,14 @@ const Auth = () => {
                       {selectedMethod === 'phone' && showOtpInAuth ? t('auth.verifyOtp') : t('auth.login')}
                     </Button>
                   </form>
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => setShowResetPassword(true)}
+                    className="w-full mt-2"
+                  >
+                    {t('auth.forgotPassword')}
+                  </Button>
                   {renderSocialButtons()}
                 </>
               )}
@@ -440,6 +659,7 @@ const Auth = () => {
               {renderSocialButtons()}
             </TabsContent>
           </Tabs>
+          )}
         </CardContent>
       </Card>
     </div>
