@@ -8,9 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { toast } from 'sonner';
 import { Loader2, Mail, Phone } from 'lucide-react';
 import { authConfig } from './auth.config';
+import { authService } from './auth.service';
 
 type SelectedAuthMethod = 'email' | 'phone';
 
@@ -33,6 +36,9 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [phoneForOtp, setPhoneForOtp] = useState('');
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -75,6 +81,24 @@ const Auth = () => {
       toast.error(getIdentifierError());
       return;
     }
+
+    // If phone number and OTP is enabled, show OTP input
+    if (selectedMethod === 'phone') {
+      setIsLoading(true);
+      try {
+        await authService.sendOtp(loginIdentifier);
+        setPhoneForOtp(loginIdentifier);
+        setShowOtpInput(true);
+        toast.success(t('auth.otpSent'));
+      } catch (error) {
+        toast.error(t('auth.loginError'));
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Email login with password
     if (!loginPassword) {
       toast.error(t('auth.passwordRequired'));
       return;
@@ -83,6 +107,51 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await login(loginIdentifier, loginPassword);
+      toast.success(t('auth.loginSuccess'));
+      navigate('/');
+    } catch (error) {
+      toast.error(t('auth.loginError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!otpValue || otpValue.length !== 6) {
+      toast.error(t('auth.otpRequired'));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authService.verifyOtp(phoneForOtp, otpValue);
+      toast.success(t('auth.loginSuccess'));
+      navigate('/');
+    } catch (error) {
+      toast.error(t('auth.otpInvalid'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoading(true);
+    try {
+      await authService.sendOtp(phoneForOtp);
+      toast.success(t('auth.otpResent'));
+    } catch (error) {
+      toast.error(t('auth.loginError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: string) => {
+    setIsLoading(true);
+    try {
+      await authService.loginWithSocial(provider);
       toast.success(t('auth.loginSuccess'));
       navigate('/');
     } catch (error) {
@@ -194,6 +263,99 @@ const Auth = () => {
     );
   };
 
+  const renderSocialButtons = () => {
+    const socialProviders = [
+      { name: 'google', icon: '🔍', color: 'hover:bg-red-50 hover:border-red-200' },
+      { name: 'facebook', icon: '📘', color: 'hover:bg-blue-50 hover:border-blue-200' },
+      { name: 'microsoft', icon: '🪟', color: 'hover:bg-blue-50 hover:border-blue-300' },
+      { name: 'apple', icon: '🍎', color: 'hover:bg-gray-50 hover:border-gray-200' },
+    ];
+
+    return (
+      <div className="space-y-3">
+        <div className="relative">
+          <Separator className="my-4" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-background px-2 text-xs text-muted-foreground">
+              {t('auth.socialLogin')}
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {socialProviders.map((provider) => (
+            <Button
+              key={provider.name}
+              type="button"
+              variant="outline"
+              onClick={() => handleSocialLogin(provider.name)}
+              disabled={isLoading}
+              className={`w-full transition-colors ${provider.color}`}
+            >
+              <span className="mr-2 text-lg">{provider.icon}</span>
+              {t(`auth.${provider.name}`)}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderOtpVerification = () => {
+    return (
+      <form onSubmit={handleOtpVerification} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="otp-input">{t('auth.enterOtp')}</Label>
+          <div className="flex justify-center">
+            <InputOTP
+              maxLength={6}
+              value={otpValue}
+              onChange={(value) => setOtpValue(value)}
+              disabled={isLoading}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
+            {t('auth.otpSent')}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleResendOtp}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            {t('auth.resendOtp')}
+          </Button>
+          <Button type="submit" disabled={isLoading} className="flex-1">
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t('auth.verifyOtp')}
+          </Button>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            setShowOtpInput(false);
+            setOtpValue('');
+          }}
+          className="w-full"
+        >
+          {t('common.cancel')}
+        </Button>
+      </form>
+    );
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -213,24 +375,33 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                {renderMethodSelector()}
-                {renderIdentifierInput('login-identifier', loginIdentifier, setLoginIdentifier)}
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">{t('auth.password')}</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t('auth.login')}
-                </Button>
-              </form>
+              {showOtpInput ? (
+                renderOtpVerification()
+              ) : (
+                <>
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    {renderMethodSelector()}
+                    {renderIdentifierInput('login-identifier', loginIdentifier, setLoginIdentifier)}
+                    {selectedMethod === 'email' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="login-password">{t('auth.password')}</Label>
+                        <Input
+                          id="login-password"
+                          type="password"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          disabled={isLoading}
+                        />
+                      </div>
+                    )}
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {selectedMethod === 'phone' ? t('auth.verifyOtp') : t('auth.login')}
+                    </Button>
+                  </form>
+                  {renderSocialButtons()}
+                </>
+              )}
             </TabsContent>
             
             <TabsContent value="signup">
@@ -262,6 +433,7 @@ const Auth = () => {
                   {t('auth.signup')}
                 </Button>
               </form>
+              {renderSocialButtons()}
             </TabsContent>
           </Tabs>
         </CardContent>

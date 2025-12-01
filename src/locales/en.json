@@ -42,7 +42,21 @@
     "passwordMinLength": "Password must be at least 8 characters",
     "logout": "Logout",
     "logoutSuccess": "Successfully logged out",
-    "selectMethod": "Sign in with"
+    "selectMethod": "Sign in with",
+    "verifyOtp": "Verify Code",
+    "otpSent": "Verification code sent to your phone",
+    "otpInvalid": "Invalid verification code",
+    "otpRequired": "Verification code is required",
+    "enterOtp": "Enter verification code",
+    "resendOtp": "Resend Code",
+    "otpResent": "Code resent successfully",
+    "socialLogin": "Or continue with",
+    "google": "Google",
+    "facebook": "Facebook",
+    "microsoft": "Microsoft",
+    "twitter": "Twitter",
+    "github": "GitHub",
+    "apple": "Apple"
   },
   "nav": {
     "home": "Home",

@@ -42,7 +42,21 @@
     "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
     "logout": "Déconnexion",
     "logoutSuccess": "Déconnexion réussie",
-    "selectMethod": "Se connecter avec"
+    "selectMethod": "Se connecter avec",
+    "verifyOtp": "Vérifier le code",
+    "otpSent": "Code de vérification envoyé à votre téléphone",
+    "otpInvalid": "Code de vérification invalide",
+    "otpRequired": "Le code de vérification est requis",
+    "enterOtp": "Entrez le code de vérification",
+    "resendOtp": "Renvoyer le code",
+    "otpResent": "Code renvoyé avec succès",
+    "socialLogin": "Ou continuer avec",
+    "google": "Google",
+    "facebook": "Facebook",
+    "microsoft": "Microsoft",
+    "twitter": "Twitter",
+    "github": "GitHub",
+    "apple": "Apple"
   },
   "nav": {
     "home": "Accueil",
