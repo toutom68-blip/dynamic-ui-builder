@@ -1,0 +1,200 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "confirm": "Confirm",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "description": "Sign in to your account or create a new one",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "loginSuccess": "Successfully logged in!",
+    "signupSuccess": "Account created successfully!",
+    "loginError": "Login failed. Please check your credentials.",
+    "signupError": "Sign up failed. Please try again.",
+    "emailRequired": "Email is required",
+    "phoneRequired": "Phone number is required",
+    "passwordRequired": "Password is required",
+    "passwordMismatch": "Passwords do not match",
+    "invalidEmail": "Invalid email address",
+    "invalidPhone": "Invalid phone number",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "logout": "Logout",
+    "logoutSuccess": "Successfully logged out",
+    "selectMethod": "Sign in with"
+  },
+  "nav": {
+    "home": "Home",
+    "properties": "Properties",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile"
+  },
+  "property": {
+    "title": "Properties",
+    "search_placeholder": "Search properties...",
+    "price": "Price",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "area": "Area",
+    "location": "Location",
+    "details": "Property Details",
+    "contact_agent": "Contact Agent"
+  },
+  "language": {
+    "select": "Select Language",
+    "english": "English",
+    "french": "French",
+    "arabic": "Arabic"
+  },
+  "home": {
+    "hero": {
+      "badge": "Dynamic Component System",
+      "title": "Build Anything, Configure Everything",
+      "description": "A comprehensive component library with full styling control. Every property is configurable - from colors to behaviors.",
+      "viewDemo": "View Components Demo",
+      "exploreAll": "Explore All Components"
+    },
+    "features": {
+      "modular": {
+        "title": "Fully Modular",
+        "description": "Organized by modules with shared components and hooks for maximum reusability."
+      },
+      "configurable": {
+        "title": "Completely Configurable",
+        "description": "Every component accepts extensive styling props - colors, fonts, borders, and more."
+      },
+      "production": {
+        "title": "Production Ready",
+        "description": "Built with TypeScript, React, and best practices for scalable applications."
+      }
+    },
+    "components": {
+      "title": "Comprehensive Component Library",
+      "types": {
+        "inputs": "Inputs & Textareas",
+        "dropdowns": "Dropdowns (Single/Multi)",
+        "grids": "Data Grids",
+        "uploaders": "File Uploaders",
+        "forms": "Dynamic Forms",
+        "buttons": "Buttons & Icons",
+        "images": "Images",
+        "submenus": "Submenus"
+      }
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oops! Page not found",
+    "returnHome": "Return to Home"
+  },
+  "demo": {
+    "title": "Components Demo",
+    "description": "Explore fully configurable, reusable components with extensive styling options.",
+    "sections": {
+      "input": "Dynamic Input",
+      "buttons": "Dynamic Buttons",
+      "dropdowns": "Dynamic Dropdowns",
+      "grid": "Dynamic Grid",
+      "fileUploader": "File Uploader",
+      "image": "Dynamic Image",
+      "submenu": "Dynamic SubMenu",
+      "form": "Dynamic Form",
+      "map": "Map Search"
+    },
+    "actions": {
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "withIcon": "With Icon",
+      "largeDestructive": "Large Destructive",
+      "disabled": "Disabled",
+      "singleSelect": "Single Select",
+      "multiSelect": "Multi Select",
+      "selectOption": "Select an option",
+      "selectMultiple": "Select multiple",
+      "standardInput": "Standard input",
+      "styledInput": "Styled input"
+    }
+  },
+  "loading": {
+    "title": "Loading",
+    "message": "Please wait..."
+  },
+  "error": {
+    "boundary": {
+      "title": "Oops! Something went wrong",
+      "description": "We encountered an unexpected error. Don't worry, we've been notified and are working on it.",
+      "goHome": "Go to Home",
+      "reload": "Reload Page",
+      "showDetails": "Show Technical Details",
+      "hideDetails": "Hide Technical Details",
+      "helpText": "If this problem persists, please contact support."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "save": "Save Changes",
+    "loadError": "Failed to load settings",
+    "tabs": {
+      "preferences": "Preferences",
+      "notifications": "Notifications",
+      "account": "Account"
+    },
+    "preferences": {
+      "title": "User Preferences",
+      "description": "Customize your application experience",
+      "language": "Language",
+      "theme": "Theme",
+      "dateFormat": "Date Format",
+      "timezone": "Timezone",
+      "updateSuccess": "Preferences updated successfully"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Manage how you receive notifications",
+      "emailNotifications": "Email Notifications",
+      "pushNotifications": "Push Notifications",
+      "marketingEmails": "Marketing Emails",
+      "securityAlerts": "Security Alerts",
+      "weeklyDigest": "Weekly Digest",
+      "updateSuccess": "Notification settings updated successfully"
+    },
+    "account": {
+      "title": "Account Settings",
+      "description": "Manage your account information and security",
+      "email": "Email Address",
+      "currentPassword": "Current Password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "passwordMismatch": "Passwords do not match",
+      "passwordChangeSuccess": "Password changed successfully",
+      "updateSuccess": "Account updated successfully"
+    }
+  }
+}

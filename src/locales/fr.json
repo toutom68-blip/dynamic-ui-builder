@@ -1,0 +1,200 @@
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "reset": "Réinitialiser",
+    "apply": "Appliquer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "ok": "OK",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "auth": {
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "description": "Connectez-vous à votre compte ou créez-en un nouveau",
+    "email": "Email",
+    "phone": "Numéro de téléphone",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "noAccount": "Vous n'avez pas de compte?",
+    "haveAccount": "Vous avez déjà un compte?",
+    "loginSuccess": "Connexion réussie!",
+    "signupSuccess": "Compte créé avec succès!",
+    "loginError": "Échec de la connexion. Vérifiez vos identifiants.",
+    "signupError": "Échec de l'inscription. Veuillez réessayer.",
+    "emailRequired": "L'email est requis",
+    "phoneRequired": "Le numéro de téléphone est requis",
+    "passwordRequired": "Le mot de passe est requis",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "invalidEmail": "Adresse email invalide",
+    "invalidPhone": "Numéro de téléphone invalide",
+    "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+    "logout": "Déconnexion",
+    "logoutSuccess": "Déconnexion réussie",
+    "selectMethod": "Se connecter avec"
+  },
+  "nav": {
+    "home": "Accueil",
+    "properties": "Propriétés",
+    "about": "À propos",
+    "contact": "Contact",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "profile": "Profil"
+  },
+  "property": {
+    "title": "Propriétés",
+    "search_placeholder": "Rechercher des propriétés...",
+    "price": "Prix",
+    "bedrooms": "Chambres",
+    "bathrooms": "Salles de bain",
+    "area": "Surface",
+    "location": "Emplacement",
+    "details": "Détails de la propriété",
+    "contact_agent": "Contacter l'agent"
+  },
+  "language": {
+    "select": "Choisir la langue",
+    "english": "Anglais",
+    "french": "Français",
+    "arabic": "Arabe"
+  },
+  "home": {
+    "hero": {
+      "badge": "Système de Composants Dynamiques",
+      "title": "Construisez Tout, Configurez Tout",
+      "description": "Une bibliothèque de composants complète avec un contrôle total du style. Chaque propriété est configurable - des couleurs aux comportements.",
+      "viewDemo": "Voir la Démo des Composants",
+      "exploreAll": "Explorer Tous les Composants"
+    },
+    "features": {
+      "modular": {
+        "title": "Entièrement Modulaire",
+        "description": "Organisé par modules avec des composants et des hooks partagés pour une réutilisabilité maximale."
+      },
+      "configurable": {
+        "title": "Complètement Configurable",
+        "description": "Chaque composant accepte des props de style étendues - couleurs, polices, bordures, et plus."
+      },
+      "production": {
+        "title": "Prêt pour la Production",
+        "description": "Construit avec TypeScript, React et les meilleures pratiques pour des applications évolutives."
+      }
+    },
+    "components": {
+      "title": "Bibliothèque de Composants Complète",
+      "types": {
+        "inputs": "Entrées & Zones de Texte",
+        "dropdowns": "Listes Déroulantes (Simple/Multi)",
+        "grids": "Grilles de Données",
+        "uploaders": "Téléverseurs de Fichiers",
+        "forms": "Formulaires Dynamiques",
+        "buttons": "Boutons & Icônes",
+        "images": "Images",
+        "submenus": "Sous-menus"
+      }
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oups! Page non trouvée",
+    "returnHome": "Retour à l'Accueil"
+  },
+  "demo": {
+    "title": "Démo des Composants",
+    "description": "Explorez des composants réutilisables entièrement configurables avec des options de style étendues.",
+    "sections": {
+      "input": "Entrée Dynamique",
+      "buttons": "Boutons Dynamiques",
+      "dropdowns": "Listes Déroulantes Dynamiques",
+      "grid": "Grille Dynamique",
+      "fileUploader": "Téléverseur de Fichiers",
+      "image": "Image Dynamique",
+      "submenu": "Sous-menu Dynamique",
+      "form": "Formulaire Dynamique",
+      "map": "Recherche sur Carte"
+    },
+    "actions": {
+      "primary": "Primaire",
+      "secondary": "Secondaire",
+      "withIcon": "Avec Icône",
+      "largeDestructive": "Grand Destructif",
+      "disabled": "Désactivé",
+      "singleSelect": "Sélection Simple",
+      "multiSelect": "Sélection Multiple",
+      "selectOption": "Sélectionner une option",
+      "selectMultiple": "Sélectionner plusieurs",
+      "standardInput": "Entrée standard",
+      "styledInput": "Entrée stylisée"
+    }
+  },
+  "loading": {
+    "title": "Chargement",
+    "message": "Veuillez patienter..."
+  },
+  "error": {
+    "boundary": {
+      "title": "Oups ! Une erreur s'est produite",
+      "description": "Nous avons rencontré une erreur inattendue. Ne vous inquiétez pas, nous avons été notifiés et travaillons dessus.",
+      "goHome": "Aller à l'accueil",
+      "reload": "Recharger la page",
+      "showDetails": "Afficher les détails techniques",
+      "hideDetails": "Masquer les détails techniques",
+      "helpText": "Si ce problème persiste, veuillez contacter le support."
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "save": "Enregistrer les modifications",
+    "loadError": "Échec du chargement des paramètres",
+    "tabs": {
+      "preferences": "Préférences",
+      "notifications": "Notifications",
+      "account": "Compte"
+    },
+    "preferences": {
+      "title": "Préférences utilisateur",
+      "description": "Personnalisez votre expérience d'application",
+      "language": "Langue",
+      "theme": "Thème",
+      "dateFormat": "Format de date",
+      "timezone": "Fuseau horaire",
+      "updateSuccess": "Préférences mises à jour avec succès"
+    },
+    "notifications": {
+      "title": "Paramètres de notification",
+      "description": "Gérez la façon dont vous recevez les notifications",
+      "emailNotifications": "Notifications par e-mail",
+      "pushNotifications": "Notifications push",
+      "marketingEmails": "E-mails marketing",
+      "securityAlerts": "Alertes de sécurité",
+      "weeklyDigest": "Résumé hebdomadaire",
+      "updateSuccess": "Paramètres de notification mis à jour avec succès"
+    },
+    "account": {
+      "title": "Paramètres du compte",
+      "description": "Gérez vos informations de compte et votre sécurité",
+      "email": "Adresse e-mail",
+      "currentPassword": "Mot de passe actuel",
+      "currentPasswordPlaceholder": "Entrez le mot de passe actuel",
+      "newPassword": "Nouveau mot de passe",
+      "newPasswordPlaceholder": "Entrez le nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Confirmez le nouveau mot de passe",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "passwordChangeSuccess": "Mot de passe changé avec succès",
+      "updateSuccess": "Compte mis à jour avec succès"
+    }
+  }
+}

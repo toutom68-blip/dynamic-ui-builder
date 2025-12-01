@@ -1,0 +1,200 @@
+{
+  "common": {
+    "welcome": "مرحبا",
+    "search": "بحث",
+    "filter": "تصفية",
+    "reset": "إعادة تعيين",
+    "apply": "تطبيق",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "success": "نجح",
+    "confirm": "تأكيد",
+    "ok": "موافق",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "signup": "التسجيل",
+    "description": "سجل الدخول إلى حسابك أو أنشئ حساباً جديداً",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "noAccount": "ليس لديك حساب؟",
+    "haveAccount": "هل لديك حساب بالفعل؟",
+    "loginSuccess": "تم تسجيل الدخول بنجاح!",
+    "signupSuccess": "تم إنشاء الحساب بنجاح!",
+    "loginError": "فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد.",
+    "signupError": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "passwordRequired": "كلمة المرور مطلوبة",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "invalidEmail": "عنوان البريد الإلكتروني غير صالح",
+    "invalidPhone": "رقم الهاتف غير صالح",
+    "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+    "logout": "تسجيل الخروج",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح",
+    "selectMethod": "تسجيل الدخول باستخدام"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "properties": "العقارات",
+    "about": "حول",
+    "contact": "اتصل",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "profile": "الملف الشخصي"
+  },
+  "property": {
+    "title": "العقارات",
+    "search_placeholder": "البحث عن العقارات...",
+    "price": "السعر",
+    "bedrooms": "غرف النوم",
+    "bathrooms": "الحمامات",
+    "area": "المساحة",
+    "location": "الموقع",
+    "details": "تفاصيل العقار",
+    "contact_agent": "اتصل بالوكيل"
+  },
+  "language": {
+    "select": "اختر اللغة",
+    "english": "الإنجليزية",
+    "french": "الفرنسية",
+    "arabic": "العربية"
+  },
+  "home": {
+    "hero": {
+      "badge": "نظام مكونات ديناميكي",
+      "title": "ابنِ أي شيء، اضبط كل شيء",
+      "description": "مكتبة مكونات شاملة مع تحكم كامل في التصميم. كل خاصية قابلة للتكوين - من الألوان إلى السلوكيات.",
+      "viewDemo": "عرض ديمو المكونات",
+      "exploreAll": "استكشف جميع المكونات"
+    },
+    "features": {
+      "modular": {
+        "title": "معياري بالكامل",
+        "description": "منظم حسب الوحدات مع مكونات وخطافات مشتركة لأقصى قدر من إعادة الاستخدام."
+      },
+      "configurable": {
+        "title": "قابل للتكوين بالكامل",
+        "description": "كل مكون يقبل خصائص تصميم موسعة - الألوان والخطوط والحدود والمزيد."
+      },
+      "production": {
+        "title": "جاهز للإنتاج",
+        "description": "مبني باستخدام TypeScript و React وأفضل الممارسات للتطبيقات القابلة للتوسع."
+      }
+    },
+    "components": {
+      "title": "مكتبة مكونات شاملة",
+      "types": {
+        "inputs": "المدخلات ومناطق النص",
+        "dropdowns": "القوائم المنسدلة (مفردة/متعددة)",
+        "grids": "شبكات البيانات",
+        "uploaders": "رافعات الملفات",
+        "forms": "النماذج الديناميكية",
+        "buttons": "الأزرار والأيقونات",
+        "images": "الصور",
+        "submenus": "القوائم الفرعية"
+      }
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "message": "عذراً! الصفحة غير موجودة",
+    "returnHome": "العودة إلى الرئيسية"
+  },
+  "demo": {
+    "title": "ديمو المكونات",
+    "description": "استكشف مكونات قابلة لإعادة الاستخدام بالكامل مع خيارات تصميم موسعة.",
+    "sections": {
+      "input": "مدخل ديناميكي",
+      "buttons": "أزرار ديناميكية",
+      "dropdowns": "قوائم منسدلة ديناميكية",
+      "grid": "شبكة ديناميكية",
+      "fileUploader": "رافعة الملفات",
+      "image": "صورة ديناميكية",
+      "submenu": "قائمة فرعية ديناميكية",
+      "form": "نموذج ديناميكي",
+      "map": "البحث على الخريطة"
+    },
+    "actions": {
+      "primary": "أساسي",
+      "secondary": "ثانوي",
+      "withIcon": "مع أيقونة",
+      "largeDestructive": "مدمر كبير",
+      "disabled": "معطل",
+      "singleSelect": "تحديد مفرد",
+      "multiSelect": "تحديد متعدد",
+      "selectOption": "حدد خياراً",
+      "selectMultiple": "حدد عدة خيارات",
+      "standardInput": "مدخل قياسي",
+      "styledInput": "مدخل منمق"
+    }
+  },
+  "loading": {
+    "title": "جاري التحميل",
+    "message": "يرجى الانتظار..."
+  },
+  "error": {
+    "boundary": {
+      "title": "عذراً! حدث خطأ ما",
+      "description": "واجهنا خطأ غير متوقع. لا تقلق، لقد تم إخطارنا ونحن نعمل على حل المشكلة.",
+      "goHome": "الذهاب إلى الرئيسية",
+      "reload": "إعادة تحميل الصفحة",
+      "showDetails": "إظهار التفاصيل التقنية",
+      "hideDetails": "إخفاء التفاصيل التقنية",
+      "helpText": "إذا استمرت هذه المشكلة، يرجى الاتصال بالدعم."
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "save": "حفظ التغييرات",
+    "loadError": "فشل تحميل الإعدادات",
+    "tabs": {
+      "preferences": "التفضيلات",
+      "notifications": "الإشعارات",
+      "account": "الحساب"
+    },
+    "preferences": {
+      "title": "تفضيلات المستخدم",
+      "description": "قم بتخصيص تجربة التطبيق الخاصة بك",
+      "language": "اللغة",
+      "theme": "المظهر",
+      "dateFormat": "تنسيق التاريخ",
+      "timezone": "المنطقة الزمنية",
+      "updateSuccess": "تم تحديث التفضيلات بنجاح"
+    },
+    "notifications": {
+      "title": "إعدادات الإشعارات",
+      "description": "إدارة كيفية تلقي الإشعارات",
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "pushNotifications": "الإشعارات الفورية",
+      "marketingEmails": "رسائل البريد الإلكتروني التسويقية",
+      "securityAlerts": "تنبيهات الأمان",
+      "weeklyDigest": "الملخص الأسبوعي",
+      "updateSuccess": "تم تحديث إعدادات الإشعارات بنجاح"
+    },
+    "account": {
+      "title": "إعدادات الحساب",
+      "description": "إدارة معلومات حسابك والأمان",
+      "email": "عنوان البريد الإلكتروني",
+      "currentPassword": "كلمة المرور الحالية",
+      "currentPasswordPlaceholder": "أدخل كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
+      "passwordMismatch": "كلمات المرور غير متطابقة",
+      "passwordChangeSuccess": "تم تغيير كلمة المرور بنجاح",
+      "updateSuccess": "تم تحديث الحساب بنجاح"
+    }
+  }
+}
