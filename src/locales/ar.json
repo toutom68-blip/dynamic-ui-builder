@@ -42,7 +42,21 @@
     "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
     "logout": "تسجيل الخروج",
     "logoutSuccess": "تم تسجيل الخروج بنجاح",
-    "selectMethod": "تسجيل الدخول باستخدام"
+    "selectMethod": "تسجيل الدخول باستخدام",
+    "verifyOtp": "التحقق من الرمز",
+    "otpSent": "تم إرسال رمز التحقق إلى هاتفك",
+    "otpInvalid": "رمز التحقق غير صالح",
+    "otpRequired": "رمز التحقق مطلوب",
+    "enterOtp": "أدخل رمز التحقق",
+    "resendOtp": "إعادة إرسال الرمز",
+    "otpResent": "تم إعادة إرسال الرمز بنجاح",
+    "socialLogin": "أو تابع باستخدام",
+    "google": "جوجل",
+    "facebook": "فيسبوك",
+    "microsoft": "مايكروسوفت",
+    "twitter": "تويتر",
+    "github": "GitHub",
+    "apple": "آبل"
   },
   "nav": {
     "home": "الرئيسية",

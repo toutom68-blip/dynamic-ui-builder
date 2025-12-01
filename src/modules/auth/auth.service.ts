@@ -68,4 +68,18 @@ export const authService = {
   async updateLanguage(language: string): Promise<void> {
     await api.put('/api/user/language', { language });
   },
+
+  async sendOtp(phoneNumber: string): Promise<void> {
+    await api.post('/api/auth/send-otp', { phoneNumber });
+  },
+
+  async verifyOtp(phoneNumber: string, otp: string): Promise<User> {
+    const response = await api.post<User>('/api/auth/verify-otp', { phoneNumber, otp });
+    return response.data;
+  },
+
+  async loginWithSocial(provider: string): Promise<User> {
+    const response = await api.post<User>(`/api/auth/social/${provider}`);
+    return response.data;
+  },
 };
