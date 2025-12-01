@@ -24,12 +24,15 @@ const Auth = () => {
   
   // Determine initial method based on config
   const getInitialMethod = (): SelectedAuthMethod => {
+    // If OTP is post-login only, default to email
+    if (authConfig.isOtpPostLogin && authConfig.allowEmail) return 'email';
     if (authConfig.allowEmail) return 'email';
-    if (authConfig.allowPhone) return 'phone';
+    if (authConfig.allowPhone && authConfig.isOtpStandalone) return 'phone';
     return 'email';
   };
   
   const [selectedMethod, setSelectedMethod] = useState<SelectedAuthMethod>(getInitialMethod());
+  const showOtpInAuth = authConfig.showOtpInAuth;
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [signupIdentifier, setSignupIdentifier] = useState('');
@@ -82,8 +85,8 @@ const Auth = () => {
       return;
     }
 
-    // If phone number and OTP is enabled, show OTP input
-    if (selectedMethod === 'phone') {
+    // If phone number and OTP is enabled in standalone mode, show OTP input
+    if (selectedMethod === 'phone' && showOtpInAuth) {
       setIsLoading(true);
       try {
         await authService.sendOtp(loginIdentifier);
@@ -198,7 +201,8 @@ const Auth = () => {
   };
 
   const renderMethodSelector = () => {
-    if (!authConfig.showMethodSelector) return null;
+    // Only show method selector if OTP is in standalone mode and both methods are allowed
+    if (!authConfig.showMethodSelector || !showOtpInAuth) return null;
 
     return (
       <div className="mb-4">
@@ -382,7 +386,7 @@ const Auth = () => {
                   <form onSubmit={handleLogin} className="space-y-4">
                     {renderMethodSelector()}
                     {renderIdentifierInput('login-identifier', loginIdentifier, setLoginIdentifier)}
-                    {selectedMethod === 'email' && (
+                    {(selectedMethod === 'email' || !showOtpInAuth) && (
                       <div className="space-y-2">
                         <Label htmlFor="login-password">{t('auth.password')}</Label>
                         <Input
@@ -396,7 +400,7 @@ const Auth = () => {
                     )}
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {selectedMethod === 'phone' ? t('auth.verifyOtp') : t('auth.login')}
+                      {selectedMethod === 'phone' && showOtpInAuth ? t('auth.verifyOtp') : t('auth.login')}
                     </Button>
                   </form>
                   {renderSocialButtons()}
