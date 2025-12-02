@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Loader2, Mail, Phone } from 'lucide-react';
 import { authConfig } from './auth.config';
 import { authService } from './auth.service';
+import { ProfileCompletion } from './components/ProfileCompletion';
 
 type SelectedAuthMethod = 'email' | 'phone';
 
@@ -53,6 +54,8 @@ const Auth = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationIdentifier, setVerificationIdentifier] = useState('');
   const [verificationMethod, setVerificationMethod] = useState<'email' | 'phone'>('email');
+  const [showProfileCompletion, setShowProfileCompletion] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -292,7 +295,13 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
-      await signup(signupIdentifier, signupPassword);
+      const response: any = await signup(signupIdentifier, signupPassword);
+      
+      // Store user ID for profile completion
+      const userId = response?.id || response?.userId || response?.user?.id;
+      if (userId) {
+        setPendingUserId(userId);
+      }
       
       // Send verification after successful signup
       setVerificationIdentifier(signupIdentifier);
@@ -331,7 +340,10 @@ const Auth = () => {
       }
       
       toast.success(t('auth.verificationSuccess'));
-      navigate('/');
+      
+      // Redirect to profile completion instead of home
+      setShowVerification(false);
+      setShowProfileCompletion(true);
     } catch (error) {
       toast.error(t('auth.verificationError'));
     } finally {
@@ -355,6 +367,17 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  // Profile completion view
+  if (showProfileCompletion && pendingUserId) {
+    return (
+      <ProfileCompletion
+        userId={pendingUserId}
+        email={verificationMethod === 'email' ? verificationIdentifier : undefined}
+        phoneNbr={verificationMethod === 'phone' ? verificationIdentifier : undefined}
+      />
+    );
+  }
 
   const renderMethodSelector = () => {
     // Only show method selector if OTP is in standalone mode and both methods are allowed

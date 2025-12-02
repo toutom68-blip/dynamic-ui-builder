@@ -85,6 +85,22 @@
     "verify": "تحقق",
     "resendError": "فشل في إعادة إرسال الرمز"
   },
+  "profile": {
+    "completeProfile": "أكمل ملفك الشخصي",
+    "completeProfileDescription": "يرجى ملء معلومات ملفك الشخصي للمتابعة",
+    "complete": "إكمال الملف الشخصي",
+    "completionSuccess": "تم إكمال الملف الشخصي بنجاح",
+    "completionError": "فشل إكمال الملف الشخصي",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "avatar": "صورة الملف الشخصي",
+    "dateOfBirth": "تاريخ الميلاد",
+    "address": "العنوان",
+    "gender": "الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "other": "آخر"
+  },
   "nav": {
     "home": "الرئيسية",
     "properties": "العقارات",

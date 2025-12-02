@@ -85,6 +85,22 @@
     "verify": "Vérifier",
     "resendError": "Échec du renvoi du code"
   },
+  "profile": {
+    "completeProfile": "Complétez votre profil",
+    "completeProfileDescription": "Veuillez remplir vos informations de profil pour continuer",
+    "complete": "Compléter le profil",
+    "completionSuccess": "Profil complété avec succès",
+    "completionError": "Échec de la complétion du profil",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "avatar": "Photo de profil",
+    "dateOfBirth": "Date de naissance",
+    "address": "Adresse",
+    "gender": "Genre",
+    "male": "Homme",
+    "female": "Femme",
+    "other": "Autre"
+  },
   "nav": {
     "home": "Accueil",
     "properties": "Propriétés",
