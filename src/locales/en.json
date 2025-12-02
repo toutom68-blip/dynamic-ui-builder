@@ -85,6 +85,22 @@
     "verify": "Verify",
     "resendError": "Failed to resend code"
   },
+  "profile": {
+    "completeProfile": "Complete Your Profile",
+    "completeProfileDescription": "Please fill in your profile information to continue",
+    "complete": "Complete Profile",
+    "completionSuccess": "Profile completed successfully",
+    "completionError": "Failed to complete profile",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "avatar": "Profile Picture",
+    "dateOfBirth": "Date of Birth",
+    "address": "Address",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
   "nav": {
     "home": "Home",
     "properties": "Properties",

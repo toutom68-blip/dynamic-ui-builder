@@ -130,4 +130,20 @@ export const authService = {
   async verifyPhone(phoneNumber: string, otp: string): Promise<void> {
     await api.post('/api/auth/verification/phone/verify', { phoneNbr: phoneNumber, otp });
   },
+
+  async uploadAvatar(userId: string, file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('userId', userId);
+    const response = await api.post<{ url: string }>('/api/user/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.url;
+  },
+
+  async completeProfile(userId: string, profileData: Record<string, any>): Promise<void> {
+    await api.post('/api/user/profile/complete', { userId, ...profileData });
+  },
 };
