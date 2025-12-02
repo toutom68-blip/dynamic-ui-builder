@@ -106,4 +106,28 @@ export const authService = {
       password: encodedPassword 
     });
   },
+
+  async sendVerificationEmail(email: string): Promise<void> {
+    await api.post('/api/auth/verification/email/send', { email });
+  },
+
+  async resendVerificationEmail(email: string): Promise<void> {
+    await api.post('/api/auth/verification/email/resend', { email });
+  },
+
+  async verifyEmail(email: string, code: string): Promise<void> {
+    await api.post('/api/auth/verification/email/verify', { email, code });
+  },
+
+  async sendVerificationOtp(phoneNumber: string): Promise<void> {
+    await api.post('/api/auth/verification/phone/send', { phoneNbr: phoneNumber });
+  },
+
+  async resendVerificationOtp(phoneNumber: string): Promise<void> {
+    await api.post('/api/auth/verification/phone/resend', { phoneNbr: phoneNumber });
+  },
+
+  async verifyPhone(phoneNumber: string, otp: string): Promise<void> {
+    await api.post('/api/auth/verification/phone/verify', { phoneNbr: phoneNumber, otp });
+  },
 };

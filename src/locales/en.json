@@ -69,7 +69,21 @@
     "newPassword": "New Password",
     "resetSuccess": "Password reset successfully",
     "resetError": "Failed to reset password",
-    "invalidResetCode": "Invalid reset code"
+    "invalidResetCode": "Invalid reset code",
+    "verifyAccount": "Verify Your Account",
+    "verificationEmailSent": "Verification email sent",
+    "verificationOtpSent": "Verification code sent via SMS",
+    "verificationEmailDescription": "Enter the 6-digit code sent to your email",
+    "verificationOtpDescription": "Enter the 6-digit code sent to your phone",
+    "verificationCode": "Verification Code",
+    "verificationCodeRequired": "Please enter the 6-digit verification code",
+    "verificationSuccess": "Account verified successfully",
+    "verificationError": "Invalid verification code",
+    "verificationEmailResent": "Verification email resent",
+    "verificationOtpResent": "Verification code resent",
+    "resendCode": "Resend Code",
+    "verify": "Verify",
+    "resendError": "Failed to resend code"
   },
   "nav": {
     "home": "Home",

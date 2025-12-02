@@ -69,7 +69,21 @@
     "newPassword": "كلمة المرور الجديدة",
     "resetSuccess": "تم إعادة تعيين كلمة المرور بنجاح",
     "resetError": "فشل في إعادة تعيين كلمة المرور",
-    "invalidResetCode": "رمز إعادة التعيين غير صالح"
+    "invalidResetCode": "رمز إعادة التعيين غير صالح",
+    "verifyAccount": "تحقق من حسابك",
+    "verificationEmailSent": "تم إرسال بريد التحقق",
+    "verificationOtpSent": "تم إرسال رمز التحقق عبر الرسائل القصيرة",
+    "verificationEmailDescription": "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني",
+    "verificationOtpDescription": "أدخل الرمز المكون من 6 أرقام المرسل إلى هاتفك",
+    "verificationCode": "رمز التحقق",
+    "verificationCodeRequired": "الرجاء إدخال رمز التحقق المكون من 6 أرقام",
+    "verificationSuccess": "تم التحقق من الحساب بنجاح",
+    "verificationError": "رمز التحقق غير صالح",
+    "verificationEmailResent": "تم إعادة إرسال بريد التحقق",
+    "verificationOtpResent": "تم إعادة إرسال رمز التحقق",
+    "resendCode": "إعادة إرسال الرمز",
+    "verify": "تحقق",
+    "resendError": "فشل في إعادة إرسال الرمز"
   },
   "nav": {
     "home": "الرئيسية",
