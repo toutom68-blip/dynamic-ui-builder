@@ -69,7 +69,21 @@
     "newPassword": "Nouveau mot de passe",
     "resetSuccess": "Mot de passe réinitialisé avec succès",
     "resetError": "Échec de la réinitialisation du mot de passe",
-    "invalidResetCode": "Code de réinitialisation invalide"
+    "invalidResetCode": "Code de réinitialisation invalide",
+    "verifyAccount": "Vérifiez votre compte",
+    "verificationEmailSent": "Email de vérification envoyé",
+    "verificationOtpSent": "Code de vérification envoyé par SMS",
+    "verificationEmailDescription": "Entrez le code à 6 chiffres envoyé à votre email",
+    "verificationOtpDescription": "Entrez le code à 6 chiffres envoyé à votre téléphone",
+    "verificationCode": "Code de vérification",
+    "verificationCodeRequired": "Veuillez entrer le code de vérification à 6 chiffres",
+    "verificationSuccess": "Compte vérifié avec succès",
+    "verificationError": "Code de vérification invalide",
+    "verificationEmailResent": "Email de vérification renvoyé",
+    "verificationOtpResent": "Code de vérification renvoyé",
+    "resendCode": "Renvoyer le code",
+    "verify": "Vérifier",
+    "resendError": "Échec du renvoi du code"
   },
   "nav": {
     "home": "Accueil",

@@ -49,6 +49,10 @@ const Auth = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [resetStep, setResetStep] = useState<'request' | 'verify' | 'newPassword'>('request');
   const [resetToken, setResetToken] = useState('');
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationIdentifier, setVerificationIdentifier] = useState('');
+  const [verificationMethod, setVerificationMethod] = useState<'email' | 'phone'>('email');
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -289,10 +293,64 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await signup(signupIdentifier, signupPassword);
-      toast.success(t('auth.signupSuccess'));
-      navigate('/');
+      
+      // Send verification after successful signup
+      setVerificationIdentifier(signupIdentifier);
+      setVerificationMethod(selectedMethod);
+      
+      if (selectedMethod === 'email') {
+        await authService.sendVerificationEmail(signupIdentifier);
+        toast.success(t('auth.verificationEmailSent'));
+      } else {
+        await authService.sendVerificationOtp(signupIdentifier);
+        toast.success(t('auth.verificationOtpSent'));
+      }
+      
+      setShowVerification(true);
     } catch (error) {
       toast.error(t('auth.signupError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast.error(t('auth.verificationCodeRequired'));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (verificationMethod === 'email') {
+        await authService.verifyEmail(verificationIdentifier, verificationCode);
+      } else {
+        await authService.verifyPhone(verificationIdentifier, verificationCode);
+      }
+      
+      toast.success(t('auth.verificationSuccess'));
+      navigate('/');
+    } catch (error) {
+      toast.error(t('auth.verificationError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setIsLoading(true);
+    try {
+      if (verificationMethod === 'email') {
+        await authService.resendVerificationEmail(verificationIdentifier);
+        toast.success(t('auth.verificationEmailResent'));
+      } else {
+        await authService.resendVerificationOtp(verificationIdentifier);
+        toast.success(t('auth.verificationOtpResent'));
+      }
+    } catch (error) {
+      toast.error(t('auth.resendError'));
     } finally {
       setIsLoading(false);
     }
@@ -568,6 +626,67 @@ const Auth = () => {
     );
   };
 
+  const renderVerification = () => {
+    return (
+      <form onSubmit={handleVerification} className="space-y-4">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold">{t('auth.verifyAccount')}</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {verificationMethod === 'email' 
+              ? t('auth.verificationEmailDescription')
+              : t('auth.verificationOtpDescription')}
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="verification-code">{t('auth.verificationCode')}</Label>
+          <div className="flex justify-center">
+            <InputOTP
+              maxLength={6}
+              value={verificationCode}
+              onChange={(value) => setVerificationCode(value)}
+              disabled={isLoading}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleResendVerification}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            {t('auth.resendCode')}
+          </Button>
+          <Button type="submit" disabled={isLoading} className="flex-1">
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t('auth.verify')}
+          </Button>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            setShowVerification(false);
+            setVerificationCode('');
+          }}
+          className="w-full"
+        >
+          {t('common.cancel')}
+        </Button>
+      </form>
+    );
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -580,7 +699,9 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {showResetPassword ? (
+          {showVerification ? (
+            renderVerification()
+          ) : showResetPassword ? (
             renderPasswordReset()
           ) : (
             <Tabs defaultValue="login" className="w-full">
