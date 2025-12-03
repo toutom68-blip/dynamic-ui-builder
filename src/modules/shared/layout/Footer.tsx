@@ -13,9 +13,9 @@ export const Footer: React.FC<LayoutProps> = ({ children, content, htmlContent, 
   return (
     <footer
       className={className}
-      style={{ ...style, minHeight: '80px' }}
+      style={{ ...style, minHeight: '60px' }}
     >
-      <div className="container mx-auto px-4 h-full flex items-center justify-center">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-full flex flex-col sm:flex-row items-center justify-center gap-2 py-4">
         {htmlContent ? (
           <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
         ) : content ? (

@@ -1,4 +1,16 @@
 {
+  "datePicker": {
+    "selectDate": "اختر تاريخاً",
+    "selectRange": "اختر نطاق التاريخ"
+  },
+  "imageCropper": {
+    "title": "تعديل الصورة",
+    "rotateLeft": "تدوير لليسار",
+    "rotateRight": "تدوير لليمين",
+    "flipHorizontal": "قلب أفقي",
+    "flipVertical": "قلب عمودي",
+    "save": "حفظ التغييرات"
+  },
   "common": {
     "welcome": "مرحبا",
     "search": "بحث",
@@ -85,21 +97,42 @@
     "verify": "تحقق",
     "resendError": "فشل في إعادة إرسال الرمز"
   },
-  "profile": {
+"profile": {
+    "title": "الملف الشخصي",
+    "description": "إدارة معلوماتك الشخصية وصورة ملفك الشخصي",
     "completeProfile": "أكمل ملفك الشخصي",
     "completeProfileDescription": "يرجى ملء معلومات ملفك الشخصي للمتابعة",
     "complete": "إكمال الملف الشخصي",
     "completionSuccess": "تم إكمال الملف الشخصي بنجاح",
     "completionError": "فشل إكمال الملف الشخصي",
     "firstName": "الاسم الأول",
+    "firstNamePlaceholder": "أدخل اسمك الأول",
     "lastName": "اسم العائلة",
+    "lastNamePlaceholder": "أدخل اسم عائلتك",
+    "email": "البريد الإلكتروني",
+    "emailHint": "لا يمكن تغيير البريد الإلكتروني هنا. انتقل إلى علامة تبويب الحساب لتحديث البريد الإلكتروني.",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "أدخل رقم هاتفك",
+    "bio": "نبذة",
+    "bioPlaceholder": "أخبرنا عن نفسك...",
+    "save": "حفظ الملف الشخصي",
+    "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
+    "updateError": "فشل تحديث الملف الشخصي",
     "avatar": "صورة الملف الشخصي",
     "dateOfBirth": "تاريخ الميلاد",
     "address": "العنوان",
     "gender": "الجنس",
     "male": "ذكر",
     "female": "أنثى",
-    "other": "آخر"
+    "other": "آخر",
+    "photo": {
+      "upload": "تحميل صورة",
+      "change": "تغيير الصورة",
+      "remove": "إزالة الصورة",
+      "hint": "JPG أو PNG أو GIF. الحد الأقصى 5 ميجابايت.",
+      "invalidType": "يرجى اختيار ملف صورة",
+      "tooLarge": "يجب أن تكون الصورة أقل من 5 ميجابايت"
+    }
   },
   "nav": {
     "home": "الرئيسية",
@@ -211,11 +244,22 @@
       "helpText": "إذا استمرت هذه المشكلة، يرجى الاتصال بالدعم."
     }
   },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "delete": "حذف",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "daysAgo": "منذ {{count}} يوم"
+  },
   "settings": {
     "title": "الإعدادات",
     "save": "حفظ التغييرات",
     "loadError": "فشل تحميل الإعدادات",
-    "tabs": {
+"tabs": {
+      "profile": "الملف الشخصي",
       "preferences": "التفضيلات",
       "notifications": "الإشعارات",
       "account": "الحساب"
@@ -253,5 +297,24 @@
       "passwordChangeSuccess": "تم تغيير كلمة المرور بنجاح",
       "updateSuccess": "تم تحديث الحساب بنجاح"
     }
+  },
+  "grid": {
+    "search": "بحث...",
+    "selectFilter": "تصفية...",
+    "all": "الكل",
+    "filterBy": "تصفية حسب",
+    "clearFilter": "مسح الفلتر",
+    "clearAll": "مسح الكل",
+    "activeFilters": "الفلاتر النشطة",
+    "noData": "لا توجد بيانات متاحة",
+    "showing": "عرض",
+    "of": "من",
+    "results": "نتيجة",
+    "filtered": "مُفلتر",
+    "sortAsc": "ترتيب تصاعدي",
+    "sortDesc": "ترتيب تنازلي",
+    "columns": "الأعمدة",
+    "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء تحديد الكل"
   }
 }

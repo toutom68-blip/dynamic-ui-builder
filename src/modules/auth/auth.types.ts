@@ -1,9 +1,17 @@
 export interface User {
   id: string;
   email: string;
+  name?: string;
+  role?: string;
   language?: string;
   roles?: string[];
   [key: string]: any;
+}
+
+export interface AuthResponse {
+  user?: User;
+  token?: string;
+  message?: string;
 }
 
 export interface AuthContextType {

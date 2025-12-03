@@ -1,0 +1,43 @@
+// =============================================================================
+// Main SCSS Entry Point
+// =============================================================================
+// This file serves as the main entry point for all SCSS imports.
+// Import this file in your main.tsx to use SCSS throughout the app.
+
+// Core
+@forward 'variables';
+@forward 'functions';
+@forward 'mixins';
+@forward 'animations';
+
+// Utilities (optional - generates utility classes)
+@use 'utilities';
+
+// =============================================================================
+// Usage Examples
+// =============================================================================
+//
+// In your components, you can use SCSS like this:
+//
+// ```scss
+// @use '@/styles/variables' as *;
+// @use '@/styles/mixins' as *;
+// @use '@/styles/functions' as *;
+//
+// .my-component {
+//   @include flex-center;
+//   padding: space('4');
+//   font-size: rem(18);
+//   
+//   @include breakpoint('md') {
+//     padding: space('8');
+//   }
+//   
+//   &:hover {
+//     @include hover-lift;
+//   }
+// }
+// ```
+//
+// Or create component-specific SCSS files:
+// src/components/MyComponent/MyComponent.module.scss

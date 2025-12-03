@@ -1,14 +1,34 @@
 import { api } from '@/lib/axios';
-import { User } from './auth.types';
+import { User, AuthResponse } from './auth.types';
+import { storeJWT, clearJWT, getStoredJWTData, hasValidStoredJWT } from '@/utils/jwt';
 
 export const authService = {
   passwordSalt: (import.meta.env.VITE_PASSWORD_SALT as string) || '',
   passwordHash: (import.meta.env.VITE_PASSWORD_HASH as string) || '',
   async checkAuth(): Promise<User | null> {
     try {
-      const response = await api.get<User>('/api/auth/login');
-      return response.data;
+      // First check if we have a valid stored JWT
+      if (hasValidStoredJWT()) {
+        const jwtData = getStoredJWTData();
+        if (jwtData) {
+          // Return user data from stored JWT
+          return {
+            id: jwtData.sub || '',
+            email: jwtData.email || '',
+            name: jwtData.name,
+            role: jwtData.role,
+          } as User;
+        }
+      }
+      
+      // If no valid JWT, try to get fresh auth from server
+      const response = await api.get<AuthResponse>('/api/auth/login');
+      if (response.data.token) {
+        storeJWT(response.data.token);
+      }
+      return response.data.user || response.data as unknown as User;
     } catch (error) {
+      clearJWT();
       return null;
     }
   },
@@ -52,8 +72,14 @@ export const authService = {
     } else {
       data = { email: loginId, password: loginPassword };
     }
-    const response = await api.post<User>('/api/auth/login', data);
-    return response.data;
+    const response = await api.post<AuthResponse>('/api/auth/login', data);
+    
+    // Store JWT token if returned
+    if (response.data.token) {
+      storeJWT(response.data.token);
+    }
+    
+    return response.data.user || response.data as unknown as User;
   },
 
   async signup(email: string, password: string): Promise<User> {
@@ -62,6 +88,7 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
+    clearJWT();
     await api.post('/api/auth/logout');
   },
 

@@ -1,4 +1,16 @@
 {
+  "datePicker": {
+    "selectDate": "Sélectionner une date",
+    "selectRange": "Sélectionner une plage de dates"
+  },
+  "imageCropper": {
+    "title": "Modifier l'image",
+    "rotateLeft": "Rotation gauche",
+    "rotateRight": "Rotation droite",
+    "flipHorizontal": "Retourner horizontalement",
+    "flipVertical": "Retourner verticalement",
+    "save": "Enregistrer"
+  },
   "common": {
     "welcome": "Bienvenue",
     "search": "Rechercher",
@@ -85,21 +97,42 @@
     "verify": "Vérifier",
     "resendError": "Échec du renvoi du code"
   },
-  "profile": {
+"profile": {
+    "title": "Profil",
+    "description": "Gérez vos informations personnelles et votre photo de profil",
     "completeProfile": "Complétez votre profil",
     "completeProfileDescription": "Veuillez remplir vos informations de profil pour continuer",
     "complete": "Compléter le profil",
     "completionSuccess": "Profil complété avec succès",
     "completionError": "Échec de la complétion du profil",
     "firstName": "Prénom",
+    "firstNamePlaceholder": "Entrez votre prénom",
     "lastName": "Nom",
+    "lastNamePlaceholder": "Entrez votre nom",
+    "email": "Email",
+    "emailHint": "L'email ne peut pas être modifié ici. Allez à l'onglet Compte pour mettre à jour l'email.",
+    "phone": "Numéro de téléphone",
+    "phonePlaceholder": "Entrez votre numéro de téléphone",
+    "bio": "Bio",
+    "bioPlaceholder": "Parlez-nous de vous...",
+    "save": "Enregistrer le profil",
+    "updateSuccess": "Profil mis à jour avec succès",
+    "updateError": "Échec de la mise à jour du profil",
     "avatar": "Photo de profil",
     "dateOfBirth": "Date de naissance",
     "address": "Adresse",
     "gender": "Genre",
     "male": "Homme",
     "female": "Femme",
-    "other": "Autre"
+    "other": "Autre",
+    "photo": {
+      "upload": "Télécharger une photo",
+      "change": "Changer la photo",
+      "remove": "Supprimer la photo",
+      "hint": "JPG, PNG ou GIF. Max 5Mo.",
+      "invalidType": "Veuillez sélectionner un fichier image",
+      "tooLarge": "L'image doit être inférieure à 5Mo"
+    }
   },
   "nav": {
     "home": "Accueil",
@@ -211,11 +244,22 @@
       "helpText": "Si ce problème persiste, veuillez contacter le support."
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "markAllRead": "Tout marquer comme lu",
+    "delete": "Supprimer",
+    "justNow": "À l'instant",
+    "minutesAgo": "Il y a {{count}}m",
+    "hoursAgo": "Il y a {{count}}h",
+    "daysAgo": "Il y a {{count}}j"
+  },
   "settings": {
     "title": "Paramètres",
     "save": "Enregistrer les modifications",
     "loadError": "Échec du chargement des paramètres",
-    "tabs": {
+"tabs": {
+      "profile": "Profil",
       "preferences": "Préférences",
       "notifications": "Notifications",
       "account": "Compte"
@@ -253,5 +297,24 @@
       "passwordChangeSuccess": "Mot de passe changé avec succès",
       "updateSuccess": "Compte mis à jour avec succès"
     }
+  },
+  "grid": {
+    "search": "Rechercher...",
+    "selectFilter": "Filtrer...",
+    "all": "Tous",
+    "filterBy": "Filtrer par",
+    "clearFilter": "Effacer le filtre",
+    "clearAll": "Tout effacer",
+    "activeFilters": "Filtres actifs",
+    "noData": "Aucune donnée disponible",
+    "showing": "Affichage de",
+    "of": "sur",
+    "results": "résultats",
+    "filtered": "filtré",
+    "sortAsc": "Trier par ordre croissant",
+    "sortDesc": "Trier par ordre décroissant",
+    "columns": "Colonnes",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner"
   }
 }

@@ -5,7 +5,7 @@ import { DynamicForm } from '@/modules/shared/components/DynamicForm';
 import { DynamicFormField } from '@/types/component.types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { authService } from '../auth.service';
+import { authService } from './auth.service';
 
 interface ProfileCompletionProps {
   userId: string;

@@ -1,4 +1,41 @@
 {
+  "datePicker": {
+    "selectDate": "Select a date",
+    "selectRange": "Select date range"
+  },
+  "imageCropper": {
+    "title": "Edit Image",
+    "rotateLeft": "Rotate left",
+    "rotateRight": "Rotate right",
+    "flipHorizontal": "Flip horizontal",
+    "flipVertical": "Flip vertical",
+    "save": "Save changes"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your personal information and profile photo",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Enter your last name",
+    "email": "Email",
+    "emailHint": "Email cannot be changed here. Go to Account tab to update email.",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Enter your phone number",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "save": "Save Profile",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile",
+    "photo": {
+      "upload": "Upload Photo",
+      "change": "Change Photo",
+      "remove": "Remove Photo",
+      "hint": "JPG, PNG or GIF. Max 5MB.",
+      "invalidType": "Please select an image file",
+      "tooLarge": "Image must be less than 5MB"
+    }
+  },
   "common": {
     "welcome": "Welcome",
     "search": "Search",
@@ -211,11 +248,22 @@
       "helpText": "If this problem persists, please contact support."
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all read",
+    "delete": "Delete",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
   "settings": {
     "title": "Settings",
     "save": "Save Changes",
     "loadError": "Failed to load settings",
     "tabs": {
+      "profile": "Profile",
       "preferences": "Preferences",
       "notifications": "Notifications",
       "account": "Account"
@@ -253,5 +301,24 @@
       "passwordChangeSuccess": "Password changed successfully",
       "updateSuccess": "Account updated successfully"
     }
+  },
+  "grid": {
+    "search": "Search...",
+    "selectFilter": "Filter...",
+    "all": "All",
+    "filterBy": "Filter by",
+    "clearFilter": "Clear filter",
+    "clearAll": "Clear all",
+    "activeFilters": "Active filters",
+    "noData": "No data available",
+    "showing": "Showing",
+    "of": "of",
+    "results": "results",
+    "filtered": "filtered",
+    "sortAsc": "Sort ascending",
+    "sortDesc": "Sort descending",
+    "columns": "Columns",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all"
   }
 }

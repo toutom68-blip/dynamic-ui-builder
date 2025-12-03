@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { Loader2, Mail, Phone } from 'lucide-react';
 import { authConfig } from './auth.config';
 import { authService } from './auth.service';
-import { ProfileCompletion } from './components/ProfileCompletion';
+import { ProfileCompletion } from './ProfileCompletion';
 
 type SelectedAuthMethod = 'email' | 'phone';
 

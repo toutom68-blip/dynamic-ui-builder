@@ -10,6 +10,7 @@ import { LANGUAGE_OPTIONS, THEME_OPTIONS, DATE_FORMAT_OPTIONS, TIMEZONE_OPTIONS 
 import { DynamicFormField } from '@/types/component.types';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileForm } from './ProfileForm';
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -191,12 +192,25 @@ export const Settings: React.FC = () => {
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">{t('settings.title')}</h1>
 
-        <Tabs defaultValue="preferences" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile">{t('settings.tabs.profile')}</TabsTrigger>
             <TabsTrigger value="preferences">{t('settings.tabs.preferences')}</TabsTrigger>
             <TabsTrigger value="notifications">{t('settings.tabs.notifications')}</TabsTrigger>
             <TabsTrigger value="account">{t('settings.tabs.account')}</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('profile.title')}</CardTitle>
+                <CardDescription>{t('profile.description')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProfileForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="preferences">
             <Card>

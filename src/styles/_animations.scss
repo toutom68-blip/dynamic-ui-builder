@@ -1,0 +1,431 @@
+// =============================================================================
+// SCSS Animations Module
+// =============================================================================
+
+@use 'variables' as *;
+
+// -----------------------------------------------------------------------------
+// Keyframe Animations
+// -----------------------------------------------------------------------------
+
+// Fade Animations
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Scale Animations
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes scale-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Slide Animations
+@keyframes slide-in-top {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+// Rotate Animations
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+// Pulse & Bounce
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Shake Animation
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+// Wobble Animation
+@keyframes wobble {
+  0%, 100% {
+    transform: translateX(0) rotate(0);
+  }
+  15% {
+    transform: translateX(-10px) rotate(-5deg);
+  }
+  30% {
+    transform: translateX(8px) rotate(3deg);
+  }
+  45% {
+    transform: translateX(-6px) rotate(-3deg);
+  }
+  60% {
+    transform: translateX(4px) rotate(2deg);
+  }
+  75% {
+    transform: translateX(-2px) rotate(-1deg);
+  }
+}
+
+// Flip Animation
+@keyframes flip-x {
+  from {
+    transform: perspective(400px) rotateX(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: perspective(400px) rotateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes flip-y {
+  from {
+    transform: perspective(400px) rotateY(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: perspective(400px) rotateY(0);
+    opacity: 1;
+  }
+}
+
+// Glow Animation
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(var(--primary) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.8), 0 0 30px hsl(var(--primary) / 0.4);
+  }
+}
+
+// Skeleton Loading
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Animation Mixins
+// -----------------------------------------------------------------------------
+
+// Base animation mixin
+@mixin animate($name, $duration: 0.3s, $timing: ease-out, $delay: 0s, $iteration: 1, $direction: normal, $fill: forwards) {
+  animation: $name $duration $timing $delay $iteration $direction $fill;
+}
+
+// Fade mixins
+@mixin fade-in($duration: 0.3s, $delay: 0s) {
+  @include animate(fade-in, $duration, ease-out, $delay);
+}
+
+@mixin fade-out($duration: 0.3s, $delay: 0s) {
+  @include animate(fade-out, $duration, ease-out, $delay);
+}
+
+@mixin fade-in-up($duration: 0.4s, $delay: 0s) {
+  @include animate(fade-in-up, $duration, ease-out, $delay);
+}
+
+@mixin fade-in-down($duration: 0.4s, $delay: 0s) {
+  @include animate(fade-in-down, $duration, ease-out, $delay);
+}
+
+@mixin fade-in-left($duration: 0.4s, $delay: 0s) {
+  @include animate(fade-in-left, $duration, ease-out, $delay);
+}
+
+@mixin fade-in-right($duration: 0.4s, $delay: 0s) {
+  @include animate(fade-in-right, $duration, ease-out, $delay);
+}
+
+// Scale mixins
+@mixin scale-in($duration: 0.3s, $delay: 0s) {
+  @include animate(scale-in, $duration, ease-out, $delay);
+}
+
+@mixin scale-out($duration: 0.3s, $delay: 0s) {
+  @include animate(scale-out, $duration, ease-out, $delay);
+}
+
+@mixin scale-bounce($duration: 0.6s) {
+  @include animate(scale-bounce, $duration, ease-in-out, 0s, infinite);
+}
+
+// Slide mixins
+@mixin slide-in-top($duration: 0.4s, $delay: 0s) {
+  @include animate(slide-in-top, $duration, ease-out, $delay);
+}
+
+@mixin slide-in-bottom($duration: 0.4s, $delay: 0s) {
+  @include animate(slide-in-bottom, $duration, ease-out, $delay);
+}
+
+@mixin slide-in-left($duration: 0.4s, $delay: 0s) {
+  @include animate(slide-in-left, $duration, ease-out, $delay);
+}
+
+@mixin slide-in-right($duration: 0.4s, $delay: 0s) {
+  @include animate(slide-in-right, $duration, ease-out, $delay);
+}
+
+// Rotate mixins
+@mixin rotate($duration: 1s) {
+  @include animate(rotate, $duration, linear, 0s, infinite);
+}
+
+@mixin rotate-reverse($duration: 1s) {
+  @include animate(rotate-reverse, $duration, linear, 0s, infinite);
+}
+
+// Pulse & Bounce mixins
+@mixin pulse($duration: 2s) {
+  @include animate(pulse, $duration, ease-in-out, 0s, infinite);
+}
+
+@mixin bounce($duration: 1s) {
+  @include animate(bounce, $duration, ease-in-out, 0s, infinite);
+}
+
+@mixin bounce-soft($duration: 2s) {
+  @include animate(bounce-soft, $duration, ease-in-out, 0s, infinite);
+}
+
+// Effect mixins
+@mixin shake($duration: 0.5s) {
+  @include animate(shake, $duration, ease-in-out);
+}
+
+@mixin wobble($duration: 0.8s) {
+  @include animate(wobble, $duration, ease-in-out);
+}
+
+@mixin flip-x($duration: 0.6s, $delay: 0s) {
+  @include animate(flip-x, $duration, ease-out, $delay);
+}
+
+@mixin flip-y($duration: 0.6s, $delay: 0s) {
+  @include animate(flip-y, $duration, ease-out, $delay);
+}
+
+@mixin glow($duration: 2s) {
+  @include animate(glow, $duration, ease-in-out, 0s, infinite);
+}
+
+// Skeleton loading mixin
+@mixin shimmer($duration: 1.5s) {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  @include animate(shimmer, $duration, linear, 0s, infinite);
+}
+
+// Staggered animation mixin (for lists)
+@mixin stagger-children($base-delay: 0.1s, $animation: fade-in-up, $duration: 0.4s) {
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      @include animate($animation, $duration, ease-out, $base-delay * $i);
+    }
+  }
+}
+
+// Hover animation triggers
+@mixin on-hover-scale($scale: 1.05, $duration: 0.2s) {
+  transition: transform $duration ease-out;
+  
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+@mixin on-hover-lift($distance: -4px, $duration: 0.2s) {
+  transition: transform $duration ease-out, box-shadow $duration ease-out;
+  
+  &:hover {
+    transform: translateY($distance);
+    box-shadow: 0 10px 20px hsl(var(--foreground) / 0.1);
+  }
+}
+
+@mixin on-hover-glow($color: hsl(var(--primary) / 0.4), $duration: 0.3s) {
+  transition: box-shadow $duration ease-out;
+  
+  &:hover {
+    box-shadow: 0 0 20px $color;
+  }
+}
+
+// Entrance animation on scroll (requires JS intersection observer)
+@mixin animate-on-scroll($animation: fade-in-up, $duration: 0.6s) {
+  opacity: 0;
+  
+  &.is-visible {
+    @include animate($animation, $duration, ease-out);
+  }
+}

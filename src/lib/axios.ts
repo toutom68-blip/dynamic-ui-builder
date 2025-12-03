@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getStoredJWT, isJWTExpired, clearJWT } from '@/utils/jwt';
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -23,6 +24,13 @@ export const setLoadingCallbacks = (callbacks: {
   loadingCallbacks = callbacks;
 };
 
+// JWT expiration callback
+let onJWTExpired: (() => void) | null = null;
+
+export const setJWTExpiredCallback = (callback: () => void) => {
+  onJWTExpired = callback;
+};
+
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -30,6 +38,19 @@ api.interceptors.request.use(
     if (!config.headers['x-no-loading']) {
       loadingCallbacks?.start();
     }
+    
+    // Add JWT to Authorization header if available and valid
+    const token = getStoredJWT();
+    if (token) {
+      if (!isJWTExpired(token)) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        // Token expired, clear it and trigger callback
+        clearJWT();
+        onJWTExpired?.();
+      }
+    }
+    
     return config;
   },
   (error) => {

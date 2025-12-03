@@ -80,8 +80,49 @@ export interface GridColumn {
   key: string;
   title: string;
   width?: string;
+  minWidth?: string;
+  maxWidth?: string;
   sortable?: boolean;
+  filterable?: boolean;
+  filterType?: 'text' | 'number' | 'select' | 'date' | 'boolean';
+  filterOptions?: { label: string; value: string | number | boolean }[];
+  resizable?: boolean;
+  align?: 'left' | 'center' | 'right';
   render?: (value: any, row: any) => React.ReactNode;
+  frozen?: 'left' | 'right' | false;
+}
+
+export interface GridBulkAction {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  variant?: 'default' | 'destructive';
+}
+
+export interface GridPaginationConfig {
+  enabled: boolean;
+  currentPage: number;
+  totalItems: number;
+  pageSizeOptions?: number[];
+  showPageInput?: boolean;
+  onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+}
+
+export interface GridLazyLoadConfig {
+  enabled: boolean;
+  loadPage: (page: number, pageSize: number) => Promise<{ data: any[]; totalItems: number }>;
+}
+
+export interface GridFilterValue {
+  key: string;
+  value: string | number | boolean | null;
+  operator?: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'gt' | 'lt' | 'gte' | 'lte';
+}
+
+export interface GridSortState {
+  key: string;
+  direction: 'asc' | 'desc';
 }
 
 export interface GridProps extends BaseComponentProps {
@@ -92,9 +133,28 @@ export interface GridProps extends BaseComponentProps {
   pageSize?: number;
   onLoadMore?: () => Promise<void>;
   onSort?: (key: string, direction: 'asc' | 'desc') => void;
+  onFilter?: (filters: GridFilterValue[]) => void;
   onRowClick?: (row: any) => void;
+  onColumnResize?: (key: string, width: number) => void;
   striped?: boolean;
   hoverable?: boolean;
+  resizableColumns?: boolean;
+  showFilters?: boolean;
+  stickyHeader?: boolean;
+  emptyMessage?: string;
+  selectedRows?: any[];
+  onSelectionChange?: (rows: any[]) => void;
+  selectable?: boolean;
+  // New advanced features
+  selectionMode?: 'checkbox' | 'click' | 'none';
+  expandable?: boolean;
+  renderExpandedRow?: (row: any) => React.ReactNode;
+  bulkActions?: GridBulkAction[];
+  onBulkAction?: (action: string, rows: any[]) => void;
+  pagination?: GridPaginationConfig;
+  lazyLoading?: GridLazyLoadConfig;
+  rowKey?: string | ((row: any) => string);
+  getRowId?: (row: any, index: number) => string;
 }
 
 export interface FileUploaderProps extends BaseComponentProps {
@@ -170,4 +230,23 @@ export interface ModalProps extends BaseComponentProps {
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   showClose?: boolean;
+}
+
+export interface DatePickerProps extends BaseComponentProps {
+  mode?: 'single' | 'range';
+  value?: Date | { from?: Date; to?: Date };
+  onDateChange?: (date: Date | { from?: Date; to?: Date } | undefined) => void;
+  placeholder?: string;
+  minDate?: Date;
+  maxDate?: Date;
+  dateFormat?: string;
+}
+
+export interface ImageCropperProps extends BaseComponentProps {
+  imageSrc: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCropComplete: (croppedImageUrl: string) => void;
+  aspectRatio?: number;
+  circularCrop?: boolean;
 }

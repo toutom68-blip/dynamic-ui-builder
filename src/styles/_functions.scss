@@ -1,0 +1,185 @@
+// =============================================================================
+// SCSS Functions
+// =============================================================================
+
+@use 'sass:math';
+@use 'sass:map';
+@use 'sass:list';
+@use 'sass:color';
+@use 'variables' as *;
+
+// -----------------------------------------------------------------------------
+// Unit Conversions
+// -----------------------------------------------------------------------------
+
+/// Convert px to rem
+/// @param {Number} $px - Pixel value
+/// @param {Number} $base - Base font size (default: 16)
+/// @return {Number} - Rem value
+@function rem($px, $base: 16) {
+  @return math.div($px, $base) * 1rem;
+}
+
+/// Convert px to em
+/// @param {Number} $px - Pixel value
+/// @param {Number} $base - Base font size (default: 16)
+/// @return {Number} - Em value
+@function em($px, $base: 16) {
+  @return math.div($px, $base) * 1em;
+}
+
+/// Convert rem to px
+/// @param {Number} $rem - Rem value
+/// @param {Number} $base - Base font size (default: 16)
+/// @return {Number} - Pixel value
+@function px($rem, $base: 16) {
+  @return $rem * $base * 1px;
+}
+
+// -----------------------------------------------------------------------------
+// Spacing Helpers
+// -----------------------------------------------------------------------------
+
+/// Get spacing value from map
+/// @param {String|Number} $key - Spacing key or value
+/// @return {Number} - Spacing value
+@function space($key) {
+  @if map.has-key($spacing, $key) {
+    @return map.get($spacing, $key);
+  }
+  @return $key;
+}
+
+// -----------------------------------------------------------------------------
+// Color Functions
+// -----------------------------------------------------------------------------
+
+/// Lighten a color by percentage
+/// @param {Color} $color - Base color
+/// @param {Number} $amount - Amount to lighten (0-100)
+/// @return {Color} - Lightened color
+@function tint($color, $amount) {
+  @return color.mix(white, $color, $amount);
+}
+
+/// Darken a color by percentage
+/// @param {Color} $color - Base color
+/// @param {Number} $amount - Amount to darken (0-100)
+/// @return {Color} - Darkened color
+@function shade($color, $amount) {
+  @return color.mix(black, $color, $amount);
+}
+
+/// Create a semi-transparent version of a color
+/// @param {Color} $color - Base color
+/// @param {Number} $alpha - Alpha value (0-1)
+/// @return {Color} - Color with alpha
+@function alpha($color, $alpha) {
+  @return color.change($color, $alpha: $alpha);
+}
+
+// -----------------------------------------------------------------------------
+// Math Functions
+// -----------------------------------------------------------------------------
+
+/// Clamp a value between min and max
+/// @param {Number} $value - Value to clamp
+/// @param {Number} $min - Minimum value
+/// @param {Number} $max - Maximum value
+/// @return {Number} - Clamped value
+@function clamp-value($value, $min, $max) {
+  @return math.max($min, math.min($value, $max));
+}
+
+/// Calculate percentage
+/// @param {Number} $part - Part value
+/// @param {Number} $whole - Whole value
+/// @return {Number} - Percentage
+@function percentage($part, $whole) {
+  @return math.percentage(math.div($part, $whole));
+}
+
+/// Calculate fluid value (for responsive typography/spacing)
+/// @param {Number} $min-size - Minimum size in px
+/// @param {Number} $max-size - Maximum size in px
+/// @param {Number} $min-vw - Minimum viewport width in px
+/// @param {Number} $max-vw - Maximum viewport width in px
+/// @return {String} - Clamp value
+@function fluid($min-size, $max-size, $min-vw: 320, $max-vw: 1200) {
+  $slope: math.div($max-size - $min-size, $max-vw - $min-vw);
+  $y-intercept: $min-size - ($slope * $min-vw);
+  
+  $min-rem: rem($min-size);
+  $max-rem: rem($max-size);
+  $preferred: calc(#{rem($y-intercept)} + #{$slope * 100vw});
+  
+  @return clamp(#{$min-rem}, #{$preferred}, #{$max-rem});
+}
+
+// -----------------------------------------------------------------------------
+// String Functions
+// -----------------------------------------------------------------------------
+
+/// Replace string
+/// @param {String} $string - Original string
+/// @param {String} $search - String to search
+/// @param {String} $replace - Replacement string
+/// @return {String} - Modified string
+@function str-replace($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+  
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace + 
+            str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+  
+  @return $string;
+}
+
+// -----------------------------------------------------------------------------
+// Map Functions
+// -----------------------------------------------------------------------------
+
+/// Deep get value from nested map
+/// @param {Map} $map - Map to search
+/// @param {String...} $keys - Keys path
+/// @return {*} - Value at path
+@function map-deep-get($map, $keys...) {
+  @each $key in $keys {
+    @if type-of($map) != 'map' {
+      @return null;
+    }
+    $map: map.get($map, $key);
+  }
+  @return $map;
+}
+
+// -----------------------------------------------------------------------------
+// Z-Index
+// -----------------------------------------------------------------------------
+
+/// Get z-index value
+/// @param {String} $layer - Layer name
+/// @return {Number} - Z-index value
+@function z($layer) {
+  @if map.has-key($z-index, $layer) {
+    @return map.get($z-index, $layer);
+  }
+  @warn "Unknown z-index layer: #{$layer}";
+  @return 1;
+}
+
+// -----------------------------------------------------------------------------
+// Breakpoint
+// -----------------------------------------------------------------------------
+
+/// Get breakpoint value
+/// @param {String} $name - Breakpoint name
+/// @return {Number} - Breakpoint value
+@function bp($name) {
+  @if map.has-key($breakpoints, $name) {
+    @return map.get($breakpoints, $name);
+  }
+  @warn "Unknown breakpoint: #{$name}";
+  @return $name;
+}

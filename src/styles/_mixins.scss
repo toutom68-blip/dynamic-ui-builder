@@ -1,0 +1,250 @@
+// =============================================================================
+// SCSS Mixins
+// =============================================================================
+
+@use 'variables' as *;
+
+// -----------------------------------------------------------------------------
+// Responsive Breakpoints
+// -----------------------------------------------------------------------------
+@mixin breakpoint($size) {
+  @if map-has-key($breakpoints, $size) {
+    @media (min-width: map-get($breakpoints, $size)) {
+      @content;
+    }
+  } @else {
+    @media (min-width: $size) {
+      @content;
+    }
+  }
+}
+
+@mixin breakpoint-down($size) {
+  @if map-has-key($breakpoints, $size) {
+    @media (max-width: map-get($breakpoints, $size) - 1px) {
+      @content;
+    }
+  } @else {
+    @media (max-width: $size - 1px) {
+      @content;
+    }
+  }
+}
+
+@mixin breakpoint-between($min, $max) {
+  $min-val: if(map-has-key($breakpoints, $min), map-get($breakpoints, $min), $min);
+  $max-val: if(map-has-key($breakpoints, $max), map-get($breakpoints, $max), $max);
+  
+  @media (min-width: $min-val) and (max-width: $max-val - 1px) {
+    @content;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Flexbox
+// -----------------------------------------------------------------------------
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+@mixin flex-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// -----------------------------------------------------------------------------
+// Grid
+// -----------------------------------------------------------------------------
+@mixin grid($columns: 1, $gap: 1rem) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+@mixin grid-auto-fit($min-width: 250px, $gap: 1rem) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
+  gap: $gap;
+}
+
+@mixin grid-auto-fill($min-width: 250px, $gap: 1rem) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: $gap;
+}
+
+// -----------------------------------------------------------------------------
+// Typography
+// -----------------------------------------------------------------------------
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@mixin font-size($size) {
+  @if map-has-key($font-sizes, $size) {
+    font-size: map-get($font-sizes, $size);
+  } @else {
+    font-size: $size;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Positioning
+// -----------------------------------------------------------------------------
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin absolute-fill {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+@mixin fixed-fill {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+// -----------------------------------------------------------------------------
+// Visual Effects
+// -----------------------------------------------------------------------------
+@mixin transition($properties: all, $duration: default, $timing: smooth) {
+  $dur: if(map-has-key($transition-duration, $duration), map-get($transition-duration, $duration), $duration);
+  $tim: if(map-has-key($transition-timing, $timing), map-get($transition-timing, $timing), $timing);
+  transition: $properties $dur $tim;
+}
+
+@mixin shadow($size: default) {
+  @if map-has-key($shadows, $size) {
+    box-shadow: map-get($shadows, $size);
+  } @else {
+    box-shadow: $size;
+  }
+}
+
+@mixin gradient($direction: to right, $start-color: #000, $end-color: #fff) {
+  background: linear-gradient($direction, $start-color, $end-color);
+}
+
+@mixin overlay($color: rgba(0, 0, 0, 0.5)) {
+  position: relative;
+  
+  &::before {
+    content: '';
+    @include absolute-fill;
+    background-color: $color;
+    z-index: 1;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Interactive States
+// -----------------------------------------------------------------------------
+@mixin hover-lift($distance: -2px) {
+  @include transition(transform);
+  
+  &:hover {
+    transform: translateY($distance);
+  }
+}
+
+@mixin hover-scale($scale: 1.05) {
+  @include transition(transform);
+  
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+@mixin focus-ring($color: hsl(var(--ring)), $offset: 2px) {
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: $offset;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Scrollbar
+// -----------------------------------------------------------------------------
+@mixin custom-scrollbar($width: 8px, $track-color: transparent, $thumb-color: hsl(var(--muted))) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: $thumb-color;
+    border-radius: $width / 2;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Aspect Ratio
+// -----------------------------------------------------------------------------
+@mixin aspect-ratio($width: 16, $height: 9) {
+  aspect-ratio: $width / $height;
+}
+
+// -----------------------------------------------------------------------------
+// Visually Hidden (Accessible)
+// -----------------------------------------------------------------------------
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
