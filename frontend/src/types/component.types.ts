@@ -81,7 +81,21 @@ export interface GridColumn {
   title: string;
   width?: string;
   sortable?: boolean;
+  groupable?: boolean;
+  draggable?: boolean;
   render?: (value: any, row: any) => React.ReactNode;
+}
+
+export interface GridGroupConfig {
+  key: string;
+  direction?: 'asc' | 'desc';
+  aggregations?: GridAggregation[];
+}
+
+export interface GridAggregation {
+  columnKey: string;
+  type: 'sum' | 'avg' | 'count' | 'min' | 'max';
+  label?: string;
 }
 
 export interface GridProps extends BaseComponentProps {
@@ -95,6 +109,15 @@ export interface GridProps extends BaseComponentProps {
   onRowClick?: (row: any) => void;
   striped?: boolean;
   hoverable?: boolean;
+  // Column reordering
+  reorderableColumns?: boolean;
+  onColumnReorder?: (columns: GridColumn[]) => void;
+  // Grouping
+  groupBy?: GridGroupConfig[];
+  onGroupByChange?: (groupBy: GridGroupConfig[]) => void;
+  showGroupByPanel?: boolean;
+  collapsibleGroups?: boolean;
+  defaultExpandedGroups?: string[];
 }
 
 export interface FileUploaderProps extends BaseComponentProps {
