@@ -19,6 +19,8 @@ import {
   Grid3X3,
   Clock,
   Loader2,
+  CalendarDays,
+  CalendarRange,
 } from 'lucide-react';
 import {
   format,
@@ -26,9 +28,13 @@ import {
   endOfMonth,
   startOfWeek,
   endOfWeek,
+  startOfDay,
+  endOfDay,
   eachDayOfInterval,
+  eachHourOfInterval,
   isSameMonth,
   isSameDay,
+  isSameHour,
   addMonths,
   subMonths,
   addWeeks,
@@ -36,7 +42,10 @@ import {
   addDays,
   subDays,
   isToday,
-  parseISO,
+  isWithinInterval,
+  getHours,
+  setHours,
+  setMinutes,
 } from 'date-fns';
 import { EventTooltip } from './EventTooltip';
 import { BookingModal } from './BookingModal';
@@ -280,6 +289,24 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     return filteredEvents.filter(event => isSameDay(new Date(event.startDate), date));
   };
 
+  // Get events for a specific hour slot
+  const getEventsForHour = (date: Date, hour: number) => {
+    return filteredEvents.filter(event => {
+      const eventStart = new Date(event.startDate);
+      const eventEnd = new Date(event.endDate);
+      const slotStart = setMinutes(setHours(date, hour), 0);
+      const slotEnd = setMinutes(setHours(date, hour + 1), 0);
+      
+      return (
+        (eventStart >= slotStart && eventStart < slotEnd) ||
+        (eventStart < slotStart && eventEnd > slotStart)
+      );
+    });
+  };
+
+  // Time slots for day/week view (6 AM to 10 PM)
+  const timeSlots = Array.from({ length: 17 }, (_, i) => i + 6);
+
   // Render calendar grid for month view
   const renderMonthView = () => {
     const monthStart = startOfMonth(currentDate);
@@ -369,6 +396,175 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             );
           })}
         </div>
+      </div>
+    );
+  };
+
+  // Render week view with time slots
+  const renderWeekView = () => {
+    const weekStart = startOfWeek(currentDate);
+    const weekEnd = endOfWeek(currentDate);
+    const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+    return (
+      <div className="border border-border rounded-lg overflow-hidden">
+        {/* Week day headers */}
+        <div className="grid grid-cols-8 bg-muted/50 sticky top-0 z-10">
+          <div className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border w-20">
+            Time
+          </div>
+          {days.map(day => (
+            <div
+              key={day.toISOString()}
+              className={cn(
+                'p-2 text-center border-b border-r border-border',
+                isToday(day) && 'bg-primary/10'
+              )}
+            >
+              <div className="text-xs text-muted-foreground">{format(day, 'EEE')}</div>
+              <div className={cn(
+                'text-sm font-medium w-7 h-7 mx-auto flex items-center justify-center rounded-full',
+                isToday(day) && 'bg-primary text-primary-foreground'
+              )}>
+                {format(day, 'd')}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Time slots grid */}
+        <ScrollArea className="h-[600px]">
+          <div className="grid grid-cols-8">
+            {timeSlots.map(hour => (
+              <React.Fragment key={hour}>
+                {/* Time label */}
+                <div className="p-2 text-xs text-muted-foreground border-b border-r border-border w-20 h-16 flex items-start justify-end pr-2">
+                  {format(setHours(new Date(), hour), 'h a')}
+                </div>
+                {/* Day columns */}
+                {days.map(day => {
+                  const hourEvents = getEventsForHour(day, hour);
+                  return (
+                    <div
+                      key={`${day.toISOString()}-${hour}`}
+                      className={cn(
+                        'border-b border-r border-border h-16 p-0.5 cursor-pointer hover:bg-muted/30 relative',
+                        isToday(day) && 'bg-primary/5'
+                      )}
+                      onClick={() => onDateClick?.(setHours(day, hour))}
+                    >
+                      {hourEvents.map((event, idx) => (
+                        <EventTooltip
+                          key={event.id}
+                          event={event}
+                          onBook={() => handleBook(event)}
+                          onShare={() => handleShare(event)}
+                          onReminder={() => handleReminder(event)}
+                        >
+                          <div
+                            className={cn(
+                              'text-xs p-1 rounded truncate cursor-pointer mb-0.5 text-primary-foreground'
+                            )}
+                            style={{ backgroundColor: event.color || 'hsl(var(--primary))' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventClick(event);
+                            }}
+                          >
+                            {format(new Date(event.startDate), 'h:mm')} {event.title}
+                          </div>
+                        </EventTooltip>
+                      ))}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  };
+
+  // Render day view with time slots
+  const renderDayView = () => {
+    return (
+      <div className="border border-border rounded-lg overflow-hidden">
+        {/* Day header */}
+        <div className="grid grid-cols-[80px_1fr] bg-muted/50 sticky top-0 z-10">
+          <div className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border">
+            Time
+          </div>
+          <div className={cn(
+            'p-3 text-center border-b border-border',
+            isToday(currentDate) && 'bg-primary/10'
+          )}>
+            <div className="text-sm text-muted-foreground">{format(currentDate, 'EEEE')}</div>
+            <div className={cn(
+              'text-2xl font-semibold w-10 h-10 mx-auto flex items-center justify-center rounded-full',
+              isToday(currentDate) && 'bg-primary text-primary-foreground'
+            )}>
+              {format(currentDate, 'd')}
+            </div>
+          </div>
+        </div>
+
+        {/* Time slots */}
+        <ScrollArea className="h-[600px]">
+          <div className="grid grid-cols-[80px_1fr]">
+            {timeSlots.map(hour => {
+              const hourEvents = getEventsForHour(currentDate, hour);
+              return (
+                <React.Fragment key={hour}>
+                  {/* Time label */}
+                  <div className="p-2 text-sm text-muted-foreground border-b border-r border-border h-20 flex items-start justify-end pr-3">
+                    {format(setHours(new Date(), hour), 'h a')}
+                  </div>
+                  {/* Event slot */}
+                  <div
+                    className={cn(
+                      'border-b border-border h-20 p-1 cursor-pointer hover:bg-muted/30'
+                    )}
+                    onClick={() => onDateClick?.(setHours(currentDate, hour))}
+                  >
+                    <div className="space-y-1">
+                      {hourEvents.map(event => (
+                        <EventTooltip
+                          key={event.id}
+                          event={event}
+                          onBook={() => handleBook(event)}
+                          onShare={() => handleShare(event)}
+                          onReminder={() => handleReminder(event)}
+                        >
+                          <div
+                            className="flex items-start gap-2 p-2 rounded cursor-pointer text-primary-foreground"
+                            style={{ backgroundColor: event.color || 'hsl(var(--primary))' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventClick(event);
+                            }}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{event.title}</div>
+                              <div className="text-xs opacity-80">
+                                {format(new Date(event.startDate), 'h:mm a')} - {format(new Date(event.endDate), 'h:mm a')}
+                              </div>
+                            </div>
+                            {event.price !== undefined && event.price > 0 && (
+                              <Badge variant="secondary" className="shrink-0">
+                                ${event.price}
+                              </Badge>
+                            )}
+                          </div>
+                        </EventTooltip>
+                      ))}
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </ScrollArea>
       </div>
     );
   };
@@ -558,6 +754,22 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             Month
           </Button>
           <Button
+            variant={view === 'week' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setView('week')}
+          >
+            <CalendarRange className="h-4 w-4 mr-1" />
+            Week
+          </Button>
+          <Button
+            variant={view === 'day' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setView('day')}
+          >
+            <CalendarDays className="h-4 w-4 mr-1" />
+            Day
+          </Button>
+          <Button
             variant={view === 'agenda' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('agenda')}
@@ -573,6 +785,10 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         renderSkeleton()
       ) : view === 'month' ? (
         renderMonthView()
+      ) : view === 'week' ? (
+        renderWeekView()
+      ) : view === 'day' ? (
+        renderDayView()
       ) : (
         renderAgendaView()
       )}
