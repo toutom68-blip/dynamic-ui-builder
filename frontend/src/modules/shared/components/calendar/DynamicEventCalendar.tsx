@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   CalendarProps,
   CalendarEvent,
@@ -21,6 +21,7 @@ import {
   Loader2,
   CalendarDays,
   CalendarRange,
+  Plus,
 } from 'lucide-react';
 import {
   format,
@@ -46,13 +47,21 @@ import {
   getHours,
   setHours,
   setMinutes,
+  addMinutes,
 } from 'date-fns';
 import { EventTooltip } from './EventTooltip';
 import { BookingModal } from './BookingModal';
 import { ShareModal } from './ShareModal';
 import { ReminderModal } from './ReminderModal';
 import { CalendarFilters } from './CalendarFilters';
+import { EventCreateModal } from './EventCreateModal';
+import { DraggableEvent } from './DraggableEvent';
+import { useCalendarDragDrop } from './useCalendarDragDrop';
 import { cn } from '@/lib/utils';
+
+const SLOT_HEIGHT = 64; // pixels per time slot
+const START_HOUR = 6;
+const END_HOUR = 22;
 
 export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   events: initialEvents = [],
@@ -63,6 +72,9 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   onCancelBooking,
   onSetReminder,
   onShare,
+  onEventCreate,
+  onEventUpdate,
+  onEventDelete,
   lazyLoading,
   filters: externalFilters,
   onFilterChange,
@@ -72,6 +84,9 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   locale = 'en-US',
   timezone,
   className,
+  slotDuration = 30,
+  defaultEventDuration = 60,
+  defaultEventColor,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewConfig['view']>(initialView);
@@ -86,6 +101,33 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [reminderModalOpen, setReminderModalOpen] = useState(false);
+
+  // Refs for drag-drop
+  const weekViewRef = useRef<HTMLDivElement>(null);
+  const dayViewRef = useRef<HTMLDivElement>(null);
+
+  // Drag-drop hook
+  const {
+    dragState,
+    showCreateModal,
+    setShowCreateModal,
+    pendingEvent,
+    dragRef,
+    startDragCreate,
+    startDragEvent,
+    updateDrag,
+    endDrag,
+    cancelDrag,
+    handleCreateEvent,
+  } = useCalendarDragDrop({
+    events,
+    editable,
+    slotDuration,
+    defaultEventDuration,
+    onEventCreate,
+    onEventUpdate,
+    setEvents,
+  });
 
   // Extract unique categories and tags for filters
   const categories = useMemo(() => 
@@ -251,7 +293,6 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     if (onBookEvent) {
       return await onBookEvent(event, quantity);
     }
-    // Mock booking response
     return {
       id: `booking-${Date.now()}`,
       eventId: event.id,
@@ -271,7 +312,6 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     if (onSetReminder) {
       return await onSetReminder(event, reminder);
     }
-    // Mock reminder response
     return {
       ...reminder,
       id: `reminder-${Date.now()}`,
@@ -304,8 +344,85 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     });
   };
 
-  // Time slots for day/week view (6 AM to 10 PM)
-  const timeSlots = Array.from({ length: 17 }, (_, i) => i + 6);
+  // Get events for a day that span time slots
+  const getEventsForDayColumn = (date: Date) => {
+    return filteredEvents.filter(event => {
+      const eventStart = new Date(event.startDate);
+      return isSameDay(eventStart, date);
+    });
+  };
+
+  // Time slots for day/week view
+  const timeSlots = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => i + START_HOUR);
+
+  // Mouse handlers for drag-drop
+  const handleSlotMouseDown = (date: Date, hour: number, e: React.MouseEvent) => {
+    if (!editable) return;
+    e.preventDefault();
+    
+    const slotDate = setMinutes(setHours(date, hour), 0);
+    dragRef.current = {
+      initialY: e.clientY,
+      currentDate: slotDate,
+      slotHeight: SLOT_HEIGHT,
+      startHour: START_HOUR,
+    };
+    startDragCreate(slotDate, SLOT_HEIGHT, START_HOUR);
+  };
+
+  const handleMouseMove = useCallback((e: React.MouseEvent, containerRef: React.RefObject<HTMLDivElement>, date: Date) => {
+    if (!dragState.isDragging || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    updateDrag(date, e.clientY, rect);
+  }, [dragState.isDragging, updateDrag]);
+
+  const handleMouseUp = useCallback(() => {
+    if (dragState.isDragging) {
+      endDrag();
+    }
+  }, [dragState.isDragging, endDrag]);
+
+  // Global mouse up listener
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (dragState.isDragging) {
+        endDrag();
+      }
+    };
+    
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, [dragState.isDragging, endDrag]);
+
+  // Render drag preview
+  const renderDragPreview = (date: Date) => {
+    if (!dragState.isDragging || dragState.dragType !== 'create') return null;
+    if (!dragState.startDate || !dragState.endDate) return null;
+    if (!isSameDay(dragState.startDate, date)) return null;
+
+    const startMinutes = dragState.startDate.getHours() * 60 + dragState.startDate.getMinutes();
+    const endMinutes = dragState.endDate.getHours() * 60 + dragState.endDate.getMinutes();
+    const durationMinutes = endMinutes - startMinutes;
+    
+    const pixelsPerMinute = SLOT_HEIGHT / slotDuration;
+    const topOffset = (startMinutes - START_HOUR * 60) * pixelsPerMinute;
+    const height = Math.max(durationMinutes * pixelsPerMinute, 24);
+
+    return (
+      <div
+        className="absolute left-1 right-1 rounded bg-primary/50 border-2 border-dashed border-primary pointer-events-none z-30"
+        style={{
+          top: `${topOffset}px`,
+          height: `${height}px`,
+        }}
+      >
+        <div className="p-1 text-xs text-primary-foreground font-medium">
+          {format(dragState.startDate, 'h:mm')} - {format(dragState.endDate, 'h:mm a')}
+        </div>
+      </div>
+    );
+  };
 
   // Render calendar grid for month view
   const renderMonthView = () => {
@@ -400,7 +517,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     );
   };
 
-  // Render week view with time slots
+  // Render week view with time slots and drag-drop
   const renderWeekView = () => {
     const weekStart = startOfWeek(currentDate);
     const weekEnd = endOfWeek(currentDate);
@@ -409,7 +526,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     return (
       <div className="border border-border rounded-lg overflow-hidden">
         {/* Week day headers */}
-        <div className="grid grid-cols-8 bg-muted/50 sticky top-0 z-10">
+        <div className="grid grid-cols-8 bg-muted/50 sticky top-0 z-20">
           <div className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border w-20">
             Time
           </div>
@@ -434,47 +551,55 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
 
         {/* Time slots grid */}
         <ScrollArea className="h-[600px]">
-          <div className="grid grid-cols-8">
+          <div 
+            ref={weekViewRef}
+            className="grid grid-cols-8"
+            onMouseUp={handleMouseUp}
+          >
             {timeSlots.map(hour => (
               <React.Fragment key={hour}>
                 {/* Time label */}
-                <div className="p-2 text-xs text-muted-foreground border-b border-r border-border w-20 h-16 flex items-start justify-end pr-2">
+                <div className="p-2 text-xs text-muted-foreground border-b border-r border-border w-20 flex items-start justify-end pr-2" style={{ height: SLOT_HEIGHT }}>
                   {format(setHours(new Date(), hour), 'h a')}
                 </div>
                 {/* Day columns */}
                 {days.map(day => {
-                  const hourEvents = getEventsForHour(day, hour);
+                  const dayEvents = hour === START_HOUR ? getEventsForDayColumn(day) : [];
+                  
                   return (
                     <div
                       key={`${day.toISOString()}-${hour}`}
                       className={cn(
-                        'border-b border-r border-border h-16 p-0.5 cursor-pointer hover:bg-muted/30 relative',
-                        isToday(day) && 'bg-primary/5'
+                        'border-b border-r border-border p-0 cursor-pointer hover:bg-muted/30 relative',
+                        isToday(day) && 'bg-primary/5',
+                        editable && 'select-none'
                       )}
-                      onClick={() => onDateClick?.(setHours(day, hour))}
+                      style={{ height: SLOT_HEIGHT }}
+                      onMouseDown={(e) => handleSlotMouseDown(day, hour, e)}
+                      onMouseMove={(e) => handleMouseMove(e, weekViewRef, day)}
+                      onClick={() => !dragState.isDragging && onDateClick?.(setHours(day, hour))}
                     >
-                      {hourEvents.map((event, idx) => (
-                        <EventTooltip
+                      {/* Render events only from the first slot of the day column */}
+                      {hour === START_HOUR && dayEvents.map(event => (
+                        <DraggableEvent
                           key={event.id}
                           event={event}
-                          onBook={() => handleBook(event)}
-                          onShare={() => handleShare(event)}
-                          onReminder={() => handleReminder(event)}
-                        >
-                          <div
-                            className={cn(
-                              'text-xs p-1 rounded truncate cursor-pointer mb-0.5 text-primary-foreground'
-                            )}
-                            style={{ backgroundColor: event.color || 'hsl(var(--primary))' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEventClick(event);
-                            }}
-                          >
-                            {format(new Date(event.startDate), 'h:mm')} {event.title}
-                          </div>
-                        </EventTooltip>
+                          view="week"
+                          slotHeight={SLOT_HEIGHT}
+                          slotDuration={slotDuration}
+                          editable={editable}
+                          startHour={START_HOUR}
+                          onDragStart={startDragEvent}
+                          onDragEnd={endDrag}
+                          onClick={handleEventClick}
+                          onBook={handleBook}
+                          onShare={handleShare}
+                          onReminder={handleReminder}
+                        />
                       ))}
+                      
+                      {/* Drag preview */}
+                      {hour === START_HOUR && renderDragPreview(day)}
                     </div>
                   );
                 })}
@@ -486,12 +611,14 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     );
   };
 
-  // Render day view with time slots
+  // Render day view with time slots and drag-drop
   const renderDayView = () => {
+    const dayEvents = getEventsForDayColumn(currentDate);
+
     return (
       <div className="border border-border rounded-lg overflow-hidden">
         {/* Day header */}
-        <div className="grid grid-cols-[80px_1fr] bg-muted/50 sticky top-0 z-10">
+        <div className="grid grid-cols-[80px_1fr] bg-muted/50 sticky top-0 z-20">
           <div className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border">
             Time
           </div>
@@ -511,58 +638,62 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
 
         {/* Time slots */}
         <ScrollArea className="h-[600px]">
-          <div className="grid grid-cols-[80px_1fr]">
-            {timeSlots.map(hour => {
-              const hourEvents = getEventsForHour(currentDate, hour);
-              return (
-                <React.Fragment key={hour}>
-                  {/* Time label */}
-                  <div className="p-2 text-sm text-muted-foreground border-b border-r border-border h-20 flex items-start justify-end pr-3">
-                    {format(setHours(new Date(), hour), 'h a')}
-                  </div>
-                  {/* Event slot */}
-                  <div
-                    className={cn(
-                      'border-b border-border h-20 p-1 cursor-pointer hover:bg-muted/30'
-                    )}
-                    onClick={() => onDateClick?.(setHours(currentDate, hour))}
-                  >
-                    <div className="space-y-1">
-                      {hourEvents.map(event => (
-                        <EventTooltip
-                          key={event.id}
-                          event={event}
-                          onBook={() => handleBook(event)}
-                          onShare={() => handleShare(event)}
-                          onReminder={() => handleReminder(event)}
-                        >
-                          <div
-                            className="flex items-start gap-2 p-2 rounded cursor-pointer text-primary-foreground"
-                            style={{ backgroundColor: event.color || 'hsl(var(--primary))' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEventClick(event);
-                            }}
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm truncate">{event.title}</div>
-                              <div className="text-xs opacity-80">
-                                {format(new Date(event.startDate), 'h:mm a')} - {format(new Date(event.endDate), 'h:mm a')}
-                              </div>
-                            </div>
-                            {event.price !== undefined && event.price > 0 && (
-                              <Badge variant="secondary" className="shrink-0">
-                                ${event.price}
-                              </Badge>
-                            )}
-                          </div>
-                        </EventTooltip>
-                      ))}
-                    </div>
-                  </div>
-                </React.Fragment>
-              );
-            })}
+          <div 
+            ref={dayViewRef}
+            className="grid grid-cols-[80px_1fr] relative"
+            onMouseUp={handleMouseUp}
+          >
+            {/* Time labels column */}
+            <div>
+              {timeSlots.map(hour => (
+                <div 
+                  key={hour} 
+                  className="text-sm text-muted-foreground border-b border-r border-border flex items-start justify-end pr-3 pt-1"
+                  style={{ height: SLOT_HEIGHT }}
+                >
+                  {format(setHours(new Date(), hour), 'h a')}
+                </div>
+              ))}
+            </div>
+            
+            {/* Events column */}
+            <div className="relative">
+              {timeSlots.map(hour => (
+                <div
+                  key={hour}
+                  className={cn(
+                    'border-b border-border cursor-pointer hover:bg-muted/30',
+                    editable && 'select-none'
+                  )}
+                  style={{ height: SLOT_HEIGHT }}
+                  onMouseDown={(e) => handleSlotMouseDown(currentDate, hour, e)}
+                  onMouseMove={(e) => handleMouseMove(e, dayViewRef, currentDate)}
+                  onClick={() => !dragState.isDragging && onDateClick?.(setHours(currentDate, hour))}
+                />
+              ))}
+              
+              {/* Render all events positioned absolutely */}
+              {dayEvents.map(event => (
+                <DraggableEvent
+                  key={event.id}
+                  event={event}
+                  view="day"
+                  slotHeight={SLOT_HEIGHT}
+                  slotDuration={slotDuration}
+                  editable={editable}
+                  startHour={START_HOUR}
+                  onDragStart={startDragEvent}
+                  onDragEnd={endDrag}
+                  onClick={handleEventClick}
+                  onBook={handleBook}
+                  onShare={handleShare}
+                  onReminder={handleReminder}
+                />
+              ))}
+              
+              {/* Drag preview */}
+              {renderDragPreview(currentDate)}
+            </div>
           </div>
         </ScrollArea>
       </div>
@@ -725,7 +856,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
       )}
 
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => navigate('prev')}>
             <ChevronLeft className="h-4 w-4" />
@@ -745,6 +876,25 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {editable && (
+            <Button
+              size="sm"
+              onClick={() => {
+                const now = new Date();
+                const startDate = setMinutes(setHours(now, now.getHours() + 1), 0);
+                const endDate = addMinutes(startDate, defaultEventDuration);
+                handleCreateEvent({
+                  title: 'New Event',
+                  startDate,
+                  endDate,
+                  color: defaultEventColor,
+                });
+              }}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Quick Add
+            </Button>
+          )}
           <Button
             variant={view === 'month' ? 'default' : 'outline'}
             size="sm"
@@ -780,6 +930,13 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         </div>
       </div>
 
+      {/* Editable hint */}
+      {editable && (view === 'week' || view === 'day') && (
+        <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
+          💡 Click and drag on time slots to create events. Drag events to move them, or drag the edges to resize.
+        </div>
+      )}
+
       {/* Calendar Content */}
       {isLoading && events.length === 0 ? (
         renderSkeleton()
@@ -813,6 +970,15 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         open={reminderModalOpen}
         onOpenChange={setReminderModalOpen}
         onSetReminder={handleSetReminder}
+      />
+
+      <EventCreateModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        startDate={pendingEvent?.start || null}
+        endDate={pendingEvent?.end || null}
+        onSave={handleCreateEvent}
+        defaultColor={defaultEventColor}
       />
     </div>
   );

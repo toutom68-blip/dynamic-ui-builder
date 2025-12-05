@@ -70,6 +70,15 @@ export interface CalendarLazyLoadConfig {
   }>;
 }
 
+export interface DragState {
+  isDragging: boolean;
+  dragType: 'create' | 'move' | 'resize-start' | 'resize-end' | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  eventId: string | null;
+  originalEvent: CalendarEvent | null;
+}
+
 export interface CalendarProps {
   events?: CalendarEvent[];
   initialView?: CalendarViewConfig['view'];
@@ -79,6 +88,9 @@ export interface CalendarProps {
   onCancelBooking?: (booking: CalendarBooking) => Promise<void>;
   onSetReminder?: (event: CalendarEvent, reminder: Omit<CalendarReminder, 'id' | 'sent'>) => Promise<CalendarReminder>;
   onShare?: (event: CalendarEvent, platform: 'copy' | 'email' | 'twitter' | 'facebook' | 'whatsapp') => void;
+  onEventCreate?: (event: Omit<CalendarEvent, 'id'>) => Promise<CalendarEvent>;
+  onEventUpdate?: (event: CalendarEvent) => Promise<CalendarEvent>;
+  onEventDelete?: (eventId: string) => Promise<void>;
   lazyLoading?: CalendarLazyLoadConfig;
   filters?: CalendarFilterConfig;
   onFilterChange?: (filters: CalendarFilterConfig) => void;
@@ -88,4 +100,7 @@ export interface CalendarProps {
   locale?: string;
   timezone?: string;
   className?: string;
+  slotDuration?: number; // in minutes, default 30
+  defaultEventDuration?: number; // in minutes, default 60
+  defaultEventColor?: string;
 }

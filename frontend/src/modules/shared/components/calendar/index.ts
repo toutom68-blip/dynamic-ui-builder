@@ -4,3 +4,6 @@ export { BookingModal } from './BookingModal';
 export { ShareModal } from './ShareModal';
 export { ReminderModal } from './ReminderModal';
 export { CalendarFilters } from './CalendarFilters';
+export { EventCreateModal } from './EventCreateModal';
+export { DraggableEvent } from './DraggableEvent';
+export { useCalendarDragDrop } from './useCalendarDragDrop';
