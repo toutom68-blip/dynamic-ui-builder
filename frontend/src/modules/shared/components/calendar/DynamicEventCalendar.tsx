@@ -55,6 +55,7 @@ import { ShareModal } from './ShareModal';
 import { ReminderModal } from './ReminderModal';
 import { CalendarFilters } from './CalendarFilters';
 import { EventCreateModal } from './EventCreateModal';
+import { EventEditModal } from './EventEditModal';
 import { DraggableEvent } from './DraggableEvent';
 import { useCalendarDragDrop } from './useCalendarDragDrop';
 import { cn } from '@/lib/utils';
@@ -101,6 +102,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Refs for drag-drop
   const weekViewRef = useRef<HTMLDivElement>(null);
@@ -271,7 +273,15 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   // Event handlers
   const handleEventClick = (event: CalendarEvent) => {
     setSelectedEvent(event);
+    if (editable) {
+      setEditModalOpen(true);
+    }
     onEventClick?.(event);
+  };
+
+  const handleEdit = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setEditModalOpen(true);
   };
 
   const handleBook = (event: CalendarEvent) => {
@@ -322,6 +332,22 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   const handleFilterChange = (newFilters: CalendarFilterConfig) => {
     setFilters(newFilters);
     onFilterChange?.(newFilters);
+  };
+
+  const handleUpdateEvent = async (updatedEvent: CalendarEvent) => {
+    if (onEventUpdate) {
+      const result = await onEventUpdate(updatedEvent);
+      setEvents(prev => prev.map(e => e.id === result.id ? result : e));
+    } else {
+      setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (onEventDelete) {
+      await onEventDelete(eventId);
+    }
+    setEvents(prev => prev.filter(e => e.id !== eventId));
   };
 
   // Get events for a specific day
@@ -980,6 +1006,16 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         onSave={handleCreateEvent}
         defaultColor={defaultEventColor}
       />
+
+      {editable && (
+        <EventEditModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          event={selectedEvent}
+          onSave={handleUpdateEvent}
+          onDelete={onEventDelete ? handleDeleteEvent : undefined}
+        />
+      )}
     </div>
   );
 };

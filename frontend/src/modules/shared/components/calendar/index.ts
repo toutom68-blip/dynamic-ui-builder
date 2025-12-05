@@ -5,5 +5,6 @@ export { ShareModal } from './ShareModal';
 export { ReminderModal } from './ReminderModal';
 export { CalendarFilters } from './CalendarFilters';
 export { EventCreateModal } from './EventCreateModal';
+export { EventEditModal } from './EventEditModal';
 export { DraggableEvent } from './DraggableEvent';
 export { useCalendarDragDrop } from './useCalendarDragDrop';
