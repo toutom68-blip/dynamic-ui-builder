@@ -17,10 +17,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Search,
-  Filter,
-  X,
+import { 
+  Search, 
+  Filter, 
+  X, 
   Calendar as CalendarIcon,
   DollarSign,
   Tag
@@ -60,9 +60,9 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
     const newCategories = currentCategories.includes(category)
       ? currentCategories.filter(c => c !== category)
       : [...currentCategories, category];
-    onFilterChange({
-      ...filters,
-      categories: newCategories.length > 0 ? newCategories : undefined
+    onFilterChange({ 
+      ...filters, 
+      categories: newCategories.length > 0 ? newCategories : undefined 
     });
   };
 
@@ -92,9 +92,9 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
     const newTags = currentTags.includes(tag)
       ? currentTags.filter(t => t !== tag)
       : [...currentTags, tag];
-    onFilterChange({
-      ...filters,
-      tags: newTags.length > 0 ? newTags : undefined
+    onFilterChange({ 
+      ...filters, 
+      tags: newTags.length > 0 ? newTags : undefined 
     });
   };
 
