@@ -1,4 +1,9 @@
 {
+  "demo": {
+    "mapWithProperties": "Map with Property Listings",
+    "mapDescription": "Interactive map showing property listings with search and filter capabilities",
+    "propertySelected": "Selected: {{title}}"
+  },
   "datePicker": {
     "selectDate": "Select a date",
     "selectRange": "Select date range"
@@ -217,8 +222,12 @@
       "image": "Dynamic Image",
       "submenu": "Dynamic SubMenu",
       "form": "Dynamic Form",
-      "map": "Map Search"
+      "map": "Map Search",
+      "dynamicFilter": "Dynamic Filter Demo"
     },
+    "filterDescription": "A fully dynamic and parameterized filter component for property search with multiple filter types.",
+    "filterTeaser": "Advanced filtering with multiple types: text, number, select, range, date, and more.",
+    "viewFilterDemo": "View Filter Demo",
     "actions": {
       "primary": "Primary",
       "secondary": "Secondary",
@@ -319,6 +328,102 @@
     "sortDesc": "Sort descending",
     "columns": "Columns",
     "selectAll": "Select all",
-    "deselectAll": "Deselect all"
+    "deselectAll": "Deselect all",
+    "rowsPerPage": "Rows per page",
+    "page": "Page",
+    "goTo": "Go to page",
+    "go": "Go",
+    "selected": "selected",
+    "bulkActions": "Bulk Actions",
+    "name": "Name",
+    "email": "Email",
+    "department": "Department",
+    "role": "Role",
+    "status": "Status",
+    "salary": "Salary",
+    "joinDate": "Join Date",
+    "projects": "Projects",
+    "performance": "Performance",
+    "actions": "Actions",
+    "export": "Export",
+    "exportCSV": "Export as CSV",
+    "exportJSON": "Export as JSON",
+    "configureExport": "Configure & Export...",
+    "exportFormat": "Export Format",
+    "applyOrder": "Apply Order",
+    "exportSelected": "Export Selected",
+    "sendEmail": "Send Email",
+    "delete": "Delete",
+    "contactInfo": "Contact Information",
+    "workDetails": "Work Details",
+    "notes": "Notes",
+    "demoTitle": "DynamicGrid Demo",
+    "demoDescription": "Showcasing frozen columns, expandable rows, bulk actions, and lazy loading with mock API.",
+    "features": "Features Demonstrated",
+    "featureFrozen": "Frozen columns: ID and Name (left), Actions (right)",
+    "featureExpandable": "Expandable rows: Click the expand icon to see more details",
+    "featureSelection": "Row selection with checkboxes",
+    "featureBulk": "Bulk actions: Export, Send Email, Delete",
+    "featurePagination": "Advanced pagination with page size options and page input",
+    "featureLazy": "Lazy loading: Data loaded from mock API on page change",
+    "featureSorting": "Sortable and filterable columns",
+    "columnConfig": {
+      "title": "Column Configuration",
+      "description": "Drag to reorder columns, select columns to export"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import Data",
+      "description": "Upload a CSV or JSON file to import data",
+      "selectFile": "Select File",
+      "preview": "Preview (first 5 rows)",
+      "import": "Import",
+      "unsupportedFormat": "Unsupported file format",
+      "parseError": "Failed to parse file",
+      "importError": "Failed to import data"
+    },
+    "filters": {
+      "search": "Search",
+      "select": "Select",
+      "selectDate": "Select date",
+      "from": "From",
+      "to": "To"
+    }
+  },
+  "dynamicFilter": {
+    "addFilter": "Add Filter",
+    "search": "Search",
+    "cancel": "Cancel",
+    "noFiltersAvailable": "No filters available",
+    "filterApplied": "Filter applied: {{name}}",
+    "filterRemoved": "Filter removed",
+    "selectBedrooms": "Select bedrooms",
+    "selectBathrooms": "Select bathrooms",
+    "enterLocation": "Enter city or neighborhood",
+    "dateRange": "Check-in / Check-out",
+    "propertyType": "Property Type",
+    "guests": "Guests",
+    "numberOfGuests": "Number of guests",
+    "minRating": "Minimum Rating",
+    "amenities": "Amenities",
+    "parking": "Free Parking",
+    "propertySearch": "Property Search Filters",
+    "clickToAdd": "Click \"Add Filter\" to select filters. Configure values and click Search to apply.",
+    "appliedFilters": "Applied Filters",
+    "currentFilters": "Currently active filters and their values",
+    "noFilters": "No filters applied. Add filters using the button above.",
+    "supportedTypes": "Supported Filter Types",
+    "typesDescription": "The DynamicFilter component supports multiple filter types",
+    "usage": "Usage Example",
+    "types": {
+      "text": "Free text input",
+      "number": "Numeric input with min/max",
+      "select": "Single option dropdown",
+      "multiselect": "Multiple selection checkboxes",
+      "range": "Dual slider for ranges",
+      "date": "Single date picker",
+      "daterange": "From/To date pickers",
+      "boolean": "Yes/No checkbox"
+    }
   }
 }

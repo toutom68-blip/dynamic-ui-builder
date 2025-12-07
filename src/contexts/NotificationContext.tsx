@@ -15,16 +15,16 @@ interface NotificationContextType {
   addNotification: (notification: Notification) => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext < NotificationContextType | undefined > (undefined);
 
 const POLL_INTERVAL = 30000; // Poll every 30 seconds
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState < Notification[] > ([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [error, setError] = useState < string | null > (null);
+  const pollIntervalRef = useRef < NodeJS.Timeout | null > (null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -41,13 +41,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Fetch notifications from backend
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await notificationService.fetchNotifications();
-      setNotifications(response.notifications);
+      // const response = await notificationService.fetchNotifications();
+      // setNotifications(response.notifications);
     } catch (err) {
       setError('Failed to fetch notifications');
       console.error('Notification fetch error:', err);
@@ -59,16 +59,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Poll for new notifications
   const pollForNewNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
-    
+
     try {
-      const newNotifications = await notificationService.fetchNewNotifications();
-      if (newNotifications.length > 0) {
-        setNotifications(prev => {
-          const existingIds = new Set(prev.map(n => n.id));
-          const uniqueNew = newNotifications.filter(n => !existingIds.has(n.id));
-          return [...uniqueNew, ...prev];
-        });
-      }
+      // const newNotifications = await notificationService.fetchNewNotifications();
+      // if (newNotifications.length > 0) {
+      //   setNotifications(prev => {
+      //     const existingIds = new Set(prev.map(n => n.id));
+      //     const uniqueNew = newNotifications.filter(n => !existingIds.has(n.id));
+      //     return [...uniqueNew, ...prev];
+      //   });
+      // }
     } catch (err) {
       console.error('Polling error:', err);
     }
@@ -78,10 +78,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotifications();
-      
+
       // Setup polling interval
       pollIntervalRef.current = setInterval(pollForNewNotifications, POLL_INTERVAL);
-      
+
       return () => {
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
@@ -96,15 +96,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const markAsRead = useCallback(async (id: string) => {
     // Optimistic update
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
-    
+
     try {
       await notificationService.markAsRead([id]);
     } catch (err) {
       // Revert on error
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, read: false } : n)
       );
       throw err;
@@ -115,7 +115,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Optimistic update
     const previousNotifications = [...notifications];
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    
+
     try {
       await notificationService.markAllAsRead();
     } catch (err) {
@@ -129,7 +129,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Optimistic update
     const previousNotifications = [...notifications];
     setNotifications(prev => prev.filter(n => n.id !== id));
-    
+
     try {
       await notificationService.deleteNotification(id);
     } catch (err) {

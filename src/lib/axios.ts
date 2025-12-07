@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getStoredJWT, isJWTExpired, clearJWT } from '@/utils/jwt';
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8095/api';
 
 export const api = axios.create({
   baseURL: apiUrl,

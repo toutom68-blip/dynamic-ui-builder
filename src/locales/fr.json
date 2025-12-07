@@ -1,4 +1,9 @@
 {
+  "demo": {
+    "mapWithProperties": "Carte avec annonces immobilières",
+    "mapDescription": "Carte interactive montrant les annonces immobilières avec recherche et filtres",
+    "propertySelected": "Sélectionné: {{title}}"
+  },
   "datePicker": {
     "selectDate": "Sélectionner une date",
     "selectRange": "Sélectionner une plage de dates"
@@ -213,8 +218,12 @@
       "image": "Image Dynamique",
       "submenu": "Sous-menu Dynamique",
       "form": "Formulaire Dynamique",
-      "map": "Recherche sur Carte"
+      "map": "Recherche sur Carte",
+      "dynamicFilter": "Démo Filtre Dynamique"
     },
+    "filterDescription": "Un composant de filtrage entièrement dynamique et paramétré pour la recherche de propriétés avec plusieurs types de filtres.",
+    "filterTeaser": "Filtrage avancé avec plusieurs types: texte, nombre, sélection, plage, date, et plus.",
+    "viewFilterDemo": "Voir la Démo des Filtres",
     "actions": {
       "primary": "Primaire",
       "secondary": "Secondaire",
@@ -315,6 +324,102 @@
     "sortDesc": "Trier par ordre décroissant",
     "columns": "Colonnes",
     "selectAll": "Tout sélectionner",
-    "deselectAll": "Tout désélectionner"
+    "deselectAll": "Tout désélectionner",
+    "rowsPerPage": "Lignes par page",
+    "page": "Page",
+    "goTo": "Aller à la page",
+    "go": "Aller",
+    "selected": "sélectionné(s)",
+    "bulkActions": "Actions groupées",
+    "name": "Nom",
+    "email": "Email",
+    "department": "Département",
+    "role": "Rôle",
+    "status": "Statut",
+    "salary": "Salaire",
+    "joinDate": "Date d'embauche",
+    "projects": "Projets",
+    "performance": "Performance",
+    "actions": "Actions",
+    "export": "Exporter",
+    "exportCSV": "Exporter en CSV",
+    "exportJSON": "Exporter en JSON",
+    "configureExport": "Configurer et exporter...",
+    "exportFormat": "Format d'export",
+    "applyOrder": "Appliquer l'ordre",
+    "exportSelected": "Exporter la sélection",
+    "sendEmail": "Envoyer un email",
+    "delete": "Supprimer",
+    "contactInfo": "Informations de contact",
+    "workDetails": "Détails du travail",
+    "notes": "Notes",
+    "demoTitle": "Démo DynamicGrid",
+    "demoDescription": "Présentation des colonnes figées, lignes extensibles, actions groupées et chargement différé avec API simulée.",
+    "features": "Fonctionnalités démontrées",
+    "featureFrozen": "Colonnes figées: ID et Nom (gauche), Actions (droite)",
+    "featureExpandable": "Lignes extensibles: Cliquez sur l'icône pour voir plus de détails",
+    "featureSelection": "Sélection de lignes avec cases à cocher",
+    "featureBulk": "Actions groupées: Exporter, Envoyer un email, Supprimer",
+    "featurePagination": "Pagination avancée avec options de taille de page et saisie de page",
+    "featureLazy": "Chargement différé: Données chargées depuis l'API simulée au changement de page",
+    "featureSorting": "Colonnes triables et filtrables",
+    "columnConfig": {
+      "title": "Configuration des colonnes",
+      "description": "Glissez pour réorganiser, sélectionnez les colonnes à exporter"
+    },
+    "import": {
+      "button": "Importer",
+      "title": "Importer des données",
+      "description": "Téléchargez un fichier CSV ou JSON pour importer des données",
+      "selectFile": "Sélectionner un fichier",
+      "preview": "Aperçu (5 premières lignes)",
+      "import": "Importer",
+      "unsupportedFormat": "Format de fichier non pris en charge",
+      "parseError": "Échec de l'analyse du fichier",
+      "importError": "Échec de l'importation des données"
+    },
+    "filters": {
+      "search": "Rechercher",
+      "select": "Sélectionner",
+      "selectDate": "Sélectionner une date",
+      "from": "De",
+      "to": "À"
+    }
+  },
+  "dynamicFilter": {
+    "addFilter": "Ajouter un filtre",
+    "search": "Rechercher",
+    "cancel": "Annuler",
+    "noFiltersAvailable": "Aucun filtre disponible",
+    "filterApplied": "Filtre appliqué: {{name}}",
+    "filterRemoved": "Filtre supprimé",
+    "selectBedrooms": "Sélectionner les chambres",
+    "selectBathrooms": "Sélectionner les salles de bain",
+    "enterLocation": "Entrez la ville ou le quartier",
+    "dateRange": "Arrivée / Départ",
+    "propertyType": "Type de propriété",
+    "guests": "Invités",
+    "numberOfGuests": "Nombre d'invités",
+    "minRating": "Note minimale",
+    "amenities": "Équipements",
+    "parking": "Parking gratuit",
+    "propertySearch": "Filtres de recherche de propriétés",
+    "clickToAdd": "Cliquez sur \"Ajouter un filtre\" pour sélectionner des filtres. Configurez les valeurs et cliquez sur Rechercher.",
+    "appliedFilters": "Filtres appliqués",
+    "currentFilters": "Filtres actuellement actifs et leurs valeurs",
+    "noFilters": "Aucun filtre appliqué. Ajoutez des filtres en utilisant le bouton ci-dessus.",
+    "supportedTypes": "Types de filtres pris en charge",
+    "typesDescription": "Le composant DynamicFilter prend en charge plusieurs types de filtres",
+    "usage": "Exemple d'utilisation",
+    "types": {
+      "text": "Saisie de texte libre",
+      "number": "Saisie numérique avec min/max",
+      "select": "Liste déroulante à option unique",
+      "multiselect": "Cases à cocher à sélection multiple",
+      "range": "Double curseur pour les plages",
+      "date": "Sélecteur de date unique",
+      "daterange": "Sélecteurs de date De/À",
+      "boolean": "Case à cocher Oui/Non"
+    }
   }
 }

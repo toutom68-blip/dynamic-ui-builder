@@ -1,14 +1,14 @@
-import axios from '@/lib/axios';
+import { api } from '@/lib/axios';
 import { Notification, NotificationResponse, NotificationUpdateRequest } from './notifications.types';
-
-const STORAGE_KEY = 'app_notifications';
-const LAST_FETCH_KEY = 'notifications_last_fetch';
+import { NOTIFICATIONS_API } from './notifications.api';
+import { NOTIFICATION_STORAGE_KEYS, NOTIFICATION_POLLING } from './notifications.constants';
+import { REQUEST_HEADERS } from '@/constants/api.constants';
 
 class NotificationService {
   // Local storage helpers
   private getFromStorage(): Notification[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEYS.NOTIFICATIONS);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -17,8 +17,8 @@ class NotificationService {
 
   private saveToStorage(notifications: Notification[]): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-      localStorage.setItem(LAST_FETCH_KEY, new Date().toISOString());
+      localStorage.setItem(NOTIFICATION_STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+      localStorage.setItem(NOTIFICATION_STORAGE_KEYS.LAST_FETCH, new Date().toISOString());
     } catch (error) {
       console.error('Failed to save notifications to storage:', error);
     }
@@ -26,7 +26,7 @@ class NotificationService {
 
   private getLastFetchTime(): Date | null {
     try {
-      const stored = localStorage.getItem(LAST_FETCH_KEY);
+      const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEYS.LAST_FETCH);
       return stored ? new Date(stored) : null;
     } catch {
       return null;
@@ -39,16 +39,19 @@ class NotificationService {
   }
 
   // Fetch notifications from backend
-  async fetchNotifications(limit = 50, offset = 0): Promise<NotificationResponse> {
+  async fetchNotifications(
+    limit = NOTIFICATION_POLLING.DEFAULT_LIMIT,
+    offset = NOTIFICATION_POLLING.DEFAULT_OFFSET
+  ): Promise<NotificationResponse> {
     try {
-      const response = await axios.get<NotificationResponse>('/notifications', {
+      const response = await api.get<NotificationResponse>(NOTIFICATIONS_API.GET_ALL, {
         params: { limit, offset },
-        headers: { 'x-no-loading': 'true' } // Don't show global loading for notifications
+        headers: { [REQUEST_HEADERS.NO_LOADING]: 'true' }
       });
-      
+
       // Update local storage with fresh data
       this.saveToStorage(response.data.notifications);
-      
+
       return response.data;
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -65,13 +68,13 @@ class NotificationService {
   // Fetch only new notifications since last fetch
   async fetchNewNotifications(): Promise<Notification[]> {
     const lastFetch = this.getLastFetchTime();
-    
+
     try {
-      const response = await axios.get<{ notifications: Notification[] }>('/notifications/new', {
+      const response = await api.get<{ notifications: Notification[] }>(NOTIFICATIONS_API.GET_NEW, {
         params: { since: lastFetch?.toISOString() },
-        headers: { 'x-no-loading': 'true' }
+        headers: { [REQUEST_HEADERS.NO_LOADING]: 'true' }
       });
-      
+
       if (response.data.notifications.length > 0) {
         // Merge new notifications with existing ones
         const existing = this.getFromStorage();
@@ -82,7 +85,7 @@ class NotificationService {
         ];
         this.saveToStorage(merged);
       }
-      
+
       return response.data.notifications;
     } catch (error) {
       console.error('Failed to fetch new notifications:', error);
@@ -93,16 +96,16 @@ class NotificationService {
   // Mark notifications as read
   async markAsRead(notificationIds: string[]): Promise<void> {
     try {
-      await axios.patch<void>('/notifications/read', {
+      await api.patch<void>(NOTIFICATIONS_API.MARK_READ, {
         notificationIds,
         read: true
       } as NotificationUpdateRequest, {
-        headers: { 'x-no-loading': 'true' }
+        headers: { [REQUEST_HEADERS.NO_LOADING]: 'true' }
       });
-      
+
       // Update local storage
       const notifications = this.getFromStorage();
-      const updated = notifications.map(n => 
+      const updated = notifications.map(n =>
         notificationIds.includes(n.id) ? { ...n, read: true } : n
       );
       this.saveToStorage(updated);
@@ -110,7 +113,7 @@ class NotificationService {
       console.error('Failed to mark notifications as read:', error);
       // Still update locally for better UX
       const notifications = this.getFromStorage();
-      const updated = notifications.map(n => 
+      const updated = notifications.map(n =>
         notificationIds.includes(n.id) ? { ...n, read: true } : n
       );
       this.saveToStorage(updated);
@@ -121,10 +124,10 @@ class NotificationService {
   // Mark all notifications as read
   async markAllAsRead(): Promise<void> {
     try {
-      await axios.patch<void>('/notifications/read-all', {}, {
-        headers: { 'x-no-loading': 'true' }
+      await api.patch<void>(NOTIFICATIONS_API.MARK_ALL_READ, {}, {
+        headers: { [REQUEST_HEADERS.NO_LOADING]: 'true' }
       });
-      
+
       // Update local storage
       const notifications = this.getFromStorage();
       const updated = notifications.map(n => ({ ...n, read: true }));
@@ -142,10 +145,10 @@ class NotificationService {
   // Delete a notification
   async deleteNotification(notificationId: string): Promise<void> {
     try {
-      await axios.delete(`/notifications/${notificationId}`, {
-        headers: { 'x-no-loading': 'true' }
+      await api.delete(NOTIFICATIONS_API.DELETE(notificationId), {
+        headers: { [REQUEST_HEADERS.NO_LOADING]: 'true' }
       });
-      
+
       // Update local storage
       const notifications = this.getFromStorage();
       const updated = notifications.filter(n => n.id !== notificationId);
@@ -158,8 +161,8 @@ class NotificationService {
 
   // Clear local storage cache
   clearCache(): void {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LAST_FETCH_KEY);
+    localStorage.removeItem(NOTIFICATION_STORAGE_KEYS.NOTIFICATIONS);
+    localStorage.removeItem(NOTIFICATION_STORAGE_KEYS.LAST_FETCH);
   }
 }
 

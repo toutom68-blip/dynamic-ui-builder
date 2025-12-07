@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Property, MapSearchFilters } from '@/types/property.types';
@@ -6,11 +6,12 @@ import { PropertyCard } from './PropertyCard';
 import { DynamicModal } from './DynamicModal';
 import { DynamicButton } from './DynamicButton';
 import { DynamicInput } from './DynamicInput';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Locate, X } from 'lucide-react';
 import ReactDOM from 'react-dom/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface MapSearchProps {
   properties: Property[];
@@ -30,17 +31,20 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
+  const popups = useRef<maplibregl.Popup[]>([]);
+  const userMarker = useRef<maplibregl.Marker | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<MapSearchFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [activePopup, setActivePopup] = useState<maplibregl.Popup | null>(null);
 
   const handleSearch = async () => {
     if (!searchQuery || !map.current) return;
 
     try {
-      // Using Nominatim (OpenStreetMap) geocoding service
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
       );
@@ -59,6 +63,68 @@ export const MapSearch: React.FC<MapSearchProps> = ({
     }
   };
 
+  const handleGeolocation = useCallback(() => {
+    if (!map.current) return;
+
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Remove existing user marker
+        if (userMarker.current) {
+          userMarker.current.remove();
+        }
+
+        // Create user location marker
+        const userMarkerEl = document.createElement('div');
+        userMarkerEl.className = 'user-location-marker';
+        userMarkerEl.innerHTML = `
+          <div class="relative">
+            <div class="w-5 h-5 bg-blue-500 rounded-full border-3 border-white shadow-lg animate-pulse"></div>
+            <div class="absolute inset-0 w-5 h-5 bg-blue-500 rounded-full animate-ping opacity-50"></div>
+          </div>
+        `;
+
+        userMarker.current = new maplibregl.Marker(userMarkerEl)
+          .setLngLat([longitude, latitude])
+          .addTo(map.current!);
+
+        map.current!.flyTo({
+          center: [longitude, latitude],
+          zoom: 14,
+          duration: 2000,
+        });
+
+        setIsLocating(false);
+        toast.success('Centered on your location');
+      },
+      (error) => {
+        setIsLocating(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Location permission denied');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Location information unavailable');
+            break;
+          case error.TIMEOUT:
+            toast.error('Location request timed out');
+            break;
+          default:
+            toast.error('An error occurred while getting location');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, []);
+
   useEffect(() => {
     if (!mapContainer.current) return;
     
@@ -76,8 +142,22 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       'top-right'
     );
 
+    // Close active popup when clicking on the map
+    map.current.on('click', (e) => {
+      // Check if click was on a marker
+      const target = e.originalEvent.target as HTMLElement;
+      if (!target.closest('.custom-marker')) {
+        if (activePopup) {
+          activePopup.remove();
+          setActivePopup(null);
+        }
+      }
+    });
+
     return () => {
       markers.current.forEach(marker => marker.remove());
+      popups.current.forEach(popup => popup.remove());
+      userMarker.current?.remove();
       map.current?.remove();
     };
   }, [center, zoom]);
@@ -85,9 +165,11 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   useEffect(() => {
     if (!map.current) return;
 
-    // Remove existing markers
+    // Remove existing markers and popups
     markers.current.forEach(marker => marker.remove());
+    popups.current.forEach(popup => popup.remove());
     markers.current = [];
+    popups.current = [];
 
     // Filter properties based on filters
     const filteredProperties = properties.filter(property => {
@@ -105,44 +187,86 @@ export const MapSearch: React.FC<MapSearchProps> = ({
     filteredProperties.forEach(property => {
       // Create popup element
       const popupContainer = document.createElement('div');
-      popupContainer.className = 'property-popup';
+      popupContainer.className = 'property-popup-content';
       
       const root = ReactDOM.createRoot(popupContainer);
       root.render(
-        <div className="w-64">
-          <PropertyCard 
-            property={property} 
-            compact={true}
-            onSelect={(prop) => {
-              setSelectedProperty(prop);
-              setShowModal(true);
-              if (onPropertySelect) {
-                onPropertySelect(prop);
-              }
-            }}
-          />
+        <div className="w-72 p-0">
+          <div className="relative">
+            {property.images[0] && (
+              <img 
+                src={property.images[0]} 
+                alt={property.title}
+                className="w-full h-36 object-cover rounded-t-xl"
+              />
+            )}
+            <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold">
+              ⭐ {property.rating || 'N/A'}
+            </div>
+          </div>
+          <div className="p-3 space-y-2">
+            <h3 className="font-semibold text-foreground text-sm line-clamp-1">{property.title}</h3>
+            <p className="text-xs text-muted-foreground line-clamp-1">{property.location.address}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-primary">
+                {property.currency}{property.price}<span className="text-xs font-normal text-muted-foreground">/night</span>
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {property.bedrooms} bed • {property.guests} guests
+              </span>
+            </div>
+            <button 
+              onClick={() => {
+                setSelectedProperty(property);
+                setShowModal(true);
+                if (onPropertySelect) {
+                  onPropertySelect(property);
+                }
+              }}
+              className="w-full mt-2 py-2 px-4 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              View Details
+            </button>
+          </div>
         </div>
       );
+
+      // Create popup
+      const popup = new maplibregl.Popup({ 
+        offset: 30,
+        closeButton: true,
+        closeOnClick: false,
+        className: 'property-map-popup',
+        maxWidth: '300px'
+      }).setDOMContent(popupContainer);
+
+      popups.current.push(popup);
 
       // Create custom marker element
       const markerEl = document.createElement('div');
       markerEl.className = 'custom-marker';
       markerEl.innerHTML = `
-        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-custom hover:scale-110 transition-base cursor-pointer">
-          <span class="text-xs font-bold">${property.currency}${property.price}</span>
+        <div class="marker-content">
+          <span class="marker-price">${property.currency}${property.price}</span>
         </div>
       `;
 
-      const marker = new maplibregl.Marker(markerEl)
+      const marker = new maplibregl.Marker({ element: markerEl, anchor: 'bottom' })
         .setLngLat([property.location.lng, property.location.lat])
-        .setPopup(
-          new maplibregl.Popup({ 
-            offset: 25,
-            className: 'property-map-popup'
-          })
-          .setDOMContent(popupContainer)
-        )
         .addTo(map.current!);
+
+      // Open popup on click
+      markerEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        // Close any active popup
+        if (activePopup) {
+          activePopup.remove();
+        }
+        
+        popup.setLngLat([property.location.lng, property.location.lat]).addTo(map.current!);
+        setActivePopup(popup);
+      });
 
       markers.current.push(marker);
     });
@@ -155,11 +279,11 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       });
       map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
     }
-  }, [properties, filters, onPropertySelect]);
+  }, [properties, filters, onPropertySelect, activePopup]);
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedProperty(null);
+    // Don't reset selectedProperty to keep markers visible
   };
 
   return (
@@ -190,6 +314,13 @@ export const MapSearch: React.FC<MapSearchProps> = ({
             onClick={() => setShowFilters(!showFilters)}
           >
             <SlidersHorizontal className="h-4 w-4" />
+          </DynamicButton>
+          <DynamicButton
+            variant="outline"
+            onClick={handleGeolocation}
+            disabled={isLocating}
+          >
+            <Locate className={`h-4 w-4 ${isLocating ? 'animate-spin' : ''}`} />
           </DynamicButton>
         </div>
 
@@ -264,7 +395,7 @@ export const MapSearch: React.FC<MapSearchProps> = ({
         )}
 
         {/* Map Container */}
-        <div ref={mapContainer} className={`w-full h-full rounded-lg ${className}`} />
+        <div ref={mapContainer} className={`w-full min-h-[400px] rounded-lg ${className}`} />
       </div>
       
       {selectedProperty && (
@@ -375,17 +506,102 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       )}
 
       <style>{`
-        .maplibregl-popup-content {
-          padding: 12px !important;
-          border-radius: 0.75rem !important;
-          box-shadow: var(--shadow-lg) !important;
+        .property-map-popup .maplibregl-popup-content {
+          padding: 0 !important;
+          border-radius: 1rem !important;
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2), 0 10px 20px -5px rgba(0, 0, 0, 0.1) !important;
           background: hsl(var(--card)) !important;
+          border: 1px solid hsl(var(--border) / 0.5) !important;
+          overflow: hidden;
         }
-        .maplibregl-popup-close-button {
-          display: none;
+        .property-map-popup .maplibregl-popup-close-button {
+          font-size: 20px;
+          padding: 8px 12px;
+          color: hsl(var(--foreground));
+          background: hsl(var(--background) / 0.8);
+          backdrop-filter: blur(4px);
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          top: 8px;
+          right: 8px;
+          z-index: 10;
+          transition: all 0.2s ease;
+        }
+        .property-map-popup .maplibregl-popup-close-button:hover {
+          background: hsl(var(--muted));
+          transform: scale(1.1);
+        }
+        .property-map-popup .maplibregl-popup-tip {
+          border-top-color: hsl(var(--card)) !important;
         }
         .custom-marker {
           cursor: pointer;
+          z-index: 1;
+          transition: z-index 0s;
+        }
+        .custom-marker:hover {
+          z-index: 10;
+        }
+        .custom-marker .marker-content {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 12px;
+          background: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: 600;
+          box-shadow: 0 4px 12px -2px hsl(var(--primary) / 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+          transform: translateY(0);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+        .custom-marker .marker-content::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid hsl(var(--primary));
+        }
+        .custom-marker:hover .marker-content {
+          transform: translateY(-4px) scale(1.05);
+          box-shadow: 0 8px 20px -4px hsl(var(--primary) / 0.5), 0 4px 8px -2px rgba(0, 0, 0, 0.15);
+        }
+        .custom-marker .marker-price {
+          white-space: nowrap;
+        }
+        .user-location-marker {
+          z-index: 5;
+        }
+        .maplibregl-ctrl-group {
+          background: hsl(var(--card)) !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1) !important;
+          border: 1px solid hsl(var(--border) / 0.5) !important;
+          overflow: hidden;
+        }
+        .maplibregl-ctrl-group button {
+          background: hsl(var(--card)) !important;
+          border-color: hsl(var(--border) / 0.3) !important;
+        }
+        .maplibregl-ctrl-group button:hover {
+          background: hsl(var(--muted)) !important;
+        }
+        .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+          filter: brightness(0) saturate(100%) invert(var(--ctrl-icon-invert, 0));
+        }
+        @media (prefers-color-scheme: dark) {
+          .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+            filter: invert(1);
+          }
         }
       `}</style>
     </>

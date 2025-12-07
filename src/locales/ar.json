@@ -1,4 +1,9 @@
 {
+  "demo": {
+    "mapWithProperties": "خريطة مع إعلانات العقارات",
+    "mapDescription": "خريطة تفاعلية تعرض إعلانات العقارات مع إمكانيات البحث والتصفية",
+    "propertySelected": "تم اختيار: {{title}}"
+  },
   "datePicker": {
     "selectDate": "اختر تاريخاً",
     "selectRange": "اختر نطاق التاريخ"
@@ -213,8 +218,12 @@
       "image": "صورة ديناميكية",
       "submenu": "قائمة فرعية ديناميكية",
       "form": "نموذج ديناميكي",
-      "map": "البحث على الخريطة"
+      "map": "البحث على الخريطة",
+      "dynamicFilter": "عرض الفلتر الديناميكي"
     },
+    "filterDescription": "مكون فلترة ديناميكي ومعلمي بالكامل للبحث عن العقارات مع أنواع فلاتر متعددة.",
+    "filterTeaser": "تصفية متقدمة بأنواع متعددة: نص، رقم، اختيار، نطاق، تاريخ، والمزيد.",
+    "viewFilterDemo": "عرض ديمو الفلتر",
     "actions": {
       "primary": "أساسي",
       "secondary": "ثانوي",
@@ -315,6 +324,102 @@
     "sortDesc": "ترتيب تنازلي",
     "columns": "الأعمدة",
     "selectAll": "تحديد الكل",
-    "deselectAll": "إلغاء تحديد الكل"
+    "deselectAll": "إلغاء تحديد الكل",
+    "rowsPerPage": "صفوف لكل صفحة",
+    "page": "صفحة",
+    "goTo": "انتقل إلى الصفحة",
+    "go": "انتقل",
+    "selected": "محدد",
+    "bulkActions": "إجراءات جماعية",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "department": "القسم",
+    "role": "الدور",
+    "status": "الحالة",
+    "salary": "الراتب",
+    "joinDate": "تاريخ الانضمام",
+    "projects": "المشاريع",
+    "performance": "الأداء",
+    "actions": "الإجراءات",
+    "export": "تصدير",
+    "exportCSV": "تصدير كـ CSV",
+    "exportJSON": "تصدير كـ JSON",
+    "configureExport": "تكوين وتصدير...",
+    "exportFormat": "صيغة التصدير",
+    "applyOrder": "تطبيق الترتيب",
+    "exportSelected": "تصدير المحدد",
+    "sendEmail": "إرسال بريد",
+    "delete": "حذف",
+    "contactInfo": "معلومات الاتصال",
+    "workDetails": "تفاصيل العمل",
+    "notes": "ملاحظات",
+    "demoTitle": "عرض DynamicGrid",
+    "demoDescription": "عرض الأعمدة المجمدة والصفوف القابلة للتوسيع والإجراءات الجماعية والتحميل الكسول مع API وهمي.",
+    "features": "الميزات المعروضة",
+    "featureFrozen": "أعمدة مجمدة: المعرف والاسم (يسار)، الإجراءات (يمين)",
+    "featureExpandable": "صفوف قابلة للتوسيع: انقر على أيقونة التوسيع لرؤية المزيد",
+    "featureSelection": "تحديد الصفوف مع مربعات الاختيار",
+    "featureBulk": "إجراءات جماعية: تصدير، إرسال بريد، حذف",
+    "featurePagination": "ترقيم صفحات متقدم مع خيارات حجم الصفحة وإدخال الصفحة",
+    "featureLazy": "التحميل الكسول: البيانات تُحمل من API وهمي عند تغيير الصفحة",
+    "featureSorting": "أعمدة قابلة للفرز والتصفية",
+    "columnConfig": {
+      "title": "تكوين الأعمدة",
+      "description": "اسحب لإعادة الترتيب، حدد الأعمدة للتصدير"
+    },
+    "import": {
+      "button": "استيراد",
+      "title": "استيراد البيانات",
+      "description": "قم بتحميل ملف CSV أو JSON لاستيراد البيانات",
+      "selectFile": "اختر ملف",
+      "preview": "معاينة (أول 5 صفوف)",
+      "import": "استيراد",
+      "unsupportedFormat": "صيغة ملف غير مدعومة",
+      "parseError": "فشل في تحليل الملف",
+      "importError": "فشل في استيراد البيانات"
+    },
+    "filters": {
+      "search": "بحث",
+      "select": "اختر",
+      "selectDate": "اختر تاريخ",
+      "from": "من",
+      "to": "إلى"
+    }
+  },
+  "dynamicFilter": {
+    "addFilter": "إضافة فلتر",
+    "search": "بحث",
+    "cancel": "إلغاء",
+    "noFiltersAvailable": "لا توجد فلاتر متاحة",
+    "filterApplied": "تم تطبيق الفلتر: {{name}}",
+    "filterRemoved": "تم إزالة الفلتر",
+    "selectBedrooms": "اختر عدد غرف النوم",
+    "selectBathrooms": "اختر عدد الحمامات",
+    "enterLocation": "أدخل المدينة أو الحي",
+    "dateRange": "تسجيل الوصول / المغادرة",
+    "propertyType": "نوع العقار",
+    "guests": "الضيوف",
+    "numberOfGuests": "عدد الضيوف",
+    "minRating": "الحد الأدنى للتقييم",
+    "amenities": "المرافق",
+    "parking": "موقف سيارات مجاني",
+    "propertySearch": "فلاتر البحث عن العقارات",
+    "clickToAdd": "انقر على \"إضافة فلتر\" لاختيار الفلاتر. قم بتكوين القيم وانقر على بحث للتطبيق.",
+    "appliedFilters": "الفلاتر المطبقة",
+    "currentFilters": "الفلاتر النشطة حالياً وقيمها",
+    "noFilters": "لم يتم تطبيق أي فلاتر. أضف فلاتر باستخدام الزر أعلاه.",
+    "supportedTypes": "أنواع الفلاتر المدعومة",
+    "typesDescription": "يدعم مكون DynamicFilter أنواع فلاتر متعددة",
+    "usage": "مثال على الاستخدام",
+    "types": {
+      "text": "إدخال نص حر",
+      "number": "إدخال رقمي مع الحد الأدنى/الأقصى",
+      "select": "قائمة منسدلة باختيار واحد",
+      "multiselect": "مربعات اختيار متعددة",
+      "range": "شريط تمرير مزدوج للنطاقات",
+      "date": "منتقي تاريخ واحد",
+      "daterange": "منتقي تاريخ من/إلى",
+      "boolean": "مربع اختيار نعم/لا"
+    }
   }
 }

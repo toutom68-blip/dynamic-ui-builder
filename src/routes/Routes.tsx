@@ -6,6 +6,8 @@ import Index from "@/pages/Index";
 import Auth from "@/modules/auth/auth.component";
 import NotFound from "@/pages/NotFound";
 import { ComponentsDemo } from "@/modules/demo/pages/ComponentsDemo";
+import { FilterDemo } from "@/modules/demo/pages/FilterDemo";
+import { GridDemo } from "@/modules/demo/pages/GridDemo";
 import { Settings } from "@/modules/settings/settings.component";
 
 export const Routes = () => {
@@ -14,28 +16,54 @@ export const Routes = () => {
 
   return (
     <RouterRoutes>
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           <ProtectedRoute>
             <Index />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/auth" 
+      <Route
+        path="/auth"
         element={
           <ProtectedRoute requireAuth={false}>
             <Auth />
           </ProtectedRoute>
-        } 
+        }
       />
       <Route
         path="/demo"
         element={
-          <ProtectedRoute requiredRoles={['admin']}>
+          // <ProtectedRoute requiredRoles={['admin']}>
+          //   <MainLayout>
+          //     <ComponentsDemo />
+          //   </MainLayout>
+          // </ProtectedRoute>
+
+          <ProtectedRoute >
             <MainLayout>
               <ComponentsDemo />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/demo/filters"
+        element={
+          <ProtectedRoute >
+            <MainLayout>
+              <FilterDemo />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/demo/grid"
+        element={
+          <ProtectedRoute >
+            <MainLayout>
+              <GridDemo />
             </MainLayout>
           </ProtectedRoute>
         }

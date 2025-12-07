@@ -2,6 +2,7 @@
 // SCSS Utility Classes
 // =============================================================================
 
+@use 'sass:map';
 @use 'variables' as *;
 @use 'mixins' as *;
 @use 'functions' as *;
@@ -171,7 +172,7 @@
 @each $key, $value in $border-radius {
   .rounded-#{$key} { border-radius: $value !important; }
 }
-.rounded { border-radius: map-get($border-radius, 'default') !important; }
+.rounded { border-radius: map.get($border-radius, 'default') !important; }
 
 // -----------------------------------------------------------------------------
 // Overflow Utilities

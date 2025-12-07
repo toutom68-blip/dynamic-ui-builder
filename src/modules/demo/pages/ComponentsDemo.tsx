@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { DynamicInput } from '@/modules/shared/components/DynamicInput';
 import { DynamicButton } from '@/modules/shared/components/DynamicButton';
 import { DynamicDropdown } from '@/modules/shared/components/DynamicDropdown';
@@ -8,7 +9,8 @@ import { DynamicImage } from '@/modules/shared/components/DynamicImage';
 import { DynamicSubMenu } from '@/modules/shared/components/DynamicSubMenu';
 import { DynamicForm } from '@/modules/shared/components/DynamicForm';
 import { MapSearch } from '@/modules/shared/components/MapSearch';
-import { Home, Settings, Users, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Home, Settings, Users, FileText, Filter, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import type { Property } from '@/types/property.types';
@@ -184,6 +186,29 @@ export const ComponentsDemo = () => {
           {t('demo.description')}
         </p>
       </div>
+
+      {/* Dynamic Filter Link */}
+      <section className="p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/20 rounded-lg">
+              <Filter className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-heading font-semibold">{t('demo.sections.dynamicFilter', 'Dynamic Filter')}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t('demo.filterTeaser', 'Advanced filtering with multiple types: text, number, select, range, date, and more.')}
+              </p>
+            </div>
+          </div>
+          <Link to="/demo/filters">
+            <Button variant="default" className="gap-2">
+              {t('demo.viewFilterDemo', 'View Filter Demo')}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </section>
 
       {/* Inputs Section */}
       <section className="space-y-4">
