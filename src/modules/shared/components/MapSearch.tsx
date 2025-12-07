@@ -43,6 +43,14 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   const [activePopup, setActivePopup] = useState<maplibregl.Popup | null>(null);
   const activePopupRef = useRef<maplibregl.Popup | null>(null);
 
+  // Smooth easing function for map animations
+  const smoothEasing = (t: number): number => {
+    // Custom cubic bezier easing for smooth deceleration
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+
   const handleSearch = async () => {
     if (!searchQuery || !map.current) return;
 
@@ -57,7 +65,11 @@ export const MapSearch: React.FC<MapSearchProps> = ({
         map.current.flyTo({
           center: [parseFloat(lon), parseFloat(lat)],
           zoom: 13,
-          duration: 2000,
+          duration: 2500,
+          essential: true,
+          curve: 1.42,
+          speed: 0.8,
+          easing: smoothEasing,
         });
       }
     } catch (error) {
@@ -101,7 +113,11 @@ export const MapSearch: React.FC<MapSearchProps> = ({
         map.current!.flyTo({
           center: [longitude, latitude],
           zoom: 14,
-          duration: 2000,
+          duration: 2500,
+          essential: true,
+          curve: 1.42,
+          speed: 0.8,
+          easing: smoothEasing,
         });
 
         setIsLocating(false);
@@ -331,13 +347,18 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       markers.current.push(marker);
     });
 
-    // Fit bounds to show all markers
+    // Fit bounds to show all markers with smooth animation
     if (filteredProperties.length > 0) {
       const bounds = new maplibregl.LngLatBounds();
       filteredProperties.forEach(property => {
         bounds.extend([property.location.lng, property.location.lat]);
       });
-      map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+      map.current.fitBounds(bounds, { 
+        padding: 50, 
+        maxZoom: 15,
+        duration: 1800,
+        easing: smoothEasing
+      });
     }
   }, [properties, filters, onPropertySelect]);
 
