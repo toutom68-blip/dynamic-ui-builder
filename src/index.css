@@ -321,4 +321,71 @@ All colors MUST be HSL.
       container-type: inline-size;
     }
   }
+
+  /* Map marker and popup styles */
+  .custom-marker {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .custom-marker:hover {
+    transform: scale(1.1);
+    z-index: 10;
+  }
+
+  .custom-marker .marker-content {
+    background: hsl(var(--background));
+    border: 2px solid hsl(var(--primary));
+    border-radius: 9999px;
+    padding: 4px 10px;
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.15);
+    transition: all 0.15s ease;
+  }
+
+  .custom-marker:hover .marker-content {
+    background: hsl(var(--primary));
+  }
+
+  .custom-marker .marker-price {
+    font-size: 12px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+  }
+
+  .custom-marker:hover .marker-price {
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Hover tooltip styles */
+  .property-hover-tooltip .maplibregl-popup-content {
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.15);
+  }
+
+  .property-hover-tooltip .maplibregl-popup-tip {
+    border-top-color: hsl(var(--card));
+  }
+
+  /* Click popup styles */
+  .property-map-popup .maplibregl-popup-content {
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 8px 24px hsl(0 0% 0% / 0.2);
+  }
+
+  .property-map-popup .maplibregl-popup-close-button {
+    font-size: 18px;
+    padding: 8px;
+    color: hsl(var(--foreground));
+    right: 4px;
+    top: 4px;
+  }
 }

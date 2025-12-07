@@ -32,6 +32,7 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
   const popups = useRef<maplibregl.Popup[]>([]);
+  const hoverPopups = useRef<maplibregl.Popup[]>([]);
   const userMarker = useRef<maplibregl.Marker | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -159,6 +160,7 @@ export const MapSearch: React.FC<MapSearchProps> = ({
     return () => {
       markers.current.forEach(marker => marker.remove());
       popups.current.forEach(popup => popup.remove());
+      hoverPopups.current.forEach(popup => popup.remove());
       userMarker.current?.remove();
       map.current?.remove();
     };
@@ -170,8 +172,10 @@ export const MapSearch: React.FC<MapSearchProps> = ({
     // Remove existing markers and popups
     markers.current.forEach(marker => marker.remove());
     popups.current.forEach(popup => popup.remove());
+    hoverPopups.current.forEach(popup => popup.remove());
     markers.current = [];
     popups.current = [];
+    hoverPopups.current = [];
 
     // Filter properties based on filters
     const filteredProperties = properties.filter(property => {
@@ -245,6 +249,43 @@ export const MapSearch: React.FC<MapSearchProps> = ({
 
       popups.current.push(popup);
 
+      // Create hover tooltip content
+      const hoverContainer = document.createElement('div');
+      hoverContainer.className = 'hover-tooltip-content';
+      
+      const hoverRoot = ReactDOM.createRoot(hoverContainer);
+      hoverRoot.render(
+        <div className="flex items-center gap-2 p-2 min-w-[180px]">
+          {property.images[0] && (
+            <img 
+              src={property.images[0]} 
+              alt={property.title}
+              className="w-12 h-12 object-cover rounded-md flex-shrink-0"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground text-xs line-clamp-1">{property.title}</p>
+            <p className="text-xs text-muted-foreground">{property.bedrooms} bed • {property.guests} guests</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-xs font-semibold text-primary">{property.currency}{property.price}/night</span>
+              {property.rating && <span className="text-xs text-muted-foreground">⭐ {property.rating}</span>}
+            </div>
+          </div>
+        </div>
+      );
+
+      // Create hover popup
+      const hoverPopup = new maplibregl.Popup({
+        offset: [0, -35],
+        closeButton: false,
+        closeOnClick: false,
+        className: 'property-hover-tooltip',
+        maxWidth: '220px',
+        focusAfterOpen: false
+      }).setDOMContent(hoverContainer);
+
+      hoverPopups.current.push(hoverPopup);
+
       // Create custom marker element
       const markerEl = document.createElement('div');
       markerEl.className = 'custom-marker';
@@ -258,9 +299,24 @@ export const MapSearch: React.FC<MapSearchProps> = ({
         .setLngLat([property.location.lng, property.location.lat])
         .addTo(map.current!);
 
+      // Show hover tooltip on mouseenter
+      markerEl.addEventListener('mouseenter', () => {
+        // Don't show hover if click popup is already open for this property
+        if (activePopupRef.current === popup) return;
+        hoverPopup.setLngLat([property.location.lng, property.location.lat]).addTo(map.current!);
+      });
+
+      // Hide hover tooltip on mouseleave
+      markerEl.addEventListener('mouseleave', () => {
+        hoverPopup.remove();
+      });
+
       // Open popup on click
       markerEl.addEventListener('click', (e) => {
         e.stopPropagation();
+        
+        // Remove hover popup
+        hoverPopup.remove();
         
         // Close any active popup using ref
         if (activePopupRef.current) {
