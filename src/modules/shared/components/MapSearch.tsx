@@ -146,9 +146,10 @@ export const MapSearch: React.FC<MapSearchProps> = ({
     map.current.on('click', (e) => {
       // Check if click was on a marker
       const target = e.originalEvent.target as HTMLElement;
-      if (!target.closest('.custom-marker')) {
-        if (activePopup) {
-          activePopup.remove();
+      if (!target.closest('.custom-marker') && !target.closest('.maplibregl-popup')) {
+        if (activePopupRef.current) {
+          activePopupRef.current.remove();
+          activePopupRef.current = null;
           setActivePopup(null);
         }
       }
@@ -161,6 +162,9 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       map.current?.remove();
     };
   }, [center, zoom]);
+
+  // Use ref to track active popup without causing re-renders
+  const activePopupRef = useRef<maplibregl.Popup | null>(null);
 
   useEffect(() => {
     if (!map.current) return;
@@ -237,7 +241,8 @@ export const MapSearch: React.FC<MapSearchProps> = ({
         closeButton: true,
         closeOnClick: false,
         className: 'property-map-popup',
-        maxWidth: '300px'
+        maxWidth: '300px',
+        focusAfterOpen: false
       }).setDOMContent(popupContainer);
 
       popups.current.push(popup);
@@ -259,12 +264,13 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       markerEl.addEventListener('click', (e) => {
         e.stopPropagation();
         
-        // Close any active popup
-        if (activePopup) {
-          activePopup.remove();
+        // Close any active popup using ref
+        if (activePopupRef.current) {
+          activePopupRef.current.remove();
         }
         
         popup.setLngLat([property.location.lng, property.location.lat]).addTo(map.current!);
+        activePopupRef.current = popup;
         setActivePopup(popup);
       });
 
@@ -279,7 +285,7 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       });
       map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
     }
-  }, [properties, filters, onPropertySelect, activePopup]);
+  }, [properties, filters, onPropertySelect]);
 
   const handleCloseModal = () => {
     setShowModal(false);
