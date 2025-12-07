@@ -40,6 +40,7 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [activePopup, setActivePopup] = useState<maplibregl.Popup | null>(null);
+  const activePopupRef = useRef<maplibregl.Popup | null>(null);
 
   const handleSearch = async () => {
     if (!searchQuery || !map.current) return;
@@ -162,9 +163,6 @@ export const MapSearch: React.FC<MapSearchProps> = ({
       map.current?.remove();
     };
   }, [center, zoom]);
-
-  // Use ref to track active popup without causing re-renders
-  const activePopupRef = useRef<maplibregl.Popup | null>(null);
 
   useEffect(() => {
     if (!map.current) return;
