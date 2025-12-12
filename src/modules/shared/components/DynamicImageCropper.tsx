@@ -112,12 +112,94 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   const [canvasTextColor, setCanvasTextColor] = useState('#000000');
   const [canvasTextFontSize, setCanvasTextFontSize] = useState(24);
   const [canvasTextScale, setCanvasTextScale] = useState(1);
+  const [croppedImageUrl, setCroppedImageUrl] = useState<string | null>(null);
 
+  // Generate cropped image when crop settings change
+  useEffect(() => {
+    const generateCroppedPreview = async () => {
+      if (!imgRef.current || !completedCrop) return;
+      
+      const image = imgRef.current;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      const pixelRatio = 1;
+      
+      canvas.width = completedCrop.width * scaleX * pixelRatio;
+      canvas.height = completedCrop.height * scaleY * pixelRatio;
+
+      ctx.scale(pixelRatio, pixelRatio);
+      ctx.imageSmoothingQuality = 'high';
+
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
+
+      const centerX = canvas.width / 2 / pixelRatio;
+      const centerY = canvas.height / 2 / pixelRatio;
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(flipH ? -scale : scale, flipV ? -scale : scale);
+      ctx.translate(-centerX, -centerY);
+
+      ctx.drawImage(
+        image,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        canvas.width / pixelRatio,
+        canvas.height / pixelRatio
+      );
+
+      ctx.restore();
+
+      // Draw text overlays
+      textOverlays.forEach((overlay) => {
+        ctx.save();
+        ctx.font = `${overlay.fontWeight} ${overlay.fontSize * pixelRatio}px sans-serif`;
+        ctx.fillStyle = overlay.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const textX = (overlay.x / 100) * (canvas.width / pixelRatio);
+        const textY = (overlay.y / 100) * (canvas.height / pixelRatio);
+        
+        ctx.shadowColor = overlay.color === '#000000' ? '#FFFFFF' : '#000000';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
+        
+        ctx.fillText(overlay.text, textX, textY);
+        ctx.restore();
+      });
+
+      const dataUrl = canvas.toDataURL('image/png');
+      setCroppedImageUrl(dataUrl);
+    };
+
+    generateCroppedPreview();
+  }, [completedCrop, rotation, scale, flipH, flipV, textOverlays]);
+
+  // Initialize Fabric canvas when switching to draw tab - use cropped image if available
   useEffect(() => {
     if (activeTab === 'draw' && canvasElement) {
       if (fabricCanvasRef.current) {
+        fabricCanvasRef.current.dispose();
         fabricCanvasRef.current = null;
       }
+      
+      // Use cropped image if available, otherwise use original
+      const imageToUse = croppedImageUrl || imageSrc;
+      
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -150,7 +232,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
         brush.width = brushSize;
         canvas.freeDrawingBrush = brush;
 
-        FabricImage.fromURL(imageSrc, { crossOrigin: 'anonymous' }).then((fabricImg) => {
+        // Load the cropped image (or original if no crop) as background
+        FabricImage.fromURL(imageToUse, { crossOrigin: 'anonymous' }).then((fabricImg) => {
           const scaleX = width / fabricImg.width!;
           const scaleY = height / fabricImg.height!;
           fabricImg.set({
@@ -175,9 +258,9 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
       img.onerror = () => {
         console.error('Failed to load image for drawing canvas');
       };
-      img.src = imageSrc;
+      img.src = imageToUse;
     }
-  }, [activeTab, imageSrc, canvasElement]);
+  }, [activeTab, imageSrc, croppedImageUrl, canvasElement]);
 
 
   // Update brush settings
@@ -498,6 +581,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
     setBrushColor('#000000');
     setBrushSize(3);
     setDrawingCanvasReady(false);
+    setCroppedImageUrl(null);
     if (fabricCanvasRef.current) {
       fabricCanvasRef.current.dispose();
       fabricCanvasRef.current = null;
