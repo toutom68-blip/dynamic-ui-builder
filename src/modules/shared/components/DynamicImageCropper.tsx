@@ -23,9 +23,11 @@ interface TextOverlay {
   color: string;
   fontSize: number;
   fontWeight: 'normal' | 'bold';
+  scaleX?: number;
+  scaleY?: number;
 }
 
-type DrawingTool = 'select' | 'pen' | 'pencil' | 'eraser';
+type DrawingTool = 'select' | 'pen' | 'pencil' | 'eraser' | 'text';
 
 export interface ImageCropperProps extends BaseComponentProps {
   imageSrc: string;
@@ -70,6 +72,8 @@ const BRUSH_COLORS = [
   '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080'
 ];
 
+const FONT_SIZES = [12, 16, 20, 24, 32, 40, 48, 56, 64, 72];
+
 export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   imageSrc,
   open,
@@ -103,6 +107,10 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   const [brushSize, setBrushSize] = useState(3);
   const [drawingCanvasReady, setDrawingCanvasReady] = useState(false);
   const [draggingTextIndex, setDraggingTextIndex] = useState<number | null>(null);
+  const [editingTextIndex, setEditingTextIndex] = useState<number | null>(null);
+  const [canvasTextColor, setCanvasTextColor] = useState('#000000');
+  const [canvasTextFontSize, setCanvasTextFontSize] = useState(24);
+  const [canvasTextScale, setCanvasTextScale] = useState(1);
 
   // Initialize Fabric canvas when switching to draw tab
   useEffect(() => {
@@ -170,7 +178,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
         fabricCanvasRef.current.freeDrawingBrush.color = brushColor;
         fabricCanvasRef.current.freeDrawingBrush.width = activeTool === 'pencil' ? brushSize * 0.5 : brushSize;
       }
-      fabricCanvasRef.current.isDrawingMode = activeTool !== 'select';
+      // Disable drawing mode for select and text tools
+      fabricCanvasRef.current.isDrawingMode = activeTool !== 'select' && activeTool !== 'text';
     }
   }, [activeTool, brushColor, brushSize]);
 
@@ -248,14 +257,96 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
     const text = new FabricText(currentText, {
       left: 100,
       top: 100,
-      fontSize: textFontSize,
-      fill: textColor,
+      fontSize: canvasTextFontSize,
+      fill: canvasTextColor,
       fontWeight: textFontWeight === 'bold' ? 'bold' : 'normal',
+      scaleX: canvasTextScale,
+      scaleY: canvasTextScale,
     });
     
     fabricCanvasRef.current.add(text);
     fabricCanvasRef.current.setActiveObject(text);
     fabricCanvasRef.current.renderAll();
+    setCurrentText('');
+  };
+
+  // Update selected text properties
+  const updateSelectedText = (property: 'fill' | 'fontSize' | 'scaleX' | 'scaleY', value: string | number) => {
+    if (!fabricCanvasRef.current) return;
+    const activeObject = fabricCanvasRef.current.getActiveObject();
+    if (activeObject && activeObject.type === 'text') {
+      if (property === 'scaleX' || property === 'scaleY') {
+        activeObject.set('scaleX', value as number);
+        activeObject.set('scaleY', value as number);
+      } else {
+        activeObject.set(property, value);
+      }
+      fabricCanvasRef.current.renderAll();
+    }
+  };
+
+  // Listen for selection changes on canvas
+  useEffect(() => {
+    if (!fabricCanvasRef.current) return;
+    
+    const canvas = fabricCanvasRef.current;
+    
+    const handleSelection = () => {
+      const activeObject = canvas.getActiveObject();
+      if (activeObject && activeObject.type === 'text') {
+        const textObj = activeObject as FabricText;
+        setCanvasTextColor(textObj.fill as string || '#000000');
+        setCanvasTextFontSize(textObj.fontSize || 24);
+        setCanvasTextScale(textObj.scaleX || 1);
+        setActiveTool('text');
+      }
+    };
+
+    const handleDeselection = () => {
+      // Keep last used values
+    };
+
+    canvas.on('selection:created', handleSelection);
+    canvas.on('selection:updated', handleSelection);
+    canvas.on('selection:cleared', handleDeselection);
+
+    return () => {
+      canvas.off('selection:created', handleSelection);
+      canvas.off('selection:updated', handleSelection);
+      canvas.off('selection:cleared', handleDeselection);
+    };
+  }, [drawingCanvasReady]);
+
+  // Edit text overlay in text tab
+  const startEditingText = (index: number) => {
+    const overlay = textOverlays[index];
+    setEditingTextIndex(index);
+    setCurrentText(overlay.text);
+    setTextColor(overlay.color);
+    setTextFontSize(overlay.fontSize);
+    setTextFontWeight(overlay.fontWeight);
+  };
+
+  const saveEditedText = () => {
+    if (editingTextIndex === null || !currentText.trim()) return;
+    
+    setTextOverlays(prev => prev.map((overlay, i) => 
+      i === editingTextIndex 
+        ? { 
+            ...overlay, 
+            text: currentText, 
+            color: textColor, 
+            fontSize: textFontSize, 
+            fontWeight: textFontWeight 
+          }
+        : overlay
+    ));
+    setEditingTextIndex(null);
+    setCurrentText('');
+  };
+
+  const cancelEditText = () => {
+    setEditingTextIndex(null);
     setCurrentText('');
   };
 
@@ -532,7 +623,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
             <TabsContent value="text" className="space-y-4">
               {/* Text Input */}
               <div className="space-y-2">
-                <Label>{t('imageCropper.textOverlay')}</Label>
+                <Label>{editingTextIndex !== null ? t('imageCropper.editText', 'Edit Text') : t('imageCropper.textOverlay')}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={currentText}
@@ -540,10 +631,21 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     placeholder={t('imageCropper.enterText')}
                     className="flex-1"
                   />
-                  <Button onClick={addTextOverlay} disabled={!currentText.trim()}>
-                    <Type className="h-4 w-4 mr-2" />
-                    {t('imageCropper.addText')}
-                  </Button>
+                  {editingTextIndex !== null ? (
+                    <>
+                      <Button onClick={saveEditedText} disabled={!currentText.trim()}>
+                        {t('common.save', 'Save')}
+                      </Button>
+                      <Button variant="outline" onClick={cancelEditText}>
+                        {t('common.cancel')}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={addTextOverlay} disabled={!currentText.trim()}>
+                      <Type className="h-4 w-4 mr-2" />
+                      {t('imageCropper.addText')}
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -571,6 +673,19 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
               {/* Font Size */}
               <div className="space-y-2">
                 <Label>{t('imageCropper.fontSize')}: {textFontSize}px</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {FONT_SIZES.map((size) => (
+                    <Button
+                      key={size}
+                      variant={textFontSize === size ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTextFontSize(size)}
+                      className="w-10 h-8"
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </div>
                 <Slider
                   value={[textFontSize]}
                   onValueChange={([val]) => setTextFontSize(val)}
@@ -602,7 +717,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                 </div>
               </div>
 
-              {/* Added Text List */}
+              {/* Added Text List with Edit */}
               {textOverlays.length > 0 && (
                 <div className="space-y-2">
                   <Label>{t('imageCropper.addedTexts')}</Label>
@@ -610,23 +725,35 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     {textOverlays.map((overlay, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-2 bg-muted rounded"
+                        className={`flex items-center justify-between p-2 rounded transition-colors ${
+                          editingTextIndex === index ? 'bg-primary/20 border border-primary' : 'bg-muted'
+                        }`}
                       >
                         <span
                           style={{
                             color: overlay.color,
                             fontWeight: overlay.fontWeight,
+                            fontSize: `${Math.min(overlay.fontSize, 16)}px`,
                           }}
                         >
                           {overlay.text}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeTextOverlay(index)}
-                        >
-                          {t('common.delete')}
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditingText(index)}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeTextOverlay(index)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -658,11 +785,13 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                   {textOverlays.map((overlay, index) => (
                     <div
                       key={index}
-                      className="absolute cursor-move select-none"
+                      className={`absolute cursor-move select-none transition-all ${
+                        editingTextIndex === index ? 'ring-2 ring-primary ring-offset-2' : ''
+                      }`}
                       style={{
                         left: `${overlay.x}%`,
                         top: `${overlay.y}%`,
-                        transform: 'translate(-50%, -50%)',
+                        transform: `translate(-50%, -50%) scale(${overlay.scaleX || 1})`,
                         color: overlay.color,
                         fontSize: `${overlay.fontSize}px`,
                         fontWeight: overlay.fontWeight,
@@ -674,6 +803,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                         e.preventDefault();
                         handleTextDragStart(index);
                       }}
+                      onDoubleClick={() => startEditingText(index)}
                     >
                       <Move className="h-3 w-3 absolute -top-4 left-1/2 -translate-x-1/2 opacity-50" />
                       {overlay.text}
@@ -682,7 +812,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                 </div>
               </div>
               <p className="text-xs text-muted-foreground text-center">
-                {t('imageCropper.dragTextHint', 'Drag text to reposition')}
+                {t('imageCropper.dragTextHint', 'Drag text to reposition. Double-click to edit.')}
               </p>
             </TabsContent>
           )}
@@ -730,6 +860,15 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     {t('imageCropper.eraser', 'Eraser')}
                   </Button>
                   <Button
+                    variant={activeTool === 'text' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTool('text')}
+                    className="gap-2"
+                  >
+                    <Type className="h-4 w-4" />
+                    {t('imageCropper.textTool', 'Text')}
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={clearDrawing}
@@ -742,7 +881,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
               </div>
 
               {/* Brush Color */}
-              {activeTool !== 'eraser' && activeTool !== 'select' && (
+              {(activeTool === 'pen' || activeTool === 'pencil') && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Palette className="h-4 w-4" />
@@ -765,7 +904,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
               )}
 
               {/* Brush Size */}
-              {activeTool !== 'select' && (
+              {(activeTool === 'pen' || activeTool === 'pencil' || activeTool === 'eraser') && (
                 <div className="space-y-2">
                   <Label>
                     {t('imageCropper.brushSize', 'Brush Size')}: {brushSize}px
@@ -777,6 +916,86 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     max={20}
                     step={1}
                   />
+                </div>
+              )}
+
+              {/* Text Tool Settings */}
+              {activeTool === 'text' && (
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
+                  <Label className="text-base font-medium">{t('imageCropper.textSettings', 'Text Settings')}</Label>
+                  
+                  {/* Text Color for Canvas */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Palette className="h-4 w-4" />
+                      {t('imageCropper.textColor')}
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {TEXT_COLORS.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => {
+                            setCanvasTextColor(color);
+                            updateSelectedText('fill', color);
+                          }}
+                          className={`w-8 h-8 rounded-full border-2 transition-transform ${
+                            canvasTextColor === color ? 'scale-110 border-primary' : 'border-border'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          title={color}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Font Size for Canvas */}
+                  <div className="space-y-2">
+                    <Label>{t('imageCropper.fontSize')}: {canvasTextFontSize}px</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {FONT_SIZES.map((size) => (
+                        <Button
+                          key={size}
+                          variant={canvasTextFontSize === size ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            setCanvasTextFontSize(size);
+                            updateSelectedText('fontSize', size);
+                          }}
+                          className="w-10 h-8"
+                        >
+                          {size}
+                        </Button>
+                      ))}
+                    </div>
+                    <Slider
+                      value={[canvasTextFontSize]}
+                      onValueChange={([val]) => {
+                        setCanvasTextFontSize(val);
+                        updateSelectedText('fontSize', val);
+                      }}
+                      min={12}
+                      max={72}
+                      step={2}
+                    />
+                  </div>
+
+                  {/* Text Zoom/Scale */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <ZoomIn className="h-4 w-4" />
+                      {t('imageCropper.textZoom', 'Text Zoom')}: {Math.round(canvasTextScale * 100)}%
+                    </Label>
+                    <Slider
+                      value={[canvasTextScale]}
+                      onValueChange={([val]) => {
+                        setCanvasTextScale(val);
+                        updateSelectedText('scaleX', val);
+                      }}
+                      min={0.5}
+                      max={3}
+                      step={0.1}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -797,7 +1016,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                 </div>
               </div>
 
-              {/* Drawing Canvas */}
+              {/* Drawing Canvas with Photo */}
               <div className="flex justify-center bg-muted/50 rounded-lg p-4 overflow-hidden">
                 <canvas 
                   ref={canvasRef}
@@ -805,7 +1024,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                 />
               </div>
               <p className="text-xs text-muted-foreground text-center">
-                {t('imageCropper.drawingHint', 'Draw on the image using the tools above. Text can be moved after adding.')}
+                {t('imageCropper.drawingHint', 'Draw on the image using the tools above. Click text to edit properties. Text can be moved and scaled.')}
               </p>
             </TabsContent>
           )}
