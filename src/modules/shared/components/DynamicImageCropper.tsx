@@ -112,7 +112,6 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   const [canvasTextColor, setCanvasTextColor] = useState('#000000');
   const [canvasTextFontSize, setCanvasTextFontSize] = useState(24);
   const [canvasTextScale, setCanvasTextScale] = useState(1);
-  const [canvasMounted, setCanvasMounted] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'draw' && canvasElement) {
