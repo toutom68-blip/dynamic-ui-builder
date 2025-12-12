@@ -132,56 +132,82 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
           height = maxHeight;
         }
 
+        // Set canvas dimensions before creating FabricCanvas
+        canvasRef.current!.width = width;
+        canvasRef.current!.height = height;
+
         const canvas = new FabricCanvas(canvasRef.current!, {
           width,
           height,
           isDrawingMode: true,
         });
 
-        canvas.freeDrawingBrush = new PencilBrush(canvas);
-        canvas.freeDrawingBrush.color = brushColor;
-        canvas.freeDrawingBrush.width = brushSize;
+        // Create and set up the brush properly
+        const brush = new PencilBrush(canvas);
+        brush.color = brushColor;
+        brush.width = brushSize;
+        canvas.freeDrawingBrush = brush;
 
+        // Load and add background image
         FabricImage.fromURL(imageSrc, { crossOrigin: 'anonymous' }).then((fabricImg) => {
-          fabricImg.scaleToWidth(width);
-          fabricImg.scaleToHeight(height);
+          const scaleX = width / fabricImg.width!;
+          const scaleY = height / fabricImg.height!;
           fabricImg.set({
             left: 0,
             top: 0,
+            scaleX,
+            scaleY,
             selectable: false,
             evented: false,
+            originX: 'left',
+            originY: 'top',
           });
           canvas.insertAt(0, fabricImg);
           canvas.renderAll();
+        }).catch((err) => {
+          console.error('Error loading image:', err);
         });
 
         fabricCanvasRef.current = canvas;
         setDrawingCanvasReady(true);
       };
+      img.onerror = () => {
+        console.error('Failed to load image for drawing canvas');
+      };
       img.src = imageSrc;
     }
 
     return () => {
-      if (activeTab !== 'draw' && fabricCanvasRef.current) {
-        // Don't dispose when just switching tabs - keep canvas state
-      }
+      // Cleanup handled in resetState
     };
   }, [activeTab, imageSrc]);
 
   // Update brush settings
   useEffect(() => {
-    if (fabricCanvasRef.current && fabricCanvasRef.current.freeDrawingBrush) {
-      if (activeTool === 'eraser') {
-        fabricCanvasRef.current.freeDrawingBrush.color = '#FFFFFF';
-        fabricCanvasRef.current.freeDrawingBrush.width = brushSize * 3;
-      } else {
-        fabricCanvasRef.current.freeDrawingBrush.color = brushColor;
-        fabricCanvasRef.current.freeDrawingBrush.width = activeTool === 'pencil' ? brushSize * 0.5 : brushSize;
+    if (fabricCanvasRef.current) {
+      const canvas = fabricCanvasRef.current;
+      
+      // Ensure brush exists
+      if (!canvas.freeDrawingBrush) {
+        canvas.freeDrawingBrush = new PencilBrush(canvas);
       }
-      // Disable drawing mode for select and text tools
-      fabricCanvasRef.current.isDrawingMode = activeTool !== 'select' && activeTool !== 'text';
+      
+      if (activeTool === 'eraser') {
+        canvas.freeDrawingBrush.color = '#FFFFFF';
+        canvas.freeDrawingBrush.width = brushSize * 3;
+        canvas.isDrawingMode = true;
+      } else if (activeTool === 'pen' || activeTool === 'pencil') {
+        canvas.freeDrawingBrush.color = brushColor;
+        canvas.freeDrawingBrush.width = activeTool === 'pencil' ? Math.max(1, brushSize * 0.5) : brushSize;
+        canvas.isDrawingMode = true;
+      } else {
+        // Disable drawing mode for select and text tools
+        canvas.isDrawingMode = false;
+      }
+      
+      canvas.renderAll();
     }
-  }, [activeTool, brushColor, brushSize]);
+  }, [activeTool, brushColor, brushSize, drawingCanvasReady]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -327,25 +353,24 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
     setTextFontWeight(overlay.fontWeight);
   };
 
-  const saveEditedText = () => {
-    if (editingTextIndex === null || !currentText.trim()) return;
-    
-    setTextOverlays(prev => prev.map((overlay, i) => 
-      i === editingTextIndex 
-        ? { 
-            ...overlay, 
-            text: currentText, 
-            color: textColor, 
-            fontSize: textFontSize, 
-            fontWeight: textFontWeight 
-          }
-        : overlay
-    ));
-    setEditingTextIndex(null);
-    setCurrentText('');
-  };
+  // Auto-save text overlay when editing
+  useEffect(() => {
+    if (editingTextIndex !== null && currentText.trim()) {
+      setTextOverlays(prev => prev.map((overlay, i) => 
+        i === editingTextIndex 
+          ? { 
+              ...overlay, 
+              text: currentText, 
+              color: textColor, 
+              fontSize: textFontSize, 
+              fontWeight: textFontWeight 
+            }
+          : overlay
+      ));
+    }
+  }, [currentText, textColor, textFontSize, textFontWeight, editingTextIndex]);
 
-  const cancelEditText = () => {
+  const finishEditingText = () => {
     setEditingTextIndex(null);
     setCurrentText('');
   };
@@ -632,14 +657,9 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     className="flex-1"
                   />
                   {editingTextIndex !== null ? (
-                    <>
-                      <Button onClick={saveEditedText} disabled={!currentText.trim()}>
-                        {t('common.save', 'Save')}
-                      </Button>
-                      <Button variant="outline" onClick={cancelEditText}>
-                        {t('common.cancel')}
-                      </Button>
-                    </>
+                    <Button variant="outline" onClick={finishEditingText}>
+                      {t('common.done', 'Done')}
+                    </Button>
                   ) : (
                     <Button onClick={addTextOverlay} disabled={!currentText.trim()}>
                       <Type className="h-4 w-4 mr-2" />
@@ -647,6 +667,11 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     </Button>
                   )}
                 </div>
+                {editingTextIndex !== null && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('imageCropper.autoSaveHint', 'Changes are saved automatically')}
+                  </p>
+                )}
               </div>
 
               {/* Text Color */}
