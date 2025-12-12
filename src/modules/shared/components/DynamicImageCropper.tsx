@@ -9,8 +9,8 @@ import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { 
-  RotateCw, RotateCcw, ZoomIn, FlipHorizontal, FlipVertical, 
+import {
+  RotateCw, RotateCcw, ZoomIn, FlipHorizontal, FlipVertical,
   RectangleHorizontal, RectangleVertical, Square, Type, Bold, Palette,
   Pen, Pencil, Eraser, Move, Trash2
 } from 'lucide-react';
@@ -81,40 +81,44 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   onCropComplete,
   aspectRatio: initialAspectRatio,
   circularCrop = false,
-  enableTextOverlay = true,
+  enableTextOverlay = false,
   enableDrawing = true,
   ...baseProps
 }) => {
   const { t } = useTranslation();
-  const imgRef = useRef<HTMLImageElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricCanvasRef = useRef<FabricCanvas | null>(null);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const imgRef = useRef < HTMLImageElement > (null);
+  const canvasRef = useRef < HTMLCanvasElement > (null);
+  const [canvasElement, setCanvasElement] = useState < HTMLCanvasElement | null > (null);
+  const fabricCanvasRef = useRef < FabricCanvas | null > (null);
+  const [crop, setCrop] = useState < Crop > ();
+  const [completedCrop, setCompletedCrop] = useState < PixelCrop > ();
   const [rotation, setRotation] = useState(0);
   const [scale, setScale] = useState(1);
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
-  const [selectedAspect, setSelectedAspect] = useState<number | undefined>(initialAspectRatio);
-  const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
+  const [selectedAspect, setSelectedAspect] = useState < number | undefined > (initialAspectRatio);
+  const [textOverlays, setTextOverlays] = useState < TextOverlay[] > ([]);
   const [currentText, setCurrentText] = useState('');
   const [textColor, setTextColor] = useState('#FFFFFF');
   const [textFontSize, setTextFontSize] = useState(24);
-  const [textFontWeight, setTextFontWeight] = useState<'normal' | 'bold'>('normal');
+  const [textFontWeight, setTextFontWeight] = useState < 'normal' | 'bold' > ('normal');
   const [activeTab, setActiveTab] = useState('crop');
-  const [activeTool, setActiveTool] = useState<DrawingTool>('pen');
+  const [activeTool, setActiveTool] = useState < DrawingTool > ('pen');
   const [brushColor, setBrushColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(3);
   const [drawingCanvasReady, setDrawingCanvasReady] = useState(false);
-  const [draggingTextIndex, setDraggingTextIndex] = useState<number | null>(null);
-  const [editingTextIndex, setEditingTextIndex] = useState<number | null>(null);
+  const [draggingTextIndex, setDraggingTextIndex] = useState < number | null > (null);
+  const [editingTextIndex, setEditingTextIndex] = useState < number | null > (null);
   const [canvasTextColor, setCanvasTextColor] = useState('#000000');
   const [canvasTextFontSize, setCanvasTextFontSize] = useState(24);
   const [canvasTextScale, setCanvasTextScale] = useState(1);
+  const [canvasMounted, setCanvasMounted] = useState(false);
 
-  // Initialize Fabric canvas when switching to draw tab
   useEffect(() => {
-    if (activeTab === 'draw' && canvasRef.current && !fabricCanvasRef.current) {
+    if (activeTab === 'draw' && canvasElement) {
+      if (fabricCanvasRef.current) {
+        fabricCanvasRef.current = null;
+      }
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -122,7 +126,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
         const maxHeight = 400;
         let width = img.width;
         let height = img.height;
-        
+
         if (width > maxWidth) {
           height = (maxWidth / width) * height;
           width = maxWidth;
@@ -132,25 +136,21 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
           height = maxHeight;
         }
 
-        // Set canvas dimensions before creating FabricCanvas
-        canvasRef.current!.width = width;
-        canvasRef.current!.height = height;
+        canvasElement!.width = width;
+        canvasElement!.height = height;
 
-        const canvas = new FabricCanvas(canvasRef.current!, {
+        const canvas = new FabricCanvas(canvasElement!, {
           width,
           height,
         });
 
-        // Explicitly enable drawing mode
         canvas.isDrawingMode = true;
 
-        // Create and set up the brush properly
         const brush = new PencilBrush(canvas);
         brush.color = brushColor;
         brush.width = brushSize;
         canvas.freeDrawingBrush = brush;
 
-        // Load and add background image
         FabricImage.fromURL(imageSrc, { crossOrigin: 'anonymous' }).then((fabricImg) => {
           const scaleX = width / fabricImg.width!;
           const scaleY = height / fabricImg.height!;
@@ -178,22 +178,19 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
       };
       img.src = imageSrc;
     }
+  }, [activeTab, imageSrc, canvasElement]);
 
-    return () => {
-      // Cleanup handled in resetState
-    };
-  }, [activeTab, imageSrc]);
 
   // Update brush settings
   useEffect(() => {
     if (fabricCanvasRef.current) {
       const canvas = fabricCanvasRef.current;
-      
+
       // Ensure brush exists
       if (!canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush = new PencilBrush(canvas);
       }
-      
+
       if (activeTool === 'eraser') {
         canvas.freeDrawingBrush.color = '#FFFFFF';
         canvas.freeDrawingBrush.width = brushSize * 3;
@@ -206,7 +203,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
         // Disable drawing mode for select and text tools
         canvas.isDrawingMode = false;
       }
-      
+
       canvas.renderAll();
     }
   }, [activeTool, brushColor, brushSize, drawingCanvasReady]);
@@ -252,12 +249,12 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
   const handleTextDrag = (e: React.MouseEvent, containerRect: DOMRect) => {
     if (draggingTextIndex === null) return;
-    
+
     const x = ((e.clientX - containerRect.left) / containerRect.width) * 100;
     const y = ((e.clientY - containerRect.top) / containerRect.height) * 100;
-    
-    setTextOverlays(prev => prev.map((overlay, i) => 
-      i === draggingTextIndex 
+
+    setTextOverlays(prev => prev.map((overlay, i) =>
+      i === draggingTextIndex
         ? { ...overlay, x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) }
         : overlay
     ));
@@ -281,7 +278,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
   const addTextToCanvas = () => {
     if (!fabricCanvasRef.current || !currentText.trim()) return;
-    
+
     const text = new FabricText(currentText, {
       left: 100,
       top: 100,
@@ -291,7 +288,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
       scaleX: canvasTextScale,
       scaleY: canvasTextScale,
     });
-    
+
     fabricCanvasRef.current.add(text);
     fabricCanvasRef.current.setActiveObject(text);
     fabricCanvasRef.current.renderAll();
@@ -316,9 +313,9 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   // Listen for selection changes on canvas
   useEffect(() => {
     if (!fabricCanvasRef.current) return;
-    
+
     const canvas = fabricCanvasRef.current;
-    
+
     const handleSelection = () => {
       const activeObject = canvas.getActiveObject();
       if (activeObject && activeObject.type === 'text') {
@@ -358,15 +355,15 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   // Auto-save text overlay when editing
   useEffect(() => {
     if (editingTextIndex !== null && currentText.trim()) {
-      setTextOverlays(prev => prev.map((overlay, i) => 
-        i === editingTextIndex 
-          ? { 
-              ...overlay, 
-              text: currentText, 
-              color: textColor, 
-              fontSize: textFontSize, 
-              fontWeight: textFontWeight 
-            }
+      setTextOverlays(prev => prev.map((overlay, i) =>
+        i === editingTextIndex
+          ? {
+            ...overlay,
+            text: currentText,
+            color: textColor,
+            fontSize: textFontSize,
+            fontWeight: textFontWeight
+          }
           : overlay
       ));
     }
@@ -398,7 +395,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
     const scaleY = image.naturalHeight / image.height;
 
     const pixelRatio = window.devicePixelRatio || 1;
-    
+
     canvas.width = completedCrop.width * scaleX * pixelRatio;
     canvas.height = completedCrop.height * scaleY * pixelRatio;
 
@@ -440,22 +437,22 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
       ctx.fillStyle = overlay.color;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      
+
       const textX = (overlay.x / 100) * (canvas.width / pixelRatio);
       const textY = (overlay.y / 100) * (canvas.height / pixelRatio);
-      
+
       // Add text shadow for better visibility
       ctx.shadowColor = overlay.color === '#000000' ? '#FFFFFF' : '#000000';
       ctx.shadowBlur = 4;
       ctx.shadowOffsetX = 1;
       ctx.shadowOffsetY = 1;
-      
+
       ctx.fillText(overlay.text, textX, textY);
       ctx.restore();
     });
 
     return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
+      canvas?.toBlob((blob) => {
         if (blob) {
           resolve(URL.createObjectURL(blob));
         }
@@ -466,14 +463,14 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   const handleSave = async () => {
     try {
       let resultUrl: string;
-      
+
       if (activeTab === 'draw' && fabricCanvasRef.current) {
         // If on draw tab, export the canvas
         resultUrl = await getDrawingDataURL() || imageSrc;
       } else {
         resultUrl = await getCroppedImg();
       }
-      
+
       onCropComplete(resultUrl);
       onOpenChange(false);
       resetState();
@@ -572,6 +569,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     ref={imgRef}
                     src={imageSrc}
                     alt="Crop"
+                    crossOrigin="anonymous"
                     onLoad={onImageLoad}
                     style={{
                       transform: `rotate(${rotation}deg) scale(${flipH ? -scale : scale}, ${flipV ? -scale : scale})`,
@@ -591,8 +589,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                         color: overlay.color,
                         fontSize: `${overlay.fontSize}px`,
                         fontWeight: overlay.fontWeight,
-                        textShadow: overlay.color === '#000000' 
-                          ? '1px 1px 2px #FFFFFF' 
+                        textShadow: overlay.color === '#000000'
+                          ? '1px 1px 2px #FFFFFF'
                           : '1px 1px 2px #000000',
                       }}
                     >
@@ -611,17 +609,17 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
               <Button variant="outline" size="icon" onClick={rotateRight} title={t('imageCropper.rotateRight')}>
                 <RotateCw className="h-4 w-4" />
               </Button>
-              <Button 
-                variant={flipH ? "default" : "outline"} 
-                size="icon" 
+              <Button
+                variant={flipH ? "default" : "outline"}
+                size="icon"
                 onClick={toggleFlipH}
                 title={t('imageCropper.flipHorizontal')}
               >
                 <FlipHorizontal className="h-4 w-4" />
               </Button>
-              <Button 
-                variant={flipV ? "default" : "outline"} 
-                size="icon" 
+              <Button
+                variant={flipV ? "default" : "outline"}
+                size="icon"
                 onClick={toggleFlipV}
                 title={t('imageCropper.flipVertical')}
               >
@@ -687,9 +685,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     <button
                       key={color}
                       onClick={() => setTextColor(color)}
-                      className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                        textColor === color ? 'scale-110 border-primary' : 'border-border'
-                      }`}
+                      className={`w-8 h-8 rounded-full border-2 transition-transform ${textColor === color ? 'scale-110 border-primary' : 'border-border'
+                        }`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -752,9 +749,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                     {textOverlays.map((overlay, index) => (
                       <div
                         key={index}
-                        className={`flex items-center justify-between p-2 rounded transition-colors ${
-                          editingTextIndex === index ? 'bg-primary/20 border border-primary' : 'bg-muted'
-                        }`}
+                        className={`flex items-center justify-between p-2 rounded transition-colors ${editingTextIndex === index ? 'bg-primary/20 border border-primary' : 'bg-muted'
+                          }`}
                       >
                         <span
                           style={{
@@ -789,7 +785,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
               {/* Preview with draggable text */}
               <div className="flex justify-center bg-muted/50 rounded-lg p-4 overflow-hidden">
-                <div 
+                <div
                   className="relative select-none"
                   onMouseMove={(e) => {
                     if (draggingTextIndex !== null) {
@@ -812,9 +808,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                   {textOverlays.map((overlay, index) => (
                     <div
                       key={index}
-                      className={`absolute cursor-move select-none transition-all ${
-                        editingTextIndex === index ? 'ring-2 ring-primary ring-offset-2' : ''
-                      }`}
+                      className={`absolute cursor-move select-none transition-all ${editingTextIndex === index ? 'ring-2 ring-primary ring-offset-2' : ''
+                        }`}
                       style={{
                         left: `${overlay.x}%`,
                         top: `${overlay.y}%`,
@@ -822,8 +817,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                         color: overlay.color,
                         fontSize: `${overlay.fontSize}px`,
                         fontWeight: overlay.fontWeight,
-                        textShadow: overlay.color === '#000000' 
-                          ? '1px 1px 2px #FFFFFF' 
+                        textShadow: overlay.color === '#000000'
+                          ? '1px 1px 2px #FFFFFF'
                           : '1px 1px 2px #000000',
                       }}
                       onMouseDown={(e) => {
@@ -919,9 +914,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                       <button
                         key={color}
                         onClick={() => setBrushColor(color)}
-                        className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                          brushColor === color ? 'scale-110 border-primary' : 'border-border'
-                        }`}
+                        className={`w-8 h-8 rounded-full border-2 transition-transform ${brushColor === color ? 'scale-110 border-primary' : 'border-border'
+                          }`}
                         style={{ backgroundColor: color }}
                         title={color}
                       />
@@ -950,7 +944,7 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
               {activeTool === 'text' && (
                 <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
                   <Label className="text-base font-medium">{t('imageCropper.textSettings', 'Text Settings')}</Label>
-                  
+
                   {/* Text Color for Canvas */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
@@ -965,9 +959,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                             setCanvasTextColor(color);
                             updateSelectedText('fill', color);
                           }}
-                          className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                            canvasTextColor === color ? 'scale-110 border-primary' : 'border-border'
-                          }`}
+                          className={`w-8 h-8 rounded-full border-2 transition-transform ${canvasTextColor === color ? 'scale-110 border-primary' : 'border-border'
+                            }`}
                           style={{ backgroundColor: color }}
                           title={color}
                         />
@@ -1045,8 +1038,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
               {/* Drawing Canvas with Photo */}
               <div className="flex justify-center bg-muted/50 rounded-lg p-4 overflow-hidden">
-                <canvas 
-                  ref={canvasRef}
+                <canvas
+                  ref={setCanvasElement}
                   className="border border-border rounded shadow-sm"
                 />
               </div>
