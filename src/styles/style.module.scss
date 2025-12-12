@@ -1,0 +1,49 @@
+.zIndex {
+    &_1 {
+        z-index: 1000;
+    }
+
+    &_2 {
+        z-index: 2000 !important;
+    }
+}
+
+.height {
+    &_full {
+        height: 100vh;
+    }
+
+    &_90vh {
+        height: 90vh;
+    }
+
+    &_80vh {
+        height: 80vh;
+    }
+
+    &_85vh {
+        height: 85vh;
+    }
+
+    &_calc {
+        height: calc(100vh - 4rem);
+    }
+}
+
+.maxHeight {
+    &_80vh {
+        max-height: 80vh;
+    }
+
+    &_75vh {
+        max-height: 75vh;
+    }
+
+    &_85vh {
+        max-height: 85vh;
+    }
+
+    &_90vh {
+        max-height: 90vh;
+    }
+}

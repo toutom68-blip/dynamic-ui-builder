@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CalendarEvent } from './types/calendar.types';
 import {
   Dialog,
@@ -9,18 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Copy,
-  Mail,
-  Twitter,
-  Facebook,
-  MessageCircle,
-  Check,
-  Calendar,
-  Clock,
-  MapPin
-} from 'lucide-react';
+import { Copy, Mail, Twitter, Facebook, MessageCircle, Check, Calendar, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ShareModalProps {
@@ -30,12 +20,8 @@ interface ShareModalProps {
   onShare?: (event: CalendarEvent, platform: 'copy' | 'email' | 'twitter' | 'facebook' | 'whatsapp') => void;
 }
 
-export const ShareModal: React.FC<ShareModalProps> = ({
-  event,
-  open,
-  onOpenChange,
-  onShare,
-}) => {
+export const ShareModal: React.FC<ShareModalProps> = ({ event, open, onOpenChange, onShare }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   if (!event) return null;
@@ -79,21 +65,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Event</DialogTitle>
-          <DialogDescription>
-            Share this event with friends and colleagues.
-          </DialogDescription>
+          <DialogTitle>{t('share.title')}</DialogTitle>
+          <DialogDescription>{t('share.description')}</DialogDescription>
         </DialogHeader>
 
-        {/* Event Preview */}
         <div className="flex gap-4 p-4 rounded-lg bg-muted/50">
-          {event.imageUrl && (
-            <img
-              src={event.imageUrl}
-              alt={event.title}
-              className="w-16 h-16 object-cover rounded-md"
-            />
-          )}
+          {event.imageUrl && <img src={event.imageUrl} alt={event.title} className="w-16 h-16 object-cover rounded-md" />}
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-foreground truncate">{event.title}</h4>
             <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
@@ -109,73 +86,37 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           </div>
         </div>
 
-        {/* Copy Link */}
         <div className="flex gap-2">
-          <Input
-            value={eventUrl}
-            readOnly
-            className="flex-1 text-sm"
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleCopy}
-            className="shrink-0"
-          >
-            {copied ? (
-              <Check className="h-4 w-4 text-primary" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
+          <Input value={eventUrl} readOnly className="flex-1 text-sm" />
+          <Button variant="outline" size="icon" onClick={handleCopy} className="shrink-0">
+            {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
           </Button>
         </div>
 
-        {/* Share Buttons */}
         <div className="grid grid-cols-4 gap-2">
-          <Button
-            variant="outline"
-            className="flex flex-col items-center gap-1 h-auto py-4"
-            onClick={() => handleShare('email')}
-          >
+          <Button variant="outline" className="flex flex-col items-center gap-1 h-auto py-4" onClick={() => handleShare('email')}>
             <Mail className="h-5 w-5" />
-            <span className="text-xs">Email</span>
+            <span className="text-xs">{t('share.email')}</span>
           </Button>
-          <Button
-            variant="outline"
-            className="flex flex-col items-center gap-1 h-auto py-4"
-            onClick={() => handleShare('twitter')}
-          >
+          <Button variant="outline" className="flex flex-col items-center gap-1 h-auto py-4" onClick={() => handleShare('twitter')}>
             <Twitter className="h-5 w-5" />
-            <span className="text-xs">Twitter</span>
+            <span className="text-xs">{t('share.twitter')}</span>
           </Button>
-          <Button
-            variant="outline"
-            className="flex flex-col items-center gap-1 h-auto py-4"
-            onClick={() => handleShare('facebook')}
-          >
+          <Button variant="outline" className="flex flex-col items-center gap-1 h-auto py-4" onClick={() => handleShare('facebook')}>
             <Facebook className="h-5 w-5" />
-            <span className="text-xs">Facebook</span>
+            <span className="text-xs">{t('share.facebook')}</span>
           </Button>
-          <Button
-            variant="outline"
-            className="flex flex-col items-center gap-1 h-auto py-4"
-            onClick={() => handleShare('whatsapp')}
-          >
+          <Button variant="outline" className="flex flex-col items-center gap-1 h-auto py-4" onClick={() => handleShare('whatsapp')}>
             <MessageCircle className="h-5 w-5" />
-            <span className="text-xs">WhatsApp</span>
+            <span className="text-xs">{t('share.whatsapp')}</span>
           </Button>
         </div>
 
-        {/* Add to Calendar */}
         <div className="pt-2 border-t border-border">
-          <p className="text-sm text-muted-foreground mb-2">Add to calendar</p>
+          <p className="text-sm text-muted-foreground mb-2">{t('share.addToCalendar')}</p>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" className="flex-1">
-              Google Calendar
-            </Button>
-            <Button variant="secondary" size="sm" className="flex-1">
-              Apple Calendar
-            </Button>
+            <Button variant="secondary" size="sm" className="flex-1">{t('share.googleCalendar')}</Button>
+            <Button variant="secondary" size="sm" className="flex-1">{t('share.appleCalendar')}</Button>
           </div>
         </div>
       </DialogContent>

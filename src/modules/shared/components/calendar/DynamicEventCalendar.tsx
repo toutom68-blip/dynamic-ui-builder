@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CalendarProps,
   CalendarEvent,
@@ -89,6 +90,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
   defaultEventDuration = 60,
   defaultEventColor,
 }) => {
+  const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState < CalendarViewConfig['view'] > (initialView);
   const [events, setEvents] = useState < CalendarEvent[] > (initialEvents);
@@ -458,7 +460,15 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
     const calendarEnd = endOfWeek(monthEnd);
     const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDays = [
+      t('calendar.weekDays.sun'),
+      t('calendar.weekDays.mon'),
+      t('calendar.weekDays.tue'),
+      t('calendar.weekDays.wed'),
+      t('calendar.weekDays.thu'),
+      t('calendar.weekDays.fri'),
+      t('calendar.weekDays.sat')
+    ];
 
     return (
       <div className="border border-border rounded-lg overflow-hidden">
@@ -531,7 +541,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
                   ))}
                   {dayEvents.length > 3 && (
                     <div className="text-xs text-muted-foreground pl-1">
-                      +{dayEvents.length - 3} more
+                      {t('calendar.moreEvents', { count: dayEvents.length - 3 })}
                     </div>
                   )}
                 </div>
@@ -554,7 +564,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         {/* Week day headers */}
         <div className="grid grid-cols-8 bg-muted/50 sticky top-0 z-20">
           <div className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border w-20">
-            Time
+            {t('calendar.time')}
           </div>
           {days.map(day => (
             <div
@@ -646,7 +656,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         {/* Day header */}
         <div className="grid grid-cols-[80px_1fr] bg-muted/50 sticky top-0 z-20">
           <div className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border">
-            Time
+            {t('calendar.time')}
           </div>
           <div className={cn(
             'p-3 text-center border-b border-border',
@@ -737,7 +747,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
         <div className="divide-y divide-border">
           {daysWithEvents.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              No events in this period
+              {t('calendar.noEventsInPeriod')}
             </div>
           ) : (
             daysWithEvents.map(day => {
@@ -783,7 +793,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
                             </div>
                             {event.price !== undefined && (
                               <Badge variant="secondary">
-                                {event.price === 0 ? 'Free' : `$${event.price}`}
+                                {event.price === 0 ? t('booking.free') : `$${event.price}`}
                               </Badge>
                             )}
                           </div>
@@ -801,7 +811,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
                                   handleBook(event);
                                 }}
                               >
-                                Book
+                                {t('calendar.book')}
                               </Button>
                             )}
                             <Button
@@ -812,7 +822,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
                                 handleShare(event);
                               }}
                             >
-                              Share
+                              {t('calendar.share')}
                             </Button>
                             <Button
                               size="sm"
@@ -822,7 +832,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
                                 handleReminder(event);
                               }}
                             >
-                              Remind
+                              {t('calendar.remind')}
                             </Button>
                           </div>
                         </div>
@@ -845,10 +855,10 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Loading...
+                    {t('common.loading')}
                   </>
                 ) : (
-                  'Load More Events'
+                  t('calendar.loadMore')
                 )}
               </Button>
             </div>
@@ -891,7 +901,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button variant="outline" onClick={goToToday}>
-            Today
+            {t('calendar.today')}
           </Button>
           <h2 className="text-xl font-semibold ml-4">
             {view === 'day'
@@ -918,7 +928,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
               }}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Quick Add
+              {t('calendar.quickAdd')}
             </Button>
           )}
           <Button
@@ -927,7 +937,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             onClick={() => setView('month')}
           >
             <Grid3X3 className="h-4 w-4 mr-1" />
-            Month
+            {t('calendar.month')}
           </Button>
           <Button
             variant={view === 'week' ? 'default' : 'outline'}
@@ -935,7 +945,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             onClick={() => setView('week')}
           >
             <CalendarRange className="h-4 w-4 mr-1" />
-            Week
+            {t('calendar.week')}
           </Button>
           <Button
             variant={view === 'day' ? 'default' : 'outline'}
@@ -943,7 +953,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             onClick={() => setView('day')}
           >
             <CalendarDays className="h-4 w-4 mr-1" />
-            Day
+            {t('calendar.day')}
           </Button>
           <Button
             variant={view === 'agenda' ? 'default' : 'outline'}
@@ -951,7 +961,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
             onClick={() => setView('agenda')}
           >
             <List className="h-4 w-4 mr-1" />
-            Agenda
+            {t('calendar.agenda')}
           </Button>
         </div>
       </div>
@@ -959,7 +969,7 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
       {/* Editable hint */}
       {editable && (view === 'week' || view === 'day') && (
         <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
-          💡 Click and drag on time slots to create events. Drag events to move them, or drag the edges to resize.
+          💡 {t('calendar.editableHint')}
         </div>
       )}
 

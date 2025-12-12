@@ -309,6 +309,7 @@ const ActiveFilterButton: React.FC<ActiveFilterButtonProps> = ({
   searchButtonLabel,
   cancelButtonLabel,
 }) => {
+  const { t } = useTranslation();
   const Icon = filter.config.icon;
   const popoverRef = useRef < HTMLDivElement > (null);
 
@@ -320,7 +321,7 @@ const ActiveFilterButton: React.FC<ActiveFilterButtonProps> = ({
         const option = filter.config.options?.find(o => String(o.value) === String(filter.value));
         return option?.label || filter.value;
       case 'multiselect':
-        return `${filter.value.length} selected`;
+        return t('dynamicFilter.selected', { count: filter.value.length });
       case 'range':
         return `${filter.value[0]} - ${filter.value[1]}`;
       case 'date':
@@ -330,11 +331,11 @@ const ActiveFilterButton: React.FC<ActiveFilterButtonProps> = ({
         const to = filter.value.to ? format(new Date(filter.value.to), 'PP') : '...';
         return `${from} - ${to}`;
       case 'boolean':
-        return filter.value ? 'Yes' : 'No';
+        return filter.value ? t('common.yes') : t('common.no');
       default:
         return String(filter.value);
     }
-  }, [filter]);
+  }, [filter, t]);
 
   const onInteractOutside = (e: any) => {
     if (popoverRef.current && !popoverRef.current.contains(e.target)) {

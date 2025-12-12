@@ -9,8 +9,12 @@ import { DynamicImage } from '@/modules/shared/components/DynamicImage';
 import { DynamicSubMenu } from '@/modules/shared/components/DynamicSubMenu';
 import { DynamicForm } from '@/modules/shared/components/DynamicForm';
 import { MapSearch } from '@/modules/shared/components/MapSearch';
+import { DynamicEventCalendar } from '@/modules/shared/components/calendar/DynamicEventCalendar';
+import { BookingModal } from '@/modules/shared/components/calendar/BookingModal';
+import { DynamicImageCropper } from '@/modules/shared/components/DynamicImageCropper';
 import { Button } from '@/components/ui/button';
-import { Home, Settings, Users, FileText, Filter, ArrowRight } from 'lucide-react';
+import { Home, Settings, Users, FileText, Filter, ArrowRight, Calendar, ImageIcon, Ticket } from 'lucide-react';
+import { CalendarEvent, CalendarBooking } from '@/modules/shared/components/calendar/types/calendar.types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import type { Property } from '@/types/property.types';
@@ -20,6 +24,80 @@ export const ComponentsDemo = () => {
   const [inputValue, setInputValue] = useState('');
   const [dropdownValue, setDropdownValue] = useState('');
   const [multiSelectValues, setMultiSelectValues] = useState<(string | number)[]>([]);
+  
+  // Booking Modal state
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedEventForBooking, setSelectedEventForBooking] = useState<CalendarEvent | null>(null);
+  
+  // Image Cropper state
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+
+  // Sample calendar events
+  const sampleEvents: CalendarEvent[] = [
+    {
+      id: '1',
+      title: 'Team Meeting',
+      description: 'Weekly team sync',
+      startDate: new Date(new Date().setHours(10, 0, 0, 0)),
+      endDate: new Date(new Date().setHours(11, 0, 0, 0)),
+      category: 'Work',
+      color: 'hsl(var(--primary))',
+      location: 'Conference Room A',
+      price: 0,
+      currency: '$',
+    },
+    {
+      id: '2',
+      title: 'Project Review',
+      description: 'Quarterly project review',
+      startDate: new Date(new Date().setHours(14, 0, 0, 0)),
+      endDate: new Date(new Date().setHours(15, 30, 0, 0)),
+      category: 'Meeting',
+      color: 'hsl(220, 70%, 50%)',
+      location: 'Main Office',
+      price: 50,
+      currency: '$',
+      capacity: 20,
+      bookedCount: 5,
+    },
+    {
+      id: '3',
+      title: 'Workshop',
+      description: 'Design thinking workshop',
+      startDate: new Date(new Date().getTime() + 86400000), // Tomorrow
+      endDate: new Date(new Date().getTime() + 86400000 + 7200000),
+      category: 'Training',
+      color: 'hsl(150, 60%, 45%)',
+      location: 'Training Center',
+      price: 100,
+      currency: '$',
+      capacity: 15,
+      bookedCount: 10,
+    },
+  ];
+
+  const handleBookEvent = async (event: CalendarEvent, quantity: number, notes?: string): Promise<CalendarBooking> => {
+    // Simulate booking
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const booking: CalendarBooking = {
+      id: `booking-${Date.now()}`,
+      eventId: event.id,
+      userId: 'user-1',
+      bookingDate: new Date(),
+      status: 'confirmed',
+      quantity,
+      totalPrice: (event.price || 0) * quantity,
+      notes,
+    };
+    toast.success(`Booked ${quantity} ticket(s) for ${event.title}`);
+    return booking;
+  };
+
+  const handleCropComplete = (croppedUrl: string) => {
+    setCroppedImage(croppedUrl);
+    toast.success('Image cropped successfully!');
+  };
 
   const sampleProperties: Property[] = [
     {
@@ -347,6 +425,98 @@ export const ComponentsDemo = () => {
             onPropertySelect={(property) => toast.info(`Selected: ${property.title}`)}
           />
         </div>
+      </section>
+
+      {/* Event Calendar Section */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <Calendar className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-xl font-heading font-semibold">{t('demo.sections.calendar', 'Event Calendar')}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('demo.calendarDescription', 'Full-featured event calendar with booking, filtering, and drag-drop support.')}
+        </p>
+        <div className="border border-border rounded-lg overflow-hidden">
+          <DynamicEventCalendar
+            events={sampleEvents}
+            initialView="week"
+            showFilters={true}
+            showBookingPanel={true}
+            onEventClick={(event) => {
+              setSelectedEventForBooking(event);
+              setBookingModalOpen(true);
+            }}
+            onDateClick={(date) => toast.info(`Clicked: ${date.toLocaleDateString()}`)}
+          />
+        </div>
+      </section>
+
+      {/* Booking Modal Section */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <Ticket className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-xl font-heading font-semibold">{t('demo.sections.booking', 'Booking Modal')}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('demo.bookingDescription', 'Event booking modal with quantity selection, notes, and price calculation.')}
+        </p>
+        <div className="flex gap-4">
+          <Button
+            onClick={() => {
+              setSelectedEventForBooking(sampleEvents[1]); // Use the paid event
+              setBookingModalOpen(true);
+            }}
+          >
+            <Ticket className="h-4 w-4 mr-2" />
+            {t('demo.openBookingModal', 'Open Booking Modal')}
+          </Button>
+        </div>
+        <BookingModal
+          event={selectedEventForBooking}
+          open={bookingModalOpen}
+          onOpenChange={setBookingModalOpen}
+          onBook={handleBookEvent}
+        />
+      </section>
+
+      {/* Image Cropper Section */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <ImageIcon className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-xl font-heading font-semibold">{t('demo.sections.imageCropper', 'Image Cropper')}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('demo.imageCropperDescription', 'Interactive image cropper with rotation, zoom, and flip controls.')}
+        </p>
+        <div className="flex flex-col gap-4">
+          <Button onClick={() => setCropperOpen(true)}>
+            <ImageIcon className="h-4 w-4 mr-2" />
+            {t('demo.openImageCropper', 'Open Image Cropper')}
+          </Button>
+          {croppedImage && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">{t('demo.croppedResult', 'Cropped Result:')}</p>
+              <img
+                src={croppedImage}
+                alt="Cropped result"
+                className="max-w-xs rounded-lg border border-border"
+              />
+            </div>
+          )}
+        </div>
+        <DynamicImageCropper
+          imageSrc="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800"
+          open={cropperOpen}
+          onOpenChange={setCropperOpen}
+          onCropComplete={handleCropComplete}
+          aspectRatio={16 / 9}
+        />
       </section>
     </div>
   );

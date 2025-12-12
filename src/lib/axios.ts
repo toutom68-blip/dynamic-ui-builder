@@ -38,7 +38,7 @@ api.interceptors.request.use(
     if (!config.headers['x-no-loading']) {
       loadingCallbacks?.start();
     }
-    
+
     // Add JWT to Authorization header if available and valid
     const token = getStoredJWT();
     if (token) {
@@ -50,7 +50,7 @@ api.interceptors.request.use(
         onJWTExpired?.();
       }
     }
-    
+
     return config;
   },
   (error) => {
@@ -71,7 +71,7 @@ api.interceptors.response.use(
   (error) => {
     // Stop loading on error
     loadingCallbacks?.stop();
-    
+
     // Handle common errors
     if (error.response?.status === 401) {
       // Unauthorized - could redirect to login

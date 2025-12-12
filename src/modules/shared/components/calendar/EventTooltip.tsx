@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CalendarEvent } from './types/calendar.types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
   onShare,
   onReminder,
 }) => {
+  const { t } = useTranslation();
   const availableSpots = event.capacity ? event.capacity - (event.bookedCount || 0) : null;
   const isSoldOut = availableSpots !== null && availableSpots <= 0;
 
@@ -46,7 +48,6 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
           className="w-80 p-0 bg-popover border-border shadow-xl"
           sideOffset={8}
         >
-          {/* Header with image */}
           {event.imageUrl && (
             <div className="relative h-24 overflow-hidden rounded-t-md">
               <img
@@ -67,24 +68,21 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
           )}
 
           <div className="p-4 space-y-3">
-            {/* Title */}
             <div>
               <h4 className="font-semibold text-foreground line-clamp-2">
                 {event.title}
               </h4>
               {event.organizer && (
-                <p className="text-xs text-muted-foreground">by {event.organizer}</p>
+                <p className="text-xs text-muted-foreground">{t('eventTooltip.by')} {event.organizer}</p>
               )}
             </div>
 
-            {/* Description */}
             {event.description && (
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {event.description}
               </p>
             )}
 
-            {/* Details */}
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
@@ -104,7 +102,7 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-primary">
-                    {event.price === 0 ? 'Free' : `${event.currency || '$'}${event.price.toFixed(2)}`}
+                    {event.price === 0 ? t('booking.free') : `${event.currency || '$'}${event.price.toFixed(2)}`}
                   </span>
                 </div>
               )}
@@ -114,16 +112,15 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
                   <Users className="h-4 w-4" />
                   <span>
                     {isSoldOut ? (
-                      <Badge variant="destructive" className="text-xs">Sold Out</Badge>
+                      <Badge variant="destructive" className="text-xs">{t('eventTooltip.soldOut')}</Badge>
                     ) : (
-                      `${availableSpots} spots left`
+                      t('eventTooltip.spotsLeft', { count: availableSpots })
                     )}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Tags */}
             {event.tags && event.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {event.tags.slice(0, 3).map((tag) => (
@@ -139,7 +136,6 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-2 pt-2 border-t border-border">
               {onBook && !isSoldOut && (
                 <Button
@@ -151,7 +147,7 @@ export const EventTooltip: React.FC<EventTooltipProps> = ({
                   }}
                 >
                   <Calendar className="h-4 w-4 mr-1" />
-                  Book Now
+                  {t('eventTooltip.bookNow')}
                 </Button>
               )}
               {onReminder && (

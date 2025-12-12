@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CalendarFilterConfig } from './types/calendar.types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
   tags = [],
   maxPrice = 1000,
 }) => {
+  const { t } = useTranslation();
   const activeFiltersCount = [
     filters.searchQuery,
     filters.categories?.length,
@@ -110,7 +112,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search events..."
+            placeholder={t('calendar.filters.search')}
             value={filters.searchQuery || ''}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
@@ -123,7 +125,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2">
                 <Filter className="h-4 w-4" />
-                Category
+                {t('calendar.filters.category')}
                 {filters.categories?.length ? (
                   <Badge variant="secondary" className="ml-1">
                     {filters.categories.length}
@@ -157,7 +159,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
           <PopoverTrigger asChild>
             <Button variant="outline" className="gap-2">
               <DollarSign className="h-4 w-4" />
-              Price
+              {t('calendar.filters.price')}
               {filters.priceRange && (
                 <Badge variant="secondary" className="ml-1">
                   ${filters.priceRange.min}-${filters.priceRange.max}
@@ -188,7 +190,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
                   className="flex-1"
                   onClick={() => onFilterChange({ ...filters, priceRange: undefined })}
                 >
-                  Clear
+                  {t('calendar.filters.clear')}
                 </Button>
               </div>
             </div>
@@ -200,7 +202,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
           <PopoverTrigger asChild>
             <Button variant="outline" className="gap-2">
               <CalendarIcon className="h-4 w-4" />
-              Date
+              {t('calendar.filters.date')}
               {filters.dateRange && (
                 <Badge variant="secondary" className="ml-1">
                   {format(filters.dateRange.start, 'MMM d')} - {format(filters.dateRange.end, 'MMM d')}
@@ -229,7 +231,7 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
         {activeFiltersCount > 0 && (
           <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
             <X className="h-4 w-4" />
-            Clear ({activeFiltersCount})
+            {t('calendar.filters.clearAll', { count: activeFiltersCount })}
           </Button>
         )}
       </div>
