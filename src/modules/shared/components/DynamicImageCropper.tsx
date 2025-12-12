@@ -1,14 +1,19 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { Canvas as FabricCanvas, PencilBrush, FabricText, FabricImage } from 'fabric';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { RotateCw, RotateCcw, ZoomIn, FlipHorizontal, FlipVertical, RectangleHorizontal, RectangleVertical, Square, Type, Bold, Palette } from 'lucide-react';
+import { 
+  RotateCw, RotateCcw, ZoomIn, FlipHorizontal, FlipVertical, 
+  RectangleHorizontal, RectangleVertical, Square, Type, Bold, Palette,
+  Pen, Pencil, Eraser, Move, Trash2
+} from 'lucide-react';
 import { BaseComponentProps } from '@/types/component.types';
 
 interface TextOverlay {
@@ -20,6 +25,8 @@ interface TextOverlay {
   fontWeight: 'normal' | 'bold';
 }
 
+type DrawingTool = 'select' | 'pen' | 'pencil' | 'eraser';
+
 export interface ImageCropperProps extends BaseComponentProps {
   imageSrc: string;
   open: boolean;
@@ -28,6 +35,7 @@ export interface ImageCropperProps extends BaseComponentProps {
   aspectRatio?: number;
   circularCrop?: boolean;
   enableTextOverlay?: boolean;
+  enableDrawing?: boolean;
 }
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
@@ -57,6 +65,11 @@ const TEXT_COLORS = [
   '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080'
 ];
 
+const BRUSH_COLORS = [
+  '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
+  '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080'
+];
+
 export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   imageSrc,
   open,
@@ -65,10 +78,13 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   aspectRatio: initialAspectRatio,
   circularCrop = false,
   enableTextOverlay = true,
+  enableDrawing = true,
   ...baseProps
 }) => {
   const { t } = useTranslation();
   const imgRef = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fabricCanvasRef = useRef<FabricCanvas | null>(null);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [rotation, setRotation] = useState(0);
@@ -82,6 +98,81 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
   const [textFontSize, setTextFontSize] = useState(24);
   const [textFontWeight, setTextFontWeight] = useState<'normal' | 'bold'>('normal');
   const [activeTab, setActiveTab] = useState('crop');
+  const [activeTool, setActiveTool] = useState<DrawingTool>('pen');
+  const [brushColor, setBrushColor] = useState('#000000');
+  const [brushSize, setBrushSize] = useState(3);
+  const [drawingCanvasReady, setDrawingCanvasReady] = useState(false);
+  const [draggingTextIndex, setDraggingTextIndex] = useState<number | null>(null);
+
+  // Initialize Fabric canvas when switching to draw tab
+  useEffect(() => {
+    if (activeTab === 'draw' && canvasRef.current && !fabricCanvasRef.current) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const maxWidth = 600;
+        const maxHeight = 400;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = (maxHeight / height) * width;
+          height = maxHeight;
+        }
+
+        const canvas = new FabricCanvas(canvasRef.current!, {
+          width,
+          height,
+          isDrawingMode: true,
+        });
+
+        canvas.freeDrawingBrush = new PencilBrush(canvas);
+        canvas.freeDrawingBrush.color = brushColor;
+        canvas.freeDrawingBrush.width = brushSize;
+
+        FabricImage.fromURL(imageSrc, { crossOrigin: 'anonymous' }).then((fabricImg) => {
+          fabricImg.scaleToWidth(width);
+          fabricImg.scaleToHeight(height);
+          fabricImg.set({
+            left: 0,
+            top: 0,
+            selectable: false,
+            evented: false,
+          });
+          canvas.insertAt(0, fabricImg);
+          canvas.renderAll();
+        });
+
+        fabricCanvasRef.current = canvas;
+        setDrawingCanvasReady(true);
+      };
+      img.src = imageSrc;
+    }
+
+    return () => {
+      if (activeTab !== 'draw' && fabricCanvasRef.current) {
+        // Don't dispose when just switching tabs - keep canvas state
+      }
+    };
+  }, [activeTab, imageSrc]);
+
+  // Update brush settings
+  useEffect(() => {
+    if (fabricCanvasRef.current && fabricCanvasRef.current.freeDrawingBrush) {
+      if (activeTool === 'eraser') {
+        fabricCanvasRef.current.freeDrawingBrush.color = '#FFFFFF';
+        fabricCanvasRef.current.freeDrawingBrush.width = brushSize * 3;
+      } else {
+        fabricCanvasRef.current.freeDrawingBrush.color = brushColor;
+        fabricCanvasRef.current.freeDrawingBrush.width = activeTool === 'pencil' ? brushSize * 0.5 : brushSize;
+      }
+      fabricCanvasRef.current.isDrawingMode = activeTool !== 'select';
+    }
+  }, [activeTool, brushColor, brushSize]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -116,6 +207,61 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
   const removeTextOverlay = (index: number) => {
     setTextOverlays(textOverlays.filter((_, i) => i !== index));
+  };
+
+  const handleTextDragStart = (index: number) => {
+    setDraggingTextIndex(index);
+  };
+
+  const handleTextDrag = (e: React.MouseEvent, containerRect: DOMRect) => {
+    if (draggingTextIndex === null) return;
+    
+    const x = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+    const y = ((e.clientY - containerRect.top) / containerRect.height) * 100;
+    
+    setTextOverlays(prev => prev.map((overlay, i) => 
+      i === draggingTextIndex 
+        ? { ...overlay, x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) }
+        : overlay
+    ));
+  };
+
+  const handleTextDragEnd = () => {
+    setDraggingTextIndex(null);
+  };
+
+  const clearDrawing = () => {
+    if (fabricCanvasRef.current) {
+      const objects = fabricCanvasRef.current.getObjects();
+      objects.forEach((obj, index) => {
+        if (index > 0) { // Keep background image
+          fabricCanvasRef.current?.remove(obj);
+        }
+      });
+      fabricCanvasRef.current.renderAll();
+    }
+  };
+
+  const addTextToCanvas = () => {
+    if (!fabricCanvasRef.current || !currentText.trim()) return;
+    
+    const text = new FabricText(currentText, {
+      left: 100,
+      top: 100,
+      fontSize: textFontSize,
+      fill: textColor,
+      fontWeight: textFontWeight === 'bold' ? 'bold' : 'normal',
+    });
+    
+    fabricCanvasRef.current.add(text);
+    fabricCanvasRef.current.setActiveObject(text);
+    fabricCanvasRef.current.renderAll();
+    setCurrentText('');
+  };
+
+  const getDrawingDataURL = async (): Promise<string | null> => {
+    if (!fabricCanvasRef.current) return null;
+    return fabricCanvasRef.current.toDataURL({ multiplier: 1, format: 'png', quality: 1 });
   };
 
   const getCroppedImg = useCallback(async (): Promise<string> => {
@@ -201,12 +347,20 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
   const handleSave = async () => {
     try {
-      const croppedUrl = await getCroppedImg();
-      onCropComplete(croppedUrl);
+      let resultUrl: string;
+      
+      if (activeTab === 'draw' && fabricCanvasRef.current) {
+        // If on draw tab, export the canvas
+        resultUrl = await getDrawingDataURL() || imageSrc;
+      } else {
+        resultUrl = await getCroppedImg();
+      }
+      
+      onCropComplete(resultUrl);
       onOpenChange(false);
       resetState();
     } catch (error) {
-      console.error('Error cropping image:', error);
+      console.error('Error processing image:', error);
     }
   };
 
@@ -226,6 +380,14 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
     setTextOverlays([]);
     setCurrentText('');
     setActiveTab('crop');
+    setActiveTool('pen');
+    setBrushColor('#000000');
+    setBrushSize(3);
+    setDrawingCanvasReady(false);
+    if (fabricCanvasRef.current) {
+      fabricCanvasRef.current.dispose();
+      fabricCanvasRef.current = null;
+    }
   };
 
   const rotateLeft = () => setRotation((r) => (r - 90) % 360);
@@ -235,6 +397,8 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
 
   if (baseProps.hidden) return null;
 
+  const tabCount = 1 + (enableTextOverlay ? 1 : 0) + (enableDrawing ? 1 : 0);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
@@ -243,10 +407,13 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full grid-cols-${tabCount}`}>
             <TabsTrigger value="crop">{t('imageCropper.cropTab')}</TabsTrigger>
             {enableTextOverlay && (
               <TabsTrigger value="text">{t('imageCropper.textTab')}</TabsTrigger>
+            )}
+            {enableDrawing && (
+              <TabsTrigger value="draw">{t('imageCropper.drawTab', 'Draw')}</TabsTrigger>
             )}
           </TabsList>
 
@@ -466,9 +633,19 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                 </div>
               )}
 
-              {/* Preview with text */}
+              {/* Preview with draggable text */}
               <div className="flex justify-center bg-muted/50 rounded-lg p-4 overflow-hidden">
-                <div className="relative">
+                <div 
+                  className="relative select-none"
+                  onMouseMove={(e) => {
+                    if (draggingTextIndex !== null) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      handleTextDrag(e, rect);
+                    }
+                  }}
+                  onMouseUp={handleTextDragEnd}
+                  onMouseLeave={handleTextDragEnd}
+                >
                   <img
                     src={imageSrc}
                     alt="Preview"
@@ -476,11 +653,12 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                       maxHeight: '30vh',
                       maxWidth: '100%',
                     }}
+                    draggable={false}
                   />
                   {textOverlays.map((overlay, index) => (
                     <div
                       key={index}
-                      className="absolute cursor-move"
+                      className="absolute cursor-move select-none"
                       style={{
                         left: `${overlay.x}%`,
                         top: `${overlay.y}%`,
@@ -492,12 +670,143 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
                           ? '1px 1px 2px #FFFFFF' 
                           : '1px 1px 2px #000000',
                       }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleTextDragStart(index);
+                      }}
                     >
+                      <Move className="h-3 w-3 absolute -top-4 left-1/2 -translate-x-1/2 opacity-50" />
                       {overlay.text}
                     </div>
                   ))}
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {t('imageCropper.dragTextHint', 'Drag text to reposition')}
+              </p>
+            </TabsContent>
+          )}
+
+          {enableDrawing && (
+            <TabsContent value="draw" className="space-y-4">
+              {/* Drawing Tools */}
+              <div className="space-y-2">
+                <Label>{t('imageCropper.drawingTools', 'Drawing Tools')}</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={activeTool === 'select' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTool('select')}
+                    className="gap-2"
+                  >
+                    <Move className="h-4 w-4" />
+                    {t('imageCropper.select', 'Select')}
+                  </Button>
+                  <Button
+                    variant={activeTool === 'pen' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTool('pen')}
+                    className="gap-2"
+                  >
+                    <Pen className="h-4 w-4" />
+                    {t('imageCropper.pen', 'Pen')}
+                  </Button>
+                  <Button
+                    variant={activeTool === 'pencil' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTool('pencil')}
+                    className="gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    {t('imageCropper.pencil', 'Pencil')}
+                  </Button>
+                  <Button
+                    variant={activeTool === 'eraser' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTool('eraser')}
+                    className="gap-2"
+                  >
+                    <Eraser className="h-4 w-4" />
+                    {t('imageCropper.eraser', 'Eraser')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearDrawing}
+                    className="gap-2 ml-auto"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {t('imageCropper.clearDrawing', 'Clear')}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Brush Color */}
+              {activeTool !== 'eraser' && activeTool !== 'select' && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    {t('imageCropper.brushColor', 'Brush Color')}
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {BRUSH_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setBrushColor(color)}
+                        className={`w-8 h-8 rounded-full border-2 transition-transform ${
+                          brushColor === color ? 'scale-110 border-primary' : 'border-border'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Brush Size */}
+              {activeTool !== 'select' && (
+                <div className="space-y-2">
+                  <Label>
+                    {t('imageCropper.brushSize', 'Brush Size')}: {brushSize}px
+                  </Label>
+                  <Slider
+                    value={[brushSize]}
+                    onValueChange={([val]) => setBrushSize(val)}
+                    min={1}
+                    max={20}
+                    step={1}
+                  />
+                </div>
+              )}
+
+              {/* Add Text to Canvas */}
+              <div className="space-y-2">
+                <Label>{t('imageCropper.addTextToDrawing', 'Add Text')}</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={currentText}
+                    onChange={(e) => setCurrentText(e.target.value)}
+                    placeholder={t('imageCropper.enterText')}
+                    className="flex-1"
+                  />
+                  <Button onClick={addTextToCanvas} disabled={!currentText.trim()}>
+                    <Type className="h-4 w-4 mr-2" />
+                    {t('imageCropper.addText')}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Drawing Canvas */}
+              <div className="flex justify-center bg-muted/50 rounded-lg p-4 overflow-hidden">
+                <canvas 
+                  ref={canvasRef}
+                  className="border border-border rounded shadow-sm"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {t('imageCropper.drawingHint', 'Draw on the image using the tools above. Text can be moved after adding.')}
+              </p>
             </TabsContent>
           )}
         </Tabs>
