@@ -139,8 +139,10 @@ export const DynamicImageCropper: React.FC<ImageCropperProps> = ({
         const canvas = new FabricCanvas(canvasRef.current!, {
           width,
           height,
-          isDrawingMode: true,
         });
+
+        // Explicitly enable drawing mode
+        canvas.isDrawingMode = true;
 
         // Create and set up the brush properly
         const brush = new PencilBrush(canvas);
