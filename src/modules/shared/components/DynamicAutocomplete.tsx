@@ -3,7 +3,8 @@ import { buildComponentStyles } from '@/utils/styleBuilder';
 import { Input } from '@/components/ui/input';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Check, Loader2, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Check, Loader2, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AutocompleteProps, AutocompleteOption } from '@/types/component.types';
 
@@ -22,6 +23,7 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   displayProperty = 'label',
   valueProperty = 'value',
   iconProperty,
+  groupProperty,
   
   // Item visibility
   disabledProperties = [],
@@ -38,12 +40,15 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   maxResults = 10,
   clearable = true,
   freeSolo = false,
+  multiSelect = false,
+  maxSelections,
   
   // Callbacks
   onChange,
   onSelect,
   onClear,
   onApiError,
+  onRemove,
   
   // Styling
   ...baseProps
@@ -51,6 +56,7 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [selectedOption, setSelectedOption] = useState<AutocompleteOption | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<AutocompleteOption[]>([]);
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([]);
   const [apiOptions, setApiOptions] = useState<AutocompleteOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,6 +67,11 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   
   const { style, className } = buildComponentStyles(baseProps, 'transition-base');
 
+  // Get nested value from object using dot notation
+  const getNestedValue = useCallback((obj: any, path: string): any => {
+    return path.split('.').reduce((current, key) => current?.[key], obj);
+  }, []);
+
   // Normalize options to standard format
   const normalizeOption = useCallback((item: any): AutocompleteOption => {
     if (typeof item === 'string') {
@@ -68,8 +79,9 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     }
     
     const label = displayProperty ? getNestedValue(item, displayProperty) : item.label || String(item);
-    const value = valueProperty ? getNestedValue(item, valueProperty) : item.value || item;
+    const optValue = valueProperty ? getNestedValue(item, valueProperty) : item.value || item;
     const icon = iconProperty ? getNestedValue(item, iconProperty) : item.icon;
+    const group = groupProperty ? getNestedValue(item, groupProperty) : item.group;
     
     // Check if item should be disabled or hidden
     const isDisabled = disabledProperties.some(prop => {
@@ -84,18 +96,14 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     
     return {
       label: String(label),
-      value,
+      value: optValue,
       icon,
+      group,
       disabled: isDisabled,
       hidden: isHidden,
       originalData: item
     };
-  }, [displayProperty, valueProperty, iconProperty, disabledProperties, hiddenProperties]);
-
-  // Get nested value from object using dot notation
-  const getNestedValue = (obj: any, path: string): any => {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
-  };
+  }, [displayProperty, valueProperty, iconProperty, groupProperty, disabledProperties, hiddenProperties, getNestedValue]);
 
   // Filter options based on search
   const filterLocalOptions = useCallback((searchTerm: string): AutocompleteOption[] => {
@@ -111,6 +119,11 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
       .filter(option => {
         if (option.hidden) return false;
         
+        // In multi-select, filter out already selected options
+        if (multiSelect && selectedOptions.some(sel => sel.value === option.value)) {
+          return false;
+        }
+        
         // If searchProperties specified, search in those
         if (searchProperties.length > 0 && option.originalData) {
           return searchProperties.some(prop => {
@@ -123,7 +136,26 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
         return option.label.toLowerCase().includes(lowerSearch);
       })
       .slice(0, maxResults);
-  }, [options, apiOptions, apiEndpoint, searchProperties, minSearchLength, maxResults, normalizeOption]);
+  }, [options, apiOptions, apiEndpoint, searchProperties, minSearchLength, maxResults, normalizeOption, multiSelect, selectedOptions, getNestedValue]);
+
+  // Group options by their group property
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, AutocompleteOption[]> = {};
+    const ungrouped: AutocompleteOption[] = [];
+    
+    filteredOptions.forEach(option => {
+      if (option.group) {
+        if (!groups[option.group]) {
+          groups[option.group] = [];
+        }
+        groups[option.group].push(option);
+      } else {
+        ungrouped.push(option);
+      }
+    });
+    
+    return { groups, ungrouped };
+  }, [filteredOptions]);
 
   // Fetch from API
   const fetchFromApi = useCallback(async (searchTerm: string) => {
@@ -178,7 +210,7 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [apiEndpoint, apiMethod, apiHeaders, apiQueryParam, apiResponsePath, minSearchLength, onApiError]);
+  }, [apiEndpoint, apiMethod, apiHeaders, apiQueryParam, apiResponsePath, minSearchLength, onApiError, getNestedValue]);
 
   // Debounced API search
   const debouncedApiSearch = useCallback((searchTerm: string) => {
@@ -197,22 +229,30 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     setFilteredOptions(filtered);
   }, [inputValue, filterLocalOptions]);
 
-  // Initialize selected option from value prop
+  // Initialize selected option(s) from value prop
   useEffect(() => {
     if (value !== undefined && value !== null) {
       const sourceOptions = apiEndpoint ? apiOptions : options;
-      const found = sourceOptions
-        .map(normalizeOption)
-        .find(opt => opt.value === value);
       
-      if (found) {
-        setSelectedOption(found);
-        setInputValue(found.label);
-      } else if (typeof value === 'string') {
-        setInputValue(value);
+      if (multiSelect && Array.isArray(value)) {
+        const foundOptions = value
+          .map(v => sourceOptions.map(normalizeOption).find(opt => opt.value === v))
+          .filter((opt): opt is AutocompleteOption => opt !== undefined);
+        setSelectedOptions(foundOptions);
+      } else if (!multiSelect) {
+        const found = sourceOptions
+          .map(normalizeOption)
+          .find(opt => opt.value === value);
+        
+        if (found) {
+          setSelectedOption(found);
+          setInputValue(found.label);
+        } else if (typeof value === 'string') {
+          setInputValue(value);
+        }
       }
     }
-  }, [value, options, apiOptions, apiEndpoint, normalizeOption]);
+  }, [value, options, apiOptions, apiEndpoint, normalizeOption, multiSelect]);
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,7 +265,7 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     }
     
     // For freeSolo mode, also call onChange with input value
-    if (freeSolo && onChange) {
+    if (freeSolo && onChange && !multiSelect) {
       onChange(newValue);
     }
   };
@@ -234,39 +274,232 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   const handleSelect = (option: AutocompleteOption) => {
     if (option.disabled) return;
     
-    setSelectedOption(option);
-    setInputValue(option.label);
-    setOpen(false);
+    if (multiSelect) {
+      // Check max selections
+      if (maxSelections && selectedOptions.length >= maxSelections) {
+        return;
+      }
+      
+      const newSelected = [...selectedOptions, option];
+      setSelectedOptions(newSelected);
+      setInputValue('');
+      
+      // Call onChange with array of values
+      onChange?.(newSelected.map(opt => opt.value));
+      onSelect?.(option);
+    } else {
+      setSelectedOption(option);
+      setInputValue(option.label);
+      setOpen(false);
+      
+      // Call onChange with value
+      onChange?.(option.value);
+      onSelect?.(option);
+    }
+  };
+
+  // Handle remove selected option (multi-select)
+  const handleRemoveOption = (optionToRemove: AutocompleteOption, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     
-    // Call onChange with value
-    onChange?.(option.value);
+    const newSelected = selectedOptions.filter(opt => opt.value !== optionToRemove.value);
+    setSelectedOptions(newSelected);
     
-    // Call onSelect with full option data
-    onSelect?.(option);
+    onChange?.(newSelected.map(opt => opt.value));
+    onRemove?.(optionToRemove);
   };
 
   // Handle clear
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     setInputValue('');
-    setSelectedOption(null);
+    
+    if (multiSelect) {
+      setSelectedOptions([]);
+      onChange?.([]);
+    } else {
+      setSelectedOption(null);
+      onChange?.(undefined);
+    }
+    
     setFilteredOptions([]);
-    onChange?.(undefined);
     onClear?.();
     inputRef.current?.focus();
   };
 
-  // Get output object
-  const getOutputObject = useMemo(() => ({
-    value: selectedOption?.value ?? (freeSolo ? inputValue : undefined),
-    label: selectedOption?.label ?? inputValue,
-    selectedOption,
-    inputValue,
-    originalData: selectedOption?.originalData
-  }), [selectedOption, inputValue, freeSolo]);
+  // Render option item
+  const renderOptionItem = (option: AutocompleteOption, index: number) => {
+    const isSelected = multiSelect 
+      ? selectedOptions.some(sel => sel.value === option.value)
+      : selectedOption?.value === option.value;
+    
+    return (
+      <CommandItem
+        key={`${option.value}-${index}`}
+        value={String(option.value)}
+        onSelect={() => handleSelect(option)}
+        disabled={option.disabled}
+        className={cn(
+          "cursor-pointer",
+          option.disabled && "opacity-50 cursor-not-allowed"
+        )}
+      >
+        <div className="flex items-center gap-2 w-full">
+          {option.icon && (
+            <span className="flex-shrink-0">
+              {typeof option.icon === 'string' ? (
+                <img 
+                  src={option.icon} 
+                  alt="" 
+                  className="h-4 w-4 object-contain" 
+                />
+              ) : (
+                option.icon
+              )}
+            </span>
+          )}
+          
+          <span className="flex-1 truncate">{option.label}</span>
+          
+          {isSelected && (
+            <Check className="h-4 w-4 flex-shrink-0 text-primary" />
+          )}
+        </div>
+      </CommandItem>
+    );
+  };
 
   if (baseProps.hidden) return null;
 
+  // Multi-select render
+  if (multiSelect) {
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <div 
+            className={cn(
+              "relative min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+              "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+              baseProps.disabled && "opacity-50 cursor-not-allowed",
+              className
+            )} 
+            style={style}
+          >
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {/* Selected badges */}
+              {selectedOptions.map((option, idx) => (
+                <Badge
+                  key={`selected-${option.value}-${idx}`}
+                  variant="secondary"
+                  className="gap-1 pr-1"
+                >
+                  {option.icon && (
+                    <span className="flex-shrink-0">
+                      {typeof option.icon === 'string' ? (
+                        <img src={option.icon} alt="" className="h-3 w-3 object-contain" />
+                      ) : (
+                        option.icon
+                      )}
+                    </span>
+                  )}
+                  <span className="truncate max-w-[150px]">{option.label}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleRemoveOption(option, e)}
+                    className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                    disabled={baseProps.disabled}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {/* Input field */}
+              <Input
+                ref={inputRef}
+                type="text"
+                name={name}
+                value={inputValue}
+                onChange={handleInputChange}
+                onFocus={() => setOpen(true)}
+                placeholder={selectedOptions.length === 0 ? placeholder : ''}
+                disabled={baseProps.disabled || (maxSelections !== undefined && selectedOptions.length >= maxSelections)}
+                className="flex-1 min-w-[80px] border-0 p-0 h-6 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              
+              {/* Loading / Clear / Chevron */}
+              <div className="flex items-center gap-1 ml-auto">
+                {loading && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                
+                {clearable && selectedOptions.length > 0 && !loading && (
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    disabled={baseProps.disabled}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+                
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+          </div>
+        </PopoverTrigger>
+        
+        <PopoverContent 
+          className="w-[var(--radix-popover-trigger-width)] p-0 bg-popover border border-border shadow-lg z-50" 
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <Command shouldFilter={false} className="bg-popover">
+            <CommandList className="max-h-[300px]">
+              {error && (
+                <div className="px-3 py-2 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+              
+              {!loading && filteredOptions.length === 0 && inputValue.length >= minSearchLength && (
+                <CommandEmpty>No results found.</CommandEmpty>
+              )}
+              
+              {inputValue.length < minSearchLength && !loading && (
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  Type at least {minSearchLength} character{minSearchLength > 1 ? 's' : ''} to search...
+                </div>
+              )}
+              
+              {maxSelections && selectedOptions.length >= maxSelections && (
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  Maximum {maxSelections} selection{maxSelections > 1 ? 's' : ''} reached.
+                </div>
+              )}
+              
+              {/* Render grouped options */}
+              {Object.entries(groupedOptions.groups).map(([groupName, groupOptions]) => (
+                <CommandGroup key={groupName} heading={groupName} className="bg-popover">
+                  {groupOptions.map((option, index) => renderOptionItem(option, index))}
+                </CommandGroup>
+              ))}
+              
+              {/* Render ungrouped options */}
+              {groupedOptions.ungrouped.length > 0 && (
+                <CommandGroup className="bg-popover">
+                  {groupedOptions.ungrouped.map((option, index) => renderOptionItem(option, index))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  // Single select render
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -307,12 +540,12 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
       </PopoverTrigger>
       
       <PopoverContent 
-        className="w-[var(--radix-popover-trigger-width)] p-0" 
+        className="w-[var(--radix-popover-trigger-width)] p-0 bg-popover border border-border shadow-lg z-50" 
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <Command shouldFilter={false}>
-          <CommandList>
+        <Command shouldFilter={false} className="bg-popover">
+          <CommandList className="max-h-[300px]">
             {error && (
               <div className="px-3 py-2 text-sm text-destructive">
                 {error}
@@ -329,42 +562,19 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
               </div>
             )}
             
-            <CommandGroup>
-              {filteredOptions.map((option, index) => (
-                <CommandItem
-                  key={`${option.value}-${index}`}
-                  value={String(option.value)}
-                  onSelect={() => handleSelect(option)}
-                  disabled={option.disabled}
-                  className={cn(
-                    "cursor-pointer",
-                    option.disabled && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    {option.icon && (
-                      <span className="flex-shrink-0">
-                        {typeof option.icon === 'string' ? (
-                          <img 
-                            src={option.icon} 
-                            alt="" 
-                            className="h-4 w-4 object-contain" 
-                          />
-                        ) : (
-                          option.icon
-                        )}
-                      </span>
-                    )}
-                    
-                    <span className="flex-1 truncate">{option.label}</span>
-                    
-                    {selectedOption?.value === option.value && (
-                      <Check className="h-4 w-4 flex-shrink-0 text-primary" />
-                    )}
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {/* Render grouped options */}
+            {Object.entries(groupedOptions.groups).map(([groupName, groupOptions]) => (
+              <CommandGroup key={groupName} heading={groupName} className="bg-popover">
+                {groupOptions.map((option, index) => renderOptionItem(option, index))}
+              </CommandGroup>
+            ))}
+            
+            {/* Render ungrouped options */}
+            {groupedOptions.ungrouped.length > 0 && (
+              <CommandGroup className="bg-popover">
+                {groupedOptions.ungrouped.map((option, index) => renderOptionItem(option, index))}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

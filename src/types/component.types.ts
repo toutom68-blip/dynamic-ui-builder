@@ -258,6 +258,7 @@ export interface AutocompleteOption {
   icon?: React.ReactNode | string;
   disabled?: boolean;
   hidden?: boolean;
+  group?: string;
   originalData?: any;
 }
 
@@ -278,13 +279,14 @@ export interface AutocompleteProps extends BaseComponentProps {
   displayProperty?: string; // Property path for display label
   valueProperty?: string; // Property path for value
   iconProperty?: string; // Property path for icon (string URL or React node)
+  groupProperty?: string; // Property path for grouping options
   
   // Item visibility control
   disabledProperties?: string[]; // Array of property paths - if any is truthy, item is disabled
   hiddenProperties?: string[]; // Array of property paths - if any is truthy, item is hidden
   
   // Component state
-  value?: string | number;
+  value?: string | number | (string | number)[];
   placeholder?: string;
   name?: string;
   required?: boolean;
@@ -294,17 +296,21 @@ export interface AutocompleteProps extends BaseComponentProps {
   maxResults?: number;
   clearable?: boolean;
   freeSolo?: boolean; // Allow arbitrary input not in options
+  multiSelect?: boolean; // Allow multiple selections
+  maxSelections?: number; // Maximum number of selections in multi-select mode
   
   // Callbacks
   onSelect?: (option: AutocompleteOption) => void;
   onClear?: () => void;
   onApiError?: (error: Error) => void;
+  onRemove?: (option: AutocompleteOption) => void; // Called when item removed in multi-select
 }
 
 export interface AutocompleteOutputObject {
-  value: string | number | undefined;
+  value: string | number | (string | number)[] | undefined;
   label: string;
   selectedOption: AutocompleteOption | null;
+  selectedOptions: AutocompleteOption[];
   inputValue: string;
   originalData: any;
 }
