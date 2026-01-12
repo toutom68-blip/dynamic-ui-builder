@@ -299,12 +299,111 @@ export const ComponentsDemo = () => {
           <h3 className="text-xl font-heading font-semibold">{t('demo.sections.autocomplete', 'Autocomplete')}</h3>
         </div>
         <p className="text-sm text-muted-foreground">
-          {t('demo.autocompleteDescription', 'Searchable autocomplete from static array or API, with icons, disabled/hidden items.')}
+          {t('demo.autocompleteDescription', 'Searchable autocomplete with grouping, multi-select, API support, icons, and disabled/hidden items.')}
         </p>
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Static Options Autocomplete */}
+          {/* Grouped Options Autocomplete */}
           <div className="space-y-2">
-            <p className="text-sm font-medium">{t('demo.staticAutocomplete', 'Static Options (with icons)')}</p>
+            <p className="text-sm font-medium">{t('demo.groupedAutocomplete', 'Grouped Options')}</p>
+            <DynamicAutocomplete
+              options={[
+                { id: 1, name: 'John Doe', department: 'Engineering', role: 'Developer', icon: <Users className="h-4 w-4" /> },
+                { id: 2, name: 'Jane Smith', department: 'Engineering', role: 'Lead', icon: <Users className="h-4 w-4" /> },
+                { id: 3, name: 'Bob Johnson', department: 'Design', role: 'Designer', icon: <Settings className="h-4 w-4" /> },
+                { id: 4, name: 'Alice Williams', department: 'Design', role: 'Lead', icon: <Home className="h-4 w-4" /> },
+                { id: 5, name: 'Charlie Brown', department: 'Marketing', role: 'Manager', icon: <FileText className="h-4 w-4" /> },
+                { id: 6, name: 'Diana Ross', department: 'Marketing', role: 'Analyst' },
+              ]}
+              searchProperties={['name', 'department', 'role']}
+              displayProperty="name"
+              valueProperty="id"
+              iconProperty="icon"
+              groupProperty="department"
+              placeholder="Search by name, department, or role..."
+              onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label} (ID: ${option.value})`)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Options grouped by department
+            </p>
+          </div>
+
+          {/* Multi-Select Autocomplete */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.multiSelectAutocomplete', 'Multi-Select with Chips')}</p>
+            <DynamicAutocomplete
+              options={[
+                { label: 'React', value: 'react', group: 'Frontend' },
+                { label: 'Vue', value: 'vue', group: 'Frontend' },
+                { label: 'Angular', value: 'angular', group: 'Frontend' },
+                { label: 'Node.js', value: 'nodejs', group: 'Backend' },
+                { label: 'Python', value: 'python', group: 'Backend' },
+                { label: 'Go', value: 'go', group: 'Backend' },
+                { label: 'PostgreSQL', value: 'postgres', group: 'Database' },
+                { label: 'MongoDB', value: 'mongodb', group: 'Database' },
+              ]}
+              groupProperty="group"
+              placeholder="Select technologies..."
+              multiSelect
+              maxSelections={5}
+              onChange={(values) => console.log('Selected values:', values)}
+              onSelect={(option: AutocompleteOption) => toast.info(`Added: ${option.label}`)}
+              onRemove={(option: AutocompleteOption) => toast.info(`Removed: ${option.label}`)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Select multiple items (max 5), grouped by category
+            </p>
+          </div>
+
+          {/* API Autocomplete */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.apiAutocomplete', 'API-based (Countries)')}</p>
+            <DynamicAutocomplete
+              apiEndpoint="https://restcountries.com/v3.1/name"
+              apiMethod="GET"
+              apiQueryParam=""
+              apiDebounceMs={400}
+              searchProperties={['name.common', 'name.official']}
+              displayProperty="name.common"
+              valueProperty="cca3"
+              iconProperty="flags.svg"
+              groupProperty="region"
+              placeholder="Search countries..."
+              minSearchLength={2}
+              maxResults={10}
+              onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label} (Code: ${option.value})`)}
+              onApiError={(error) => console.error('API Error:', error)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Uses restcountries.com API - grouped by region
+            </p>
+          </div>
+
+          {/* Multi-Select with Max Limit */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.limitedMultiSelect', 'Multi-Select (Limited to 3)')}</p>
+            <DynamicAutocomplete
+              options={[
+                { label: 'Dashboard', value: 'dashboard', icon: <Home className="h-4 w-4" /> },
+                { label: 'Settings', value: 'settings', icon: <Settings className="h-4 w-4" /> },
+                { label: 'Users', value: 'users', icon: <Users className="h-4 w-4" /> },
+                { label: 'Documents', value: 'docs', icon: <FileText className="h-4 w-4" /> },
+                { label: 'Calendar', value: 'calendar', icon: <Calendar className="h-4 w-4" /> },
+              ]}
+              placeholder="Select pages (max 3)..."
+              multiSelect
+              maxSelections={3}
+              borderColor="hsl(var(--primary))"
+              borderWidth="2px"
+              onSelect={(option: AutocompleteOption) => toast.info(`Added: ${option.label}`)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Custom styled with max 3 selections
+            </p>
+          </div>
+
+          {/* Static Options with Icons & Disabled */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.staticAutocomplete', 'Static with Disabled Items')}</p>
             <DynamicAutocomplete
               options={[
                 { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', icon: <Users className="h-4 w-4" /> },
@@ -322,28 +421,8 @@ export const ComponentsDemo = () => {
               placeholder="Search users..."
               onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label} (ID: ${option.value})`)}
             />
-          </div>
-
-          {/* API Autocomplete */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium">{t('demo.apiAutocomplete', 'API-based (Countries)')}</p>
-            <DynamicAutocomplete
-              apiEndpoint="https://restcountries.com/v3.1/name"
-              apiMethod="GET"
-              apiQueryParam=""
-              apiDebounceMs={400}
-              searchProperties={['name.common', 'name.official']}
-              displayProperty="name.common"
-              valueProperty="cca3"
-              iconProperty="flags.svg"
-              placeholder="Search countries..."
-              minSearchLength={2}
-              maxResults={8}
-              onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label} (Code: ${option.value})`)}
-              onApiError={(error) => console.error('API Error:', error)}
-            />
             <p className="text-xs text-muted-foreground mt-1">
-              Uses restcountries.com API - type country name to search
+              Jane is disabled, Charlie is hidden
             </p>
           </div>
 
@@ -365,23 +444,6 @@ export const ComponentsDemo = () => {
             <p className="text-xs text-muted-foreground mt-1">
               Can type custom values not in the list
             </p>
-          </div>
-
-          {/* Styled Autocomplete */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium">{t('demo.styledAutocomplete', 'Custom Styled')}</p>
-            <DynamicAutocomplete
-              options={[
-                { label: 'Dashboard', value: 'dashboard', icon: <Home className="h-4 w-4" /> },
-                { label: 'Settings', value: 'settings', icon: <Settings className="h-4 w-4" /> },
-                { label: 'Users', value: 'users', icon: <Users className="h-4 w-4" /> },
-                { label: 'Documents', value: 'docs', icon: <FileText className="h-4 w-4" /> },
-              ]}
-              placeholder="Go to page..."
-              borderColor="hsl(var(--primary))"
-              borderWidth="2px"
-              onSelect={(option: AutocompleteOption) => toast.info(`Navigate to: ${option.label}`)}
-            />
           </div>
         </div>
       </section>
