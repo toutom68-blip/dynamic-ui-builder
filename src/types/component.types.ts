@@ -250,3 +250,61 @@ export interface ImageCropperProps extends BaseComponentProps {
   aspectRatio?: number;
   circularCrop?: boolean;
 }
+
+// Autocomplete types
+export interface AutocompleteOption {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode | string;
+  disabled?: boolean;
+  hidden?: boolean;
+  originalData?: any;
+}
+
+export interface AutocompleteProps extends BaseComponentProps {
+  // Data source - static options
+  options?: any[];
+  
+  // Data source - API
+  apiEndpoint?: string;
+  apiMethod?: 'GET' | 'POST';
+  apiHeaders?: Record<string, string>;
+  apiQueryParam?: string; // Query param name for search term
+  apiResponsePath?: string; // Dot notation path to array in response (e.g., 'data.items')
+  apiDebounceMs?: number;
+  
+  // Search configuration
+  searchProperties?: string[]; // Array of property paths to search in
+  displayProperty?: string; // Property path for display label
+  valueProperty?: string; // Property path for value
+  iconProperty?: string; // Property path for icon (string URL or React node)
+  
+  // Item visibility control
+  disabledProperties?: string[]; // Array of property paths - if any is truthy, item is disabled
+  hiddenProperties?: string[]; // Array of property paths - if any is truthy, item is hidden
+  
+  // Component state
+  value?: string | number;
+  placeholder?: string;
+  name?: string;
+  required?: boolean;
+  
+  // Behavior
+  minSearchLength?: number;
+  maxResults?: number;
+  clearable?: boolean;
+  freeSolo?: boolean; // Allow arbitrary input not in options
+  
+  // Callbacks
+  onSelect?: (option: AutocompleteOption) => void;
+  onClear?: () => void;
+  onApiError?: (error: Error) => void;
+}
+
+export interface AutocompleteOutputObject {
+  value: string | number | undefined;
+  label: string;
+  selectedOption: AutocompleteOption | null;
+  inputValue: string;
+  originalData: any;
+}

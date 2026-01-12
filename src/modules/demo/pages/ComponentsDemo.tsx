@@ -8,16 +8,18 @@ import { DynamicFileUploader } from '@/modules/shared/components/DynamicFileUplo
 import { DynamicImage } from '@/modules/shared/components/DynamicImage';
 import { DynamicSubMenu } from '@/modules/shared/components/DynamicSubMenu';
 import { DynamicForm } from '@/modules/shared/components/DynamicForm';
+import { DynamicAutocomplete } from '@/modules/shared/components/DynamicAutocomplete';
 import { MapSearch } from '@/modules/shared/components/MapSearch';
 import { DynamicEventCalendar } from '@/modules/shared/components/calendar/DynamicEventCalendar';
 import { BookingModal } from '@/modules/shared/components/calendar/BookingModal';
 import { DynamicImageCropper } from '@/modules/shared/components/DynamicImageCropper';
 import { Button } from '@/components/ui/button';
-import { Home, Settings, Users, FileText, Filter, ArrowRight, Calendar, ImageIcon, Ticket } from 'lucide-react';
+import { Home, Settings, Users, FileText, Filter, ArrowRight, Calendar, ImageIcon, Ticket, Search } from 'lucide-react';
 import { CalendarEvent, CalendarBooking } from '@/modules/shared/components/calendar/types/calendar.types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import type { Property } from '@/types/property.types';
+import { AutocompleteOption } from '@/types/component.types';
 
 export const ComponentsDemo = () => {
   const { t } = useTranslation();
@@ -285,6 +287,102 @@ export const ComponentsDemo = () => {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
+        </div>
+      </section>
+
+      {/* Autocomplete Section */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <Search className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-xl font-heading font-semibold">{t('demo.sections.autocomplete', 'Autocomplete')}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('demo.autocompleteDescription', 'Searchable autocomplete from static array or API, with icons, disabled/hidden items.')}
+        </p>
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Static Options Autocomplete */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.staticAutocomplete', 'Static Options (with icons)')}</p>
+            <DynamicAutocomplete
+              options={[
+                { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', icon: <Users className="h-4 w-4" /> },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', isDisabled: true },
+                { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Editor', icon: <Settings className="h-4 w-4" /> },
+                { id: 4, name: 'Alice Williams', email: 'alice@example.com', role: 'User', icon: <Home className="h-4 w-4" /> },
+                { id: 5, name: 'Charlie Brown', email: 'charlie@example.com', role: 'Admin', isHidden: true },
+              ]}
+              searchProperties={['name', 'email', 'role']}
+              displayProperty="name"
+              valueProperty="id"
+              iconProperty="icon"
+              disabledProperties={['isDisabled']}
+              hiddenProperties={['isHidden']}
+              placeholder="Search users..."
+              onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label} (ID: ${option.value})`)}
+            />
+          </div>
+
+          {/* API Autocomplete */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.apiAutocomplete', 'API-based (Countries)')}</p>
+            <DynamicAutocomplete
+              apiEndpoint="https://restcountries.com/v3.1/name"
+              apiMethod="GET"
+              apiQueryParam=""
+              apiDebounceMs={400}
+              searchProperties={['name.common', 'name.official']}
+              displayProperty="name.common"
+              valueProperty="cca3"
+              iconProperty="flags.svg"
+              placeholder="Search countries..."
+              minSearchLength={2}
+              maxResults={8}
+              onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label} (Code: ${option.value})`)}
+              onApiError={(error) => console.error('API Error:', error)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Uses restcountries.com API - type country name to search
+            </p>
+          </div>
+
+          {/* FreeSolo Mode */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.freesoloAutocomplete', 'Free Solo (allows custom input)')}</p>
+            <DynamicAutocomplete
+              options={[
+                { label: 'React', value: 'react' },
+                { label: 'Vue', value: 'vue' },
+                { label: 'Angular', value: 'angular' },
+                { label: 'Svelte', value: 'svelte' },
+              ]}
+              placeholder="Type framework name..."
+              freeSolo
+              onChange={(value) => console.log('Input value:', value)}
+              onSelect={(option: AutocompleteOption) => toast.info(`Selected: ${option.label}`)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Can type custom values not in the list
+            </p>
+          </div>
+
+          {/* Styled Autocomplete */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('demo.styledAutocomplete', 'Custom Styled')}</p>
+            <DynamicAutocomplete
+              options={[
+                { label: 'Dashboard', value: 'dashboard', icon: <Home className="h-4 w-4" /> },
+                { label: 'Settings', value: 'settings', icon: <Settings className="h-4 w-4" /> },
+                { label: 'Users', value: 'users', icon: <Users className="h-4 w-4" /> },
+                { label: 'Documents', value: 'docs', icon: <FileText className="h-4 w-4" /> },
+              ]}
+              placeholder="Go to page..."
+              borderColor="hsl(var(--primary))"
+              borderWidth="2px"
+              onSelect={(option: AutocompleteOption) => toast.info(`Navigate to: ${option.label}`)}
+            />
+          </div>
         </div>
       </section>
 
