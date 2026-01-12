@@ -209,7 +209,32 @@
     "confirm": "Confirmer",
     "ok": "OK",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "appName": "Application Dynamique",
+    "openMenu": "Ouvrir le menu",
+    "collapse": "Réduire",
+    "user": "Utilisateur"
+  },
+  "layouts": {
+    "classic": "Classique",
+    "compact": "Compact",
+    "floating": "Flottant",
+    "glass": "Verre",
+    "topNav": "Navigation Supérieure",
+    "dualSidebar": "Double Barre Latérale",
+    "gradient": "Dégradé"
+  },
+  "navigation": {
+    "groups": { "main": "Principal", "demos": "Démos", "content": "Contenu", "admin": "Administration" },
+    "home": "Accueil", "dashboard": "Tableau de Bord", "components": "Composants",
+    "gridDemo": "Démo Grille", "filterDemo": "Démo Filtre", "mapSearch": "Recherche Carte",
+    "searchProperties": "Rechercher Propriétés", "savedLocations": "Emplacements Sauvegardés",
+    "calendar": "Calendrier", "events": "Événements", "bookings": "Réservations",
+    "pages": "Pages", "allPages": "Toutes les Pages", "createPage": "Créer Page",
+    "media": "Médias", "messages": "Messages", "users": "Utilisateurs",
+    "analytics": "Analytique", "security": "Sécurité", "appearance": "Apparence",
+    "settings": "Paramètres", "profile": "Profil", "notifications": "Notifications",
+    "help": "Aide & Support", "newBooking": "Nouvelle Réservation", "addProperty": "Ajouter Propriété"
   },
   "auth": {
     "login": "Connexion",
@@ -570,5 +595,76 @@
       "daterange": "Sélecteurs de date De/À",
       "boolean": "Case à cocher Oui/Non"
     }
+  },
+  "theme": {
+    "switchTheme": "Changer le thème",
+    "selectTheme": "Sélectionner le thème",
+    "lightMode": "Mode clair",
+    "darkMode": "Mode sombre",
+    "themes": {
+      "default": {
+        "name": "Classique",
+        "description": "Design épuré et professionnel"
+      },
+      "commerce": {
+        "name": "Commerce",
+        "description": "Audacieux et axé sur la conversion"
+      },
+      "admin": {
+        "name": "Administration",
+        "description": "Professionnel et axé sur les données"
+      },
+      "ai": {
+        "name": "IA / Tech",
+        "description": "Futuriste et innovant"
+      },
+      "nature": {
+        "name": "Nature",
+        "description": "Organique et apaisant"
+      }
+    }
+  },
+  "themeCustomizer": {
+    "title": "Personnalisateur de thème",
+    "description": "Personnalisez les couleurs, polices et animations en temps réel",
+    "tabs": {
+      "colors": "Couleurs",
+      "fonts": "Polices",
+      "animations": "Animations",
+      "spacing": "Espacement"
+    },
+    "mainColors": "Couleurs principales",
+    "backgroundColors": "Couleurs d'arrière-plan",
+    "colors": {
+      "primary": "Couleur primaire",
+      "secondary": "Couleur secondaire",
+      "accent": "Couleur d'accent",
+      "background": "Arrière-plan",
+      "foreground": "Premier plan",
+      "muted": "Atténué"
+    },
+    "fonts": {
+      "heading": "Police de titre",
+      "body": "Police de corps",
+      "headingPreview": "Le Renard Brun Rapide",
+      "bodyPreview": "Le renard brun rapide saute par-dessus le chien paresseux. Voici comment votre texte apparaîtra dans toute l'application."
+    },
+    "animations": {
+      "preset": "Préréglage d'animation",
+      "speed": "Vitesse d'animation",
+      "preview": "Aperçu au survol"
+    },
+    "spacing": {
+      "borderRadius": "Rayon de bordure",
+      "preview": "Aperçu du rayon"
+    },
+    "preview": "Aperçu en direct",
+    "previewPrimary": "Primaire",
+    "previewSecondary": "Secondaire",
+    "previewOutline": "Contour",
+    "resetBtn": "Réinitialiser",
+    "saveBtn": "Enregistrer",
+    "saved": "Personnalisations du thème enregistrées!",
+    "reset": "Personnalisations du thème réinitialisées!"
   }
 }

@@ -209,7 +209,32 @@
     "confirm": "تأكيد",
     "ok": "موافق",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "appName": "التطبيق الديناميكي",
+    "openMenu": "فتح القائمة",
+    "collapse": "طي",
+    "user": "مستخدم"
+  },
+  "layouts": {
+    "classic": "كلاسيكي",
+    "compact": "مضغوط",
+    "floating": "عائم",
+    "glass": "زجاجي",
+    "topNav": "التنقل العلوي",
+    "dualSidebar": "شريط جانبي مزدوج",
+    "gradient": "متدرج"
+  },
+  "navigation": {
+    "groups": { "main": "الرئيسية", "demos": "العروض", "content": "المحتوى", "admin": "الإدارة" },
+    "home": "الرئيسية", "dashboard": "لوحة التحكم", "components": "المكونات",
+    "gridDemo": "عرض الشبكة", "filterDemo": "عرض الفلتر", "mapSearch": "بحث الخريطة",
+    "searchProperties": "بحث العقارات", "savedLocations": "المواقع المحفوظة",
+    "calendar": "التقويم", "events": "الأحداث", "bookings": "الحجوزات",
+    "pages": "الصفحات", "allPages": "كل الصفحات", "createPage": "إنشاء صفحة",
+    "media": "الوسائط", "messages": "الرسائل", "users": "المستخدمون",
+    "analytics": "التحليلات", "security": "الأمان", "appearance": "المظهر",
+    "settings": "الإعدادات", "profile": "الملف الشخصي", "notifications": "الإشعارات",
+    "help": "المساعدة والدعم", "newBooking": "حجز جديد", "addProperty": "إضافة عقار"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -570,5 +595,76 @@
       "daterange": "منتقي تاريخ من/إلى",
       "boolean": "مربع اختيار نعم/لا"
     }
+  },
+  "theme": {
+    "switchTheme": "تغيير المظهر",
+    "selectTheme": "اختر المظهر",
+    "lightMode": "الوضع الفاتح",
+    "darkMode": "الوضع الداكن",
+    "themes": {
+      "default": {
+        "name": "كلاسيكي",
+        "description": "تصميم نظيف واحترافي"
+      },
+      "commerce": {
+        "name": "التجارة",
+        "description": "جريء ومركز على التحويل"
+      },
+      "admin": {
+        "name": "الإدارة",
+        "description": "احترافي ومركز على البيانات"
+      },
+      "ai": {
+        "name": "الذكاء الاصطناعي / التقنية",
+        "description": "مستقبلي ومبتكر"
+      },
+      "nature": {
+        "name": "الطبيعة",
+        "description": "عضوي ومهدئ"
+      }
+    }
+  },
+  "themeCustomizer": {
+    "title": "مخصص المظهر",
+    "description": "تخصيص الألوان والخطوط والرسوم المتحركة في الوقت الفعلي",
+    "tabs": {
+      "colors": "الألوان",
+      "fonts": "الخطوط",
+      "animations": "الرسوم المتحركة",
+      "spacing": "التباعد"
+    },
+    "mainColors": "الألوان الرئيسية",
+    "backgroundColors": "ألوان الخلفية",
+    "colors": {
+      "primary": "اللون الأساسي",
+      "secondary": "اللون الثانوي",
+      "accent": "لون التمييز",
+      "background": "الخلفية",
+      "foreground": "المقدمة",
+      "muted": "خافت"
+    },
+    "fonts": {
+      "heading": "خط العنوان",
+      "body": "خط النص",
+      "headingPreview": "الثعلب البني السريع",
+      "bodyPreview": "الثعلب البني السريع يقفز فوق الكلب الكسول. هكذا سيظهر نص جسمك في جميع أنحاء التطبيق."
+    },
+    "animations": {
+      "preset": "إعداد مسبق للرسوم المتحركة",
+      "speed": "سرعة الرسوم المتحركة",
+      "preview": "معاينة التمرير"
+    },
+    "spacing": {
+      "borderRadius": "نصف قطر الحدود",
+      "preview": "معاينة نصف القطر"
+    },
+    "preview": "معاينة مباشرة",
+    "previewPrimary": "أساسي",
+    "previewSecondary": "ثانوي",
+    "previewOutline": "مخطط",
+    "resetBtn": "إعادة تعيين",
+    "saveBtn": "حفظ",
+    "saved": "تم حفظ تخصيصات المظهر!",
+    "reset": "تم إعادة تعيين تخصيصات المظهر!"
   }
 }

@@ -209,7 +209,54 @@
     "confirm": "Confirm",
     "ok": "OK",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "appName": "Dynamic App",
+    "openMenu": "Open menu",
+    "collapse": "Collapse",
+    "user": "User"
+  },
+  "layouts": {
+    "classic": "Classic",
+    "compact": "Compact",
+    "floating": "Floating",
+    "glass": "Glass",
+    "topNav": "Top Navigation",
+    "dualSidebar": "Dual Sidebar",
+    "gradient": "Gradient"
+  },
+  "navigation": {
+    "groups": {
+      "main": "Main",
+      "demos": "Demos",
+      "content": "Content",
+      "admin": "Administration"
+    },
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "components": "Components",
+    "gridDemo": "Grid Demo",
+    "filterDemo": "Filter Demo",
+    "mapSearch": "Map Search",
+    "searchProperties": "Search Properties",
+    "savedLocations": "Saved Locations",
+    "calendar": "Calendar",
+    "events": "Events",
+    "bookings": "Bookings",
+    "pages": "Pages",
+    "allPages": "All Pages",
+    "createPage": "Create Page",
+    "media": "Media",
+    "messages": "Messages",
+    "users": "Users",
+    "analytics": "Analytics",
+    "security": "Security",
+    "appearance": "Appearance",
+    "settings": "Settings",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "help": "Help & Support",
+    "newBooking": "New Booking",
+    "addProperty": "Add Property"
   },
   "auth": {
     "login": "Login",
@@ -571,5 +618,76 @@
       "daterange": "From/To date pickers",
       "boolean": "Yes/No checkbox"
     }
+  },
+  "theme": {
+    "switchTheme": "Switch theme",
+    "selectTheme": "Select Theme",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "themes": {
+      "default": {
+        "name": "Classic",
+        "description": "Clean and professional design"
+      },
+      "commerce": {
+        "name": "Commerce",
+        "description": "Bold and conversion-focused"
+      },
+      "admin": {
+        "name": "Administration",
+        "description": "Professional and data-focused"
+      },
+      "ai": {
+        "name": "AI / Tech",
+        "description": "Futuristic and innovative"
+      },
+      "nature": {
+        "name": "Nature",
+        "description": "Organic and calming"
+      }
+    }
+  },
+  "themeCustomizer": {
+    "title": "Theme Customizer",
+    "description": "Customize colors, fonts, and animations in real-time",
+    "tabs": {
+      "colors": "Colors",
+      "fonts": "Fonts",
+      "animations": "Animations",
+      "spacing": "Spacing"
+    },
+    "mainColors": "Main Colors",
+    "backgroundColors": "Background Colors",
+    "colors": {
+      "primary": "Primary Color",
+      "secondary": "Secondary Color",
+      "accent": "Accent Color",
+      "background": "Background",
+      "foreground": "Foreground",
+      "muted": "Muted"
+    },
+    "fonts": {
+      "heading": "Heading Font",
+      "body": "Body Font",
+      "headingPreview": "The Quick Brown Fox",
+      "bodyPreview": "The quick brown fox jumps over the lazy dog. This is how your body text will look throughout the application."
+    },
+    "animations": {
+      "preset": "Animation Preset",
+      "speed": "Animation Speed",
+      "preview": "Hover Preview"
+    },
+    "spacing": {
+      "borderRadius": "Border Radius",
+      "preview": "Radius Preview"
+    },
+    "preview": "Live Preview",
+    "previewPrimary": "Primary",
+    "previewSecondary": "Secondary",
+    "previewOutline": "Outline",
+    "resetBtn": "Reset",
+    "saveBtn": "Save",
+    "saved": "Theme customizations saved!",
+    "reset": "Theme customizations reset!"
   }
 }

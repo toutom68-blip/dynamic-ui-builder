@@ -3,6 +3,8 @@ import { LayoutProps } from '@/types/component.types';
 import { buildComponentStyles } from '@/utils/styleBuilder';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -102,6 +104,8 @@ export const Header: React.FC<HeaderProps> = ({
               {t('auth.login')}
             </Button>
           )}
+          <ThemeCustomizer />
+          <ThemeSwitcher />
           <LanguageSwitcher />
         </div>
       </div>
