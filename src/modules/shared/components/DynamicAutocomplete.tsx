@@ -5,9 +5,11 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Loader2, X, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Check, Loader2, X, ChevronDown, RefreshCw, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AutocompleteProps, AutocompleteOption } from '@/types/component.types';
+import { useDataFetch } from '@/hooks/useDataFetch';
 
 // Skeleton component for loading state
 const AutocompleteItemSkeleton: React.FC = () => (
@@ -25,6 +27,32 @@ const AutocompleteLoadingSkeleton: React.FC<{ count?: number }> = ({ count = 4 }
     {Array.from({ length: count }).map((_, i) => (
       <AutocompleteItemSkeleton key={i} />
     ))}
+  </div>
+);
+
+// Error state component
+const AutocompleteError: React.FC<{ 
+  error: string; 
+  onRetry?: () => void;
+  retryCount?: number;
+  maxRetries?: number;
+}> = ({ error, onRetry, retryCount = 0, maxRetries = 3 }) => (
+  <div className="p-3 space-y-2">
+    <div className="flex items-center gap-2 text-destructive">
+      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+      <span className="text-sm">{error}</span>
+    </div>
+    {onRetry && retryCount < maxRetries && (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onRetry}
+        className="w-full"
+      >
+        <RefreshCw className="h-3 w-3 mr-2" />
+        Retry ({maxRetries - retryCount} attempts left)
+      </Button>
+    )}
   </div>
 );
 
@@ -78,14 +106,62 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   const [selectedOption, setSelectedOption] = useState<AutocompleteOption | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<AutocompleteOption[]>([]);
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([]);
-  const [apiOptions, setApiOptions] = useState<AutocompleteOption[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
   const { style, className } = buildComponentStyles(baseProps, 'transition-base');
+
+  // API fetcher function for useDataFetch
+  const apiFetcher = useCallback(async (params?: Record<string, any>): Promise<any[]> => {
+    const searchTerm = params?.searchTerm || '';
+    if (!apiEndpoint || searchTerm.length < minSearchLength) {
+      return [];
+    }
+    
+    let url = apiEndpoint;
+    const fetchOptions: RequestInit = {
+      method: apiMethod,
+      headers: {
+        'Content-Type': 'application/json',
+        ...apiHeaders
+      }
+    };
+    
+    if (apiMethod === 'GET') {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}${apiQueryParam}=${encodeURIComponent(searchTerm)}`;
+    } else {
+      fetchOptions.body = JSON.stringify({ [apiQueryParam]: searchTerm });
+    }
+    
+    const response = await globalThis.fetch(url, fetchOptions);
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return response.json();
+  }, [apiEndpoint, apiMethod, apiHeaders, apiQueryParam, minSearchLength]);
+
+  // Use the data fetch hook for API calls
+  const {
+    data: apiData,
+    isLoading: loading,
+    error: fetchError,
+    showSkeleton,
+    retryCount,
+    fetch: fetchApiData,
+    retry: retryFetch,
+  } = useDataFetch<any[]>(apiFetcher, {
+    initialData: [],
+    debounceMs: apiDebounceMs,
+    maxRetries: 3,
+    responsePath: apiResponsePath,
+    onError: (err) => onApiError?.(err),
+  });
+
+  const error = fetchError?.message || null;
+  const apiOptions = apiData || [];
 
   // Get nested value from object using dot notation
   const getNestedValue = useCallback((obj: any, path: string): any => {
@@ -177,71 +253,12 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     return { groups, ungrouped };
   }, [filteredOptions]);
 
-  // Fetch from API
-  const fetchFromApi = useCallback(async (searchTerm: string) => {
-    if (!apiEndpoint || searchTerm.length < minSearchLength) {
-      setApiOptions([]);
-      return;
+  // Trigger API fetch when input changes (using the hook)
+  const triggerApiSearch = useCallback((searchTerm: string) => {
+    if (apiEndpoint && searchTerm.length >= minSearchLength) {
+      fetchApiData({ searchTerm });
     }
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      let url = apiEndpoint;
-      const fetchOptions: RequestInit = {
-        method: apiMethod,
-        headers: {
-          'Content-Type': 'application/json',
-          ...apiHeaders
-        }
-      };
-      
-      if (apiMethod === 'GET') {
-        const separator = url.includes('?') ? '&' : '?';
-        url = `${url}${separator}${apiQueryParam}=${encodeURIComponent(searchTerm)}`;
-      } else {
-        fetchOptions.body = JSON.stringify({ [apiQueryParam]: searchTerm });
-      }
-      
-      const response = await fetch(url, fetchOptions);
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      let data = await response.json();
-      
-      // Extract data from nested path if specified
-      if (apiResponsePath) {
-        data = getNestedValue(data, apiResponsePath);
-      }
-      
-      if (Array.isArray(data)) {
-        setApiOptions(data);
-      } else {
-        setApiOptions([]);
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'API fetch failed';
-      setError(errorMessage);
-      onApiError?.(err instanceof Error ? err : new Error(errorMessage));
-      setApiOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiEndpoint, apiMethod, apiHeaders, apiQueryParam, apiResponsePath, minSearchLength, onApiError, getNestedValue]);
-
-  // Debounced API search
-  const debouncedApiSearch = useCallback((searchTerm: string) => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    
-    debounceRef.current = setTimeout(() => {
-      fetchFromApi(searchTerm);
-    }, apiDebounceMs);
-  }, [fetchFromApi, apiDebounceMs]);
+  }, [apiEndpoint, minSearchLength, fetchApiData]);
 
   // Update filtered options when input or source changes
   useEffect(() => {
@@ -281,7 +298,7 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
     setOpen(true);
     
     if (apiEndpoint) {
-      debouncedApiSearch(newValue);
+      triggerApiSearch(newValue);
     }
     
     // For freeSolo mode, also call onChange with input value
@@ -478,9 +495,12 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
           <Command shouldFilter={false} className="bg-popover">
             <CommandList className="max-h-[300px]">
               {error && (
-                <div className="px-3 py-2 text-sm text-destructive">
-                  {error}
-                </div>
+                <AutocompleteError 
+                  error={error} 
+                  onRetry={retryFetch}
+                  retryCount={retryCount}
+                  maxRetries={3}
+                />
               )}
               
               {/* Loading skeleton */}
@@ -572,9 +592,12 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
         <Command shouldFilter={false} className="bg-popover">
           <CommandList className="max-h-[300px]">
             {error && (
-              <div className="px-3 py-2 text-sm text-destructive">
-                {error}
-              </div>
+              <AutocompleteError 
+                error={error} 
+                onRetry={retryFetch}
+                retryCount={retryCount}
+                maxRetries={3}
+              />
             )}
             
             {/* Loading skeleton */}
