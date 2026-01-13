@@ -301,9 +301,44 @@ export const DynamicGrid: React.FC<GridProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(loading || isLoadingMore) && displayedData.length === 0 ? Array.from({ length: 5 }).map((_, idx) => (<TableRow key={idx}>{expandable && <TableCell><Skeleton className="h-4 w-4" /></TableCell>}{selectable && selectionMode === 'checkbox' && <TableCell><Skeleton className="h-4 w-4" /></TableCell>}{columns.map((col) => (<TableCell key={col.key}><Skeleton className="h-4 w-full" /></TableCell>))}</TableRow>))
-            : displayedData.length === 0 ? (<TableRow><TableCell colSpan={columns.length + (selectable && selectionMode === 'checkbox' ? 1 : 0) + (expandable ? 1 : 0)} className="text-center py-8 text-muted-foreground">{emptyMessage || t('grid.noData', 'No data available')}</TableCell></TableRow>)
-            : displayedData.map((row, idx) => {
+            {(loading || isLoadingMore) && displayedData.length === 0 ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <TableRow key={`skeleton-row-${idx}`} className="animate-pulse">
+                  {expandable && (
+                    <TableCell>
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </TableCell>
+                  )}
+                  {selectable && selectionMode === 'checkbox' && (
+                    <TableCell>
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </TableCell>
+                  )}
+                  {columns.map((col, colIdx) => (
+                    <TableCell key={`skeleton-${idx}-${col.key}`}>
+                      <div className="space-y-1">
+                        <Skeleton 
+                          className={cn(
+                            "h-4",
+                            colIdx === 0 ? "w-8" : colIdx === 1 ? "w-32" : "w-full max-w-[120px]"
+                          )} 
+                        />
+                        {col.key === 'name' && <Skeleton className="h-3 w-24" />}
+                      </div>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : displayedData.length === 0 ? (
+              <TableRow>
+                <TableCell 
+                  colSpan={columns.length + (selectable && selectionMode === 'checkbox' ? 1 : 0) + (expandable ? 1 : 0)} 
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  {emptyMessage || t('grid.noData', 'No data available')}
+                </TableCell>
+              </TableRow>
+            ) : displayedData.map((row, idx) => {
                 const rowId = getUniqueRowId(row, idx), isExpanded = expandedRows.has(rowId), isSelected = isRowSelected(row, idx);
                 return (
                   <React.Fragment key={rowId}>
@@ -320,7 +355,16 @@ export const DynamicGrid: React.FC<GridProps> = ({
               })}
           </TableBody>
         </Table>
-        {infiniteScroll && (<div ref={observerTarget} className="h-10 flex items-center justify-center">{isLoadingMore && <Skeleton className="h-4 w-32" />}</div>)}
+        {infiniteScroll && (
+          <div ref={observerTarget} className="h-10 flex items-center justify-center">
+            {isLoadingMore && (
+              <div className="flex items-center gap-2 animate-pulse">
+                <Skeleton className="h-4 w-4 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {(pagination?.enabled || (!infiniteScroll && totalPages > 1)) && (
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
