@@ -55,6 +55,43 @@ const MyComponent = () => {
 
 ## Loading System
 
+### SkeletonLoader Component
+
+A flexible skeleton loading component with multiple variants for different use cases.
+
+```tsx
+import { SkeletonLoader, AutocompleteListSkeleton, GridTableSkeleton } from '@/modules/shared/components/SkeletonLoader';
+
+// Basic usage with variants
+<SkeletonLoader variant="text" />
+<SkeletonLoader variant="avatar" />
+<SkeletonLoader variant="card" showImage lines={3} />
+<SkeletonLoader variant="listItem" count={5} />
+<SkeletonLoader variant="tableRow" />
+<SkeletonLoader variant="autocompleteItem" />
+<SkeletonLoader variant="calendarEvent" />
+
+// Specialized components
+<AutocompleteListSkeleton count={4} />
+<GridTableSkeleton rows={5} columns={5} />
+<CalendarGridSkeleton />
+<MapSearchSkeleton />
+```
+
+### Available Variants
+
+- **text**: Single line text placeholder
+- **title**: Larger title placeholder  
+- **avatar**: Circular avatar placeholder
+- **thumbnail**: Square image thumbnail
+- **card**: Full card with optional image, avatar, and text lines
+- **listItem**: List item with avatar and text
+- **tableRow**: Table row with multiple columns
+- **autocompleteItem**: Dropdown item with icon and text
+- **calendarEvent**: Calendar event placeholder
+- **mapMarker**: Map marker placeholder
+- **custom**: Custom dimensions with width/height props
+
 ### LoadingSpinner Component
 
 A flexible loading spinner with different sizes and optional text.
@@ -111,15 +148,12 @@ await api.get('/data', {
 });
 ```
 
-### LoadingPage Component
+### Components with Built-in Skeleton Loading
 
-A full-page loading component for route transitions.
-
-```tsx
-import { LoadingPage } from '@/modules/shared/pages/LoadingPage';
-
-<LoadingPage text="Loading your data..." />
-```
+- **DynamicAutocomplete**: Shows skeleton placeholders while fetching API results
+- **DynamicGrid**: Enhanced skeleton rows during data loading
+- **DynamicEventCalendar**: Calendar grid skeleton during lazy loading
+- **MapSearch**: Loading overlay while map initializes and searching
 
 ## Example
 

@@ -870,11 +870,41 @@ export const DynamicEventCalendar: React.FC<CalendarProps> = ({
 
   // Render loading skeleton
   const renderSkeleton = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-7 gap-2">
-        {Array.from({ length: 35 }).map((_, idx) => (
-          <Skeleton key={idx} className="h-24" />
-        ))}
+    <div className="space-y-4 animate-pulse">
+      {/* Header skeleton */}
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="grid grid-cols-7 bg-muted/50">
+          {Array.from({ length: 7 }).map((_, idx) => (
+            <div key={`header-${idx}`} className="p-2 border-b border-border flex justify-center">
+              <Skeleton className="h-4 w-10" />
+            </div>
+          ))}
+        </div>
+        
+        {/* Calendar grid skeleton */}
+        <div className="grid grid-cols-7">
+          {Array.from({ length: 35 }).map((_, idx) => (
+            <div key={`cell-${idx}`} className="min-h-[100px] p-2 border-b border-r border-border">
+              <Skeleton className="h-6 w-6 rounded-full mb-2" />
+              {/* Random event skeletons */}
+              {idx % 3 === 0 && (
+                <div className="space-y-1">
+                  <Skeleton className="h-5 w-full rounded" />
+                </div>
+              )}
+              {idx % 5 === 0 && (
+                <div className="space-y-1 mt-1">
+                  <Skeleton className="h-5 w-4/5 rounded" />
+                </div>
+              )}
+              {idx % 7 === 0 && (
+                <div className="space-y-1 mt-1">
+                  <Skeleton className="h-5 w-3/4 rounded" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -6,7 +6,8 @@ import { PropertyCard } from './PropertyCard';
 import { DynamicModal } from './DynamicModal';
 import { DynamicButton } from './DynamicButton';
 import { DynamicInput } from './DynamicInput';
-import { Search, SlidersHorizontal, Locate, X } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Search, SlidersHorizontal, Locate, X, Loader2 } from 'lucide-react';
 import ReactDOM from 'react-dom/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import style from '@/styles/style.module.scss';
 import mapStyle from '../styles/MapSearch.module.scss';
+
+// Skeleton components for loading states
+const MapSearchSkeleton: React.FC = () => (
+  <div className="space-y-4 animate-pulse">
+    <div className="flex gap-2">
+      <Skeleton className="h-10 flex-1 rounded-md" />
+      <Skeleton className="h-10 w-20 rounded-md" />
+      <Skeleton className="h-10 w-10 rounded-md" />
+      <Skeleton className="h-10 w-10 rounded-md" />
+    </div>
+    <Skeleton className="h-[400px] w-full rounded-lg" />
+  </div>
+);
+
+const PropertyPopupSkeleton: React.FC = () => (
+  <div className="w-72 p-0 animate-pulse">
+    <Skeleton className="h-36 w-full rounded-t-xl" />
+    <div className="p-3 space-y-2">
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-3 w-24" />
+      </div>
+      <Skeleton className="h-9 w-full rounded-lg" />
+    </div>
+  </div>
+);
 
 interface MapSearchProps {
   properties: Property[];
@@ -43,9 +72,13 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   const [isLocating, setIsLocating] = useState(false);
   const [activePopup, setActivePopup] = useState < maplibregl.Popup | null > (null);
 
+  const [isSearching, setIsSearching] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+
   const handleSearch = async () => {
     if (!searchQuery || !map.current) return;
 
+    setIsSearching(true);
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
@@ -59,9 +92,14 @@ export const MapSearch: React.FC<MapSearchProps> = ({
           zoom: 13,
           duration: 2000,
         });
+      } else {
+        toast.info('No results found for this location');
       }
     } catch (error) {
       console.error('Search error:', error);
+      toast.error('Failed to search location');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -130,11 +168,17 @@ export const MapSearch: React.FC<MapSearchProps> = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
+    setIsMapLoading(true);
+    
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: 'https://tiles.openfreemap.org/styles/liberty',
       center: center,
       zoom: zoom,
+    });
+
+    map.current.on('load', () => {
+      setIsMapLoading(false);
     });
 
     map.current.addControl(
@@ -347,9 +391,16 @@ export const MapSearch: React.FC<MapSearchProps> = ({
           <DynamicButton
             variant="primary"
             onClick={handleSearch}
-            disabled={!searchQuery}
+            disabled={!searchQuery || isSearching}
           >
-            Search
+            {isSearching ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Searching...
+              </>
+            ) : (
+              'Search'
+            )}
           </DynamicButton>
           <DynamicButton
             variant="outline"
@@ -437,7 +488,17 @@ export const MapSearch: React.FC<MapSearchProps> = ({
         )}
 
         {/* Map Container */}
-        <div ref={mapContainer} className={`w-full min-h-[400px] rounded-lg ${className}`} />
+        <div className="relative">
+          {isMapLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/50 rounded-lg">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Loading map...</span>
+              </div>
+            </div>
+          )}
+          <div ref={mapContainer} className={`w-full min-h-[400px] rounded-lg ${className}`} />
+        </div>
       </div>
 
       {selectedProperty && (

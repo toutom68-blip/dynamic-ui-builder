@@ -4,9 +4,29 @@ import { Input } from '@/components/ui/input';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Check, Loader2, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AutocompleteProps, AutocompleteOption } from '@/types/component.types';
+
+// Skeleton component for loading state
+const AutocompleteItemSkeleton: React.FC = () => (
+  <div className="flex items-center gap-2 p-2 animate-pulse">
+    <Skeleton className="h-4 w-4 rounded flex-shrink-0" />
+    <div className="flex-1 space-y-1">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-3 w-2/3" />
+    </div>
+  </div>
+);
+
+const AutocompleteLoadingSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) => (
+  <div className="p-1">
+    {Array.from({ length: count }).map((_, i) => (
+      <AutocompleteItemSkeleton key={i} />
+    ))}
+  </div>
+);
 
 export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
   // Data source
@@ -463,6 +483,11 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
                 </div>
               )}
               
+              {/* Loading skeleton */}
+              {loading && inputValue.length >= minSearchLength && (
+                <AutocompleteLoadingSkeleton count={4} />
+              )}
+              
               {!loading && filteredOptions.length === 0 && inputValue.length >= minSearchLength && (
                 <CommandEmpty>No results found.</CommandEmpty>
               )}
@@ -480,14 +505,14 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
               )}
               
               {/* Render grouped options */}
-              {Object.entries(groupedOptions.groups).map(([groupName, groupOptions]) => (
+              {!loading && Object.entries(groupedOptions.groups).map(([groupName, groupOptions]) => (
                 <CommandGroup key={groupName} heading={groupName} className="bg-popover">
                   {groupOptions.map((option, index) => renderOptionItem(option, index))}
                 </CommandGroup>
               ))}
               
               {/* Render ungrouped options */}
-              {groupedOptions.ungrouped.length > 0 && (
+              {!loading && groupedOptions.ungrouped.length > 0 && (
                 <CommandGroup className="bg-popover">
                   {groupedOptions.ungrouped.map((option, index) => renderOptionItem(option, index))}
                 </CommandGroup>
@@ -552,6 +577,11 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
               </div>
             )}
             
+            {/* Loading skeleton */}
+            {loading && inputValue.length >= minSearchLength && (
+              <AutocompleteLoadingSkeleton count={4} />
+            )}
+            
             {!loading && filteredOptions.length === 0 && inputValue.length >= minSearchLength && (
               <CommandEmpty>No results found.</CommandEmpty>
             )}
@@ -563,14 +593,14 @@ export const DynamicAutocomplete: React.FC<AutocompleteProps> = ({
             )}
             
             {/* Render grouped options */}
-            {Object.entries(groupedOptions.groups).map(([groupName, groupOptions]) => (
+            {!loading && Object.entries(groupedOptions.groups).map(([groupName, groupOptions]) => (
               <CommandGroup key={groupName} heading={groupName} className="bg-popover">
                 {groupOptions.map((option, index) => renderOptionItem(option, index))}
               </CommandGroup>
             ))}
             
             {/* Render ungrouped options */}
-            {groupedOptions.ungrouped.length > 0 && (
+            {!loading && groupedOptions.ungrouped.length > 0 && (
               <CommandGroup className="bg-popover">
                 {groupedOptions.ungrouped.map((option, index) => renderOptionItem(option, index))}
               </CommandGroup>
