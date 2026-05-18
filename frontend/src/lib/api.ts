@@ -334,6 +334,10 @@ export const publicOrgAPI = {
   },
 };
 
+export const currentOrgAPI = {
+  get: async () => apiRequest('/organizations/current'),
+};
+
 export const organizationsAPI = {
   getAll: async () => apiRequest('/hyper-admin/organizations'),
   getById: async (id: string) => apiRequest(`/hyper-admin/organizations/${id}`),
