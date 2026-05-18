@@ -31,6 +31,15 @@ export class Organization {
   @Column({ type: 'text', nullable: true })
   cguContent: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  privacyContent: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  loginTitle: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  loginContent: string | null;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   contactEmail: string | null;
 

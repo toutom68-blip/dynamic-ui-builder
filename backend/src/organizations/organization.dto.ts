@@ -38,6 +38,19 @@ export class CreateOrganizationDto {
   cguContent?: string;
 
   @IsOptional()
+  @IsString()
+  privacyContent?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  loginTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  loginContent?: string;
+
+  @IsOptional()
   @IsEmail()
   contactEmail?: string;
 
@@ -77,6 +90,9 @@ export class UpdateOrganizationDto {
   @IsOptional() @IsString() primaryColor?: string;
   @IsOptional() @IsString() secondaryColor?: string;
   @IsOptional() @IsString() cguContent?: string;
+  @IsOptional() @IsString() privacyContent?: string;
+  @IsOptional() @IsString() @MaxLength(255) loginTitle?: string;
+  @IsOptional() @IsString() loginContent?: string;
   @IsOptional() @IsEmail() contactEmail?: string;
   @IsOptional() @IsBoolean() isActive?: boolean;
 }
