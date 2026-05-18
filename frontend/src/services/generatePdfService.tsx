@@ -178,11 +178,27 @@ export const generatePdfService = {
       });
     }
 
-    const logoBase64 = await filesService.downloadFile("https://alpha-concept.s3.eu-central-1.amazonaws.com/reports_files/logo_alpha.jpg", '/reports_files', true);
-    const logoBase64Img = logoBase64 && logoBase64.data ? logoBase64.data.base64 : '';
-    const logoImage = `
-      <img src="data:image/jpeg;base64,${logoBase64Img}" class="logo-image" />    
-    `;
+    // Prefer the current organization's logo (set by AuthContext on login).
+    const defaultLogoUrl = 'https://alpha-concept.s3.eu-central-1.amazonaws.com/reports_files/logo_alpha.jpg';
+    const currentOrg = (typeof window !== 'undefined' ? (window as any).__currentOrganization : null) || null;
+    const orgLogoUrl: string | null = (reportData && reportData.organizationLogoUrl) || currentOrg?.logoUrl || null;
+    let logoSrc = '';
+    try {
+      const target = orgLogoUrl || defaultLogoUrl;
+      const logoBase64 = await filesService.downloadFile(target, '/reports_files', true);
+      const logoBase64Img = logoBase64 && logoBase64.data ? logoBase64.data.base64 : '';
+      if (logoBase64Img) {
+        logoSrc = `data:image/jpeg;base64,${logoBase64Img}`;
+      } else if (orgLogoUrl) {
+        // Fallback: embed by URL directly if download failed
+        logoSrc = orgLogoUrl;
+      }
+    } catch {
+      if (orgLogoUrl) logoSrc = orgLogoUrl;
+    }
+    const logoImage = logoSrc
+      ? `<img src="${logoSrc}" class="logo-image" />`
+      : '';
 
     return `
     <!DOCTYPE html>
