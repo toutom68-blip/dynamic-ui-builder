@@ -15,10 +15,12 @@ import {
 } from 'lucide-react';
 
 export default function Layout() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, organization, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const orgLogo = organization?.logoUrl || '/logo_admin.png';
+  const orgName = organization?.name || 'Report BTP';
 
   useEffect(() => {
     if (!loading && !user) {
@@ -72,7 +74,7 @@ export default function Layout() {
 
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between z-50">
         <div className="flex items-center gap-3">
-          <img src="/logo_admin.png" alt="Report BTP" className="h-8" />
+          <img src={orgLogo} alt={orgName} className="h-8" />
         </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -88,8 +90,8 @@ export default function Layout() {
 
       >
         <div className="p-6 border-b border-white/20" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-          <img src="/logo_admin.png" alt="Report BTP" style={{ height: '7rem', borderRadius: '10px' }} />
-          <p className="text-m text-white/90 mt-1">Plateforme de gestion SPS</p>
+          <img src={orgLogo} alt={orgName} style={{ height: '7rem', borderRadius: '10px', objectFit: 'contain', background: '#fff', padding: '6px' }} />
+          <p className="text-m text-white/90 mt-1 text-center">{organization?.name || 'Plateforme de gestion SPS'}</p>
         </div>
 
         <nav className="p-4 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px - 120px)' }}>
