@@ -11,6 +11,8 @@ interface OrgBranding {
   logoUrl: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
+  loginTitle?: string | null;
+  loginContent?: string | null;
 }
 
 export default function OrgLoginPage() {
@@ -106,7 +108,10 @@ export default function OrgLoginPage() {
               )}
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">{org.name}</h1>
-            <p className="text-slate-600 text-sm">Portail de connexion</p>
+            <p className="text-slate-600 text-sm">{org.loginTitle || 'Portail de connexion'}</p>
+            {org.loginContent && (
+              <p className="text-slate-500 text-sm mt-3 whitespace-pre-line">{org.loginContent}</p>
+            )}
           </div>
 
           {error && (
