@@ -33,10 +33,9 @@ export function effectivePermission(user: any, module: PermissionModule): Permis
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private jwtAuthGuard: JwtAuthGuard,
-  ) {}
+  private readonly jwtAuthGuard = new JwtAuthGuard();
+
+  constructor(private reflector: Reflector) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const required = this.reflector.getAllAndOverride<RequiredPermission>(PERMISSION_META, [
