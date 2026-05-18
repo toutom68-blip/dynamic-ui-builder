@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PERMISSION_META, RequiredPermission } from '../decorators/permissions.decorator';
 import { UserRole } from '../../user/user.entity';
 import {
@@ -32,16 +33,29 @@ export function effectivePermission(user: any, module: PermissionModule): Permis
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
+  private readonly jwtAuthGuard = new JwtAuthGuard();
+
   constructor(private reflector: Reflector) {}
 
-  canActivate(ctx: ExecutionContext): boolean {
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const required = this.reflector.getAllAndOverride<RequiredPermission>(PERMISSION_META, [
       ctx.getHandler(),
       ctx.getClass(),
     ]);
     if (!required) return true;
 
-    const { user } = ctx.switchToHttp().getRequest();
+    let { user } = ctx.switchToHttp().getRequest();
+    // Global guards run before route-level guards, so JwtAuthGuard may not
+    // have populated `req.user` yet. Run JWT auth on-demand so permission
+    // checks always have an authenticated user when required.
+    if (!user) {
+      try {
+        await this.jwtAuthGuard.canActivate(ctx);
+        user = ctx.switchToHttp().getRequest().user;
+      } catch (e) {
+        throw new ForbiddenException('Non authentifié');
+      }
+    }
     if (!user) throw new ForbiddenException('Non authentifié');
     if (user.role === UserRole.HYPER_ADMIN) return true;
 

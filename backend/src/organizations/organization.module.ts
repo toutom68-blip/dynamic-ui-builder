@@ -4,6 +4,7 @@ import { Organization } from './organization.entity';
 import { OrganizationService } from './organization.service';
 import { OrganizationController } from './organization.controller';
 import { PublicOrganizationController } from './public-organization.controller';
+import { CurrentOrganizationController } from './current-organization.controller';
 import { UserModule } from '../user/user.module';
 import { UploadModule } from '../upload/upload.module';
 
@@ -13,7 +14,7 @@ import { UploadModule } from '../upload/upload.module';
     UserModule,
     UploadModule,
   ],
-  controllers: [OrganizationController, PublicOrganizationController],
+  controllers: [OrganizationController, PublicOrganizationController, CurrentOrganizationController],
   providers: [OrganizationService],
   exports: [OrganizationService],
 })
