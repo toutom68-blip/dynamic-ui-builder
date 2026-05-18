@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Building2, LogOut, ShieldAlert, Users } from 'lucide-react';
+import { LayoutDashboard, Building2, LogOut, Users } from 'lucide-react';
 
 export default function HyperAdminLayout() {
   const { user, profile, loading, signOut } = useAuth();
@@ -37,9 +37,13 @@ export default function HyperAdminLayout() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <aside className="w-64 bg-slate-900 text-white flex flex-col">
-        <div className="p-6 border-b border-white/10 flex items-center gap-3">
-          <ShieldAlert className="w-8 h-8 text-amber-400" />
-          <div>
+        <div className="p-6 border-b border-white/10 flex flex-col items-center gap-2">
+          <img
+            src="/logo_admin.png"
+            alt="Report BTP"
+            className="h-20 w-auto rounded-lg bg-white p-1 object-contain"
+          />
+          <div className="text-center">
             <p className="font-bold leading-tight">Hyper Admin</p>
             <p className="text-xs text-white/60">Supervision globale</p>
           </div>
