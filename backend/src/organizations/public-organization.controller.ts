@@ -23,6 +23,10 @@ export class PublicOrganizationController {
       logoUrl,
       primaryColor: org.primaryColor,
       secondaryColor: org.secondaryColor,
+      cguContent: org.cguContent,
+      privacyContent: org.privacyContent,
+      loginTitle: org.loginTitle,
+      loginContent: org.loginContent,
     };
   }
 }
