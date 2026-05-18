@@ -58,6 +58,10 @@ export class CreateOrganizationDto {
   @IsOptional()
   @IsString()
   adminLastName?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
 
 export class UpdateOrganizationDto {
