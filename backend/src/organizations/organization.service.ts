@@ -37,7 +37,7 @@ export class OrganizationService {
       secondaryColor: dto.secondaryColor ?? null,
       cguContent: dto.cguContent ?? null,
       contactEmail: dto.contactEmail ?? null,
-      isActive: true,
+      isActive: dto.isActive ?? true,
     });
     const saved = await this.orgRepo.save(org);
 
