@@ -36,6 +36,9 @@ export class OrganizationService {
       primaryColor: dto.primaryColor ?? null,
       secondaryColor: dto.secondaryColor ?? null,
       cguContent: dto.cguContent ?? null,
+      privacyContent: dto.privacyContent ?? null,
+      loginTitle: dto.loginTitle ?? null,
+      loginContent: dto.loginContent ?? null,
       contactEmail: dto.contactEmail ?? null,
       isActive: dto.isActive ?? true,
     });
