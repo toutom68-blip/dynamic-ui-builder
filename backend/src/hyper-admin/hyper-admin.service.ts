@@ -1,0 +1,143 @@
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Organization } from '../organizations/organization.entity';
+import { User, UserRole } from '../user/user.entity';
+import { Mission } from '../missions/mission.entity';
+import { Visit } from '../visits/visit.entity';
+import { Report } from '../reports/report.entity';
+import { Client } from '../clients/client.entity';
+import { UserService } from '../user/user.service';
+
+export interface CreateOrgUserDto {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  phone?: string;
+  company?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateOrgUserDto {
+  email?: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: UserRole;
+  phone?: string;
+  company?: string;
+  isActive?: boolean;
+  organizationId?: string | null;
+  permissions?: Record<string, 'none' | 'read' | 'write'>;
+}
+
+@Injectable()
+export class HyperAdminService {
+  constructor(
+    @InjectRepository(Organization) private orgRepo: Repository<Organization>,
+    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Mission) private missionRepo: Repository<Mission>,
+    @InjectRepository(Visit) private visitRepo: Repository<Visit>,
+    @InjectRepository(Report) private reportRepo: Repository<Report>,
+    @InjectRepository(Client) private clientRepo: Repository<Client>,
+    private readonly userService: UserService,
+  ) {}
+
+  async globalDashboard() {
+    const orgs = await this.orgRepo.find({ order: { createdAt: 'DESC' } });
+    const perOrg = await Promise.all(
+      orgs.map(async (org) => ({
+        organization: org,
+        admins: await this.userRepo.count({
+          where: { organizationId: org.id, role: UserRole.ADMIN },
+        }),
+        coordinators: await this.userRepo.count({
+          where: { organizationId: org.id, role: UserRole.USER },
+        }),
+        missions: await this.missionRepo.count({ where: { organizationId: org.id } }),
+        visits: await this.visitRepo.count({ where: { organizationId: org.id } }),
+        reports: await this.reportRepo.count({ where: { organizationId: org.id } }),
+        clients: await this.clientRepo.count({ where: { organizationId: org.id } }),
+      })),
+    );
+
+    return {
+      totals: {
+        organizations: orgs.length,
+        users: await this.userRepo.count(),
+        missions: await this.missionRepo.count(),
+        visits: await this.visitRepo.count(),
+        reports: await this.reportRepo.count(),
+        clients: await this.clientRepo.count(),
+      },
+      perOrganization: perOrg,
+    };
+  }
+
+  allUsers() {
+    return this.userRepo.find({
+      select: ['id', 'email', 'firstName', 'lastName', 'role', 'organizationId', 'isActive', 'createdAt'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async listOrgUsers(orgId: string) {
+    const org = await this.orgRepo.findOne({ where: { id: orgId } });
+    if (!org) throw new NotFoundException('Organisation introuvable');
+    return this.userRepo.find({
+      where: { organizationId: orgId },
+      select: ['id', 'email', 'firstName', 'lastName', 'role', 'phone', 'company', 'isActive', 'organizationId', 'permissions', 'createdAt'],
+      order: { role: 'ASC', createdAt: 'DESC' },
+    });
+  }
+
+  async createOrgUser(orgId: string, dto: CreateOrgUserDto) {
+    const org = await this.orgRepo.findOne({ where: { id: orgId } });
+    if (!org) throw new NotFoundException('Organisation introuvable');
+    if (dto.role === UserRole.HYPER_ADMIN) {
+      throw new ForbiddenException("Impossible de créer un HYPER_ADMIN attaché à une organisation");
+    }
+    if (!dto.email || !dto.password) {
+      throw new BadRequestException('Email et mot de passe requis');
+    }
+    const existing = await this.userRepo.findOne({ where: { email: dto.email } });
+    if (existing) throw new ConflictException('Email déjà utilisé');
+
+    return this.userService.create({
+      email: dto.email,
+      password: dto.password,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      role: dto.role,
+      phone: dto.phone,
+      company: dto.company,
+      isActive: dto.isActive ?? true,
+      organizationId: orgId,
+    } as any);
+  }
+
+  async updateUser(id: string, dto: UpdateOrgUserDto) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    if (dto.role === UserRole.HYPER_ADMIN && user.role !== UserRole.HYPER_ADMIN) {
+      throw new ForbiddenException("Promotion vers HYPER_ADMIN interdite via cette route");
+    }
+    if (dto.email && dto.email !== user.email) {
+      const exists = await this.userRepo.findOne({ where: { email: dto.email } });
+      if (exists) throw new ConflictException('Email déjà utilisé');
+    }
+    return this.userService.update(id, dto as any);
+  }
+
+  async deleteUser(id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    if (user.role === UserRole.HYPER_ADMIN) {
+      throw new ForbiddenException("Impossible de supprimer un HYPER_ADMIN ici");
+    }
+    await this.userRepo.remove(user);
+    return { success: true };
+  }
+}

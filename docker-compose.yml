@@ -1,0 +1,149 @@
+version: "3.8"
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: csps-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "${DATABASE_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - csps-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p ${DATABASE_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: csps-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT:-8089}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: 3306
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_ACCESS_POINT: ${AWS_S3_ACCESS_POINT}
+    ports:
+      - "${PORT}:8089"
+    networks:
+      - csps-network
+    # volumes:
+    #   - ./logs:/app/logs
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8089/api/healthcheck",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # -----------------------
+  # Frontend React / Vite
+  # -----------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: csps-frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - csps-network
+    volumes:
+      - certbot_challenge:/var/www/certbot
+      - certs:/etc/letsencrypt
+    depends_on:
+      - backend
+
+  # -----------------------
+  # Certbot SSL
+  # -----------------------
+  certbot:
+    image: certbot/certbot
+    container_name: csps-certbot
+    restart: unless-stopped
+    depends_on:
+      - frontend
+    networks:
+      - csps-network
+    volumes:
+      - certbot_challenge:/var/www/certbot
+      - certs:/etc/letsencrypt
+    entrypoint: >
+      sh -c "
+      if [ ! -d /etc/letsencrypt/live/reportbtp.com ]; then
+        certbot certonly --webroot -w /var/www/certbot \
+          --non-interactive --agree-tos --email toufik@yooowin.com \
+          -d reportbtp.com -d www.reportbtp.com;
+      fi &&
+      while true; do
+        certbot renew --webroot -w /var/www/certbot --quiet;
+        sleep 12h;
+      done
+      "
+
+# -----------------------
+# Networks
+# -----------------------
+networks:
+  csps-network:
+    driver: bridge
+
+# -----------------------
+# Volumes
+# -----------------------
+volumes:
+  mysql_data:
+  certbot_challenge:
+  certs:
+  nginx_cache:
+  nginx_logs:

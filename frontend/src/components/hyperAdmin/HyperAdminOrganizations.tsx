@@ -1,0 +1,321 @@
+import { useEffect, useRef, useState } from 'react';
+import { organizationsAPI } from '../../lib/api';
+import { Plus, Pencil, Trash2, Upload, X, Loader2, Building2, ExternalLink } from 'lucide-react';
+
+interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  logoS3Key: string | null;
+  logoUrl?: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
+  cguContent: string | null;
+  contactEmail: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+const emptyForm = {
+  name: '',
+  slug: '',
+  primaryColor: '#1e40af',
+  secondaryColor: '#0f172a',
+  contactEmail: '',
+  cguContent: '',
+  isActive: true,
+  adminEmail: '',
+  adminPassword: '',
+  adminFirstName: '',
+  adminLastName: '',
+};
+
+export default function HyperAdminOrganizations() {
+  const [orgs, setOrgs] = useState<Organization[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<Organization | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [uploadingLogoFor, setUploadingLogoFor] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await organizationsAPI.getAll();
+      setOrgs(data);
+    } catch (e: any) {
+      setError(e.message || 'Erreur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm(emptyForm);
+    setShowModal(true);
+  };
+
+  const openEdit = (org: Organization) => {
+    setEditing(org);
+    setForm({
+      ...emptyForm,
+      name: org.name,
+      slug: org.slug,
+      primaryColor: org.primaryColor || '#1e40af',
+      secondaryColor: org.secondaryColor || '#0f172a',
+      contactEmail: org.contactEmail || '',
+      cguContent: org.cguContent || '',
+      isActive: org.isActive,
+    });
+    setShowModal(true);
+  };
+
+  const close = () => { setShowModal(false); setEditing(null); };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      if (editing) {
+        const { adminEmail, adminPassword, adminFirstName, adminLastName, ...payload } = form;
+        await organizationsAPI.update(editing.id, payload);
+      } else {
+        await organizationsAPI.create(form);
+      }
+      close();
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Erreur');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (org: Organization) => {
+    if (!confirm(`Supprimer l'organisation "${org.name}" ? Cette action est définitive.`)) return;
+    try {
+      await organizationsAPI.remove(org.id);
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Erreur');
+    }
+  };
+
+  const onPickLogo = (org: Organization) => {
+    setUploadingLogoFor(org.id);
+    fileInputRef.current?.click();
+  };
+
+  const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !uploadingLogoFor) return;
+    try {
+      await organizationsAPI.uploadLogo(uploadingLogoFor, file);
+      await load();
+    } catch (err: any) {
+      alert(err.message || 'Échec upload');
+    } finally {
+      setUploadingLogoFor(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Organisations</h1>
+          <p className="text-slate-500 mt-1">Créer, modifier et gérer chaque tenant.</p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg font-medium"
+        >
+          <Plus className="w-4 h-4" /> Nouvelle organisation
+        </button>
+      </div>
+
+      {error && <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">{error}</div>}
+
+      {loading ? (
+        <div className="flex items-center gap-2 text-slate-500"><Loader2 className="w-4 h-4 animate-spin" /> Chargement...</div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {orgs.map((org) => (
+            <div key={org.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                <div
+                  className="w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-bold flex-shrink-0 overflow-hidden"
+                  style={{ backgroundColor: org.primaryColor || '#1e40af' }}
+                >
+                  {org.logoUrl ? (
+                    <img src={org.logoUrl} alt={org.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <Building2 className="w-7 h-7" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-slate-900 truncate">{org.name}</h3>
+                  <a
+                    href={`/login/${org.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    /login/{org.slug} <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <div className="mt-1">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${org.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                      {org.isActive ? 'Actif' : 'Inactif'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 flex-wrap text-xs text-slate-500">
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-3 h-3 rounded" style={{ backgroundColor: org.primaryColor || '#1e40af' }} />
+                  {org.primaryColor || '—'}
+                </span>
+                <span className="inline-flex items-center gap-1 ml-2">
+                  <span className="w-3 h-3 rounded" style={{ backgroundColor: org.secondaryColor || '#0f172a' }} />
+                  {org.secondaryColor || '—'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mt-auto">
+                <button
+                  onClick={() => onPickLogo(org)}
+                  className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg"
+                >
+                  <Upload className="w-3.5 h-3.5" /> Logo
+                </button>
+                <button
+                  onClick={() => openEdit(org)}
+                  className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg"
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Modifier
+                </button>
+                <button
+                  onClick={() => remove(org)}
+                  className="inline-flex items-center justify-center px-3 py-2 text-xs bg-red-50 hover:bg-red-100 text-red-600 rounded-lg"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+          {orgs.length === 0 && (
+            <div className="col-span-full text-center text-slate-400 py-12">Aucune organisation. Créez la première.</div>
+          )}
+        </div>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">
+                {editing ? `Modifier ${editing.name}` : 'Nouvelle organisation'}
+              </h2>
+              <button onClick={close} className="p-1 hover:bg-slate-100 rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={submit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Nom *" required value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+                <Field
+                  label="Slug (URL) *"
+                  required
+                  value={form.slug}
+                  onChange={(v) => setForm({ ...form, slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                  hint="Minuscules, chiffres et tirets uniquement (ex: edf)"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorField label="Couleur primaire" value={form.primaryColor} onChange={(v) => setForm({ ...form, primaryColor: v })} />
+                <ColorField label="Couleur secondaire" value={form.secondaryColor} onChange={(v) => setForm({ ...form, secondaryColor: v })} />
+              </div>
+              <Field label="Email contact" type="email" value={form.contactEmail} onChange={(v) => setForm({ ...form, contactEmail: v })} />
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">CGU</label>
+                <textarea
+                  rows={4}
+                  value={form.cguContent}
+                  onChange={(e) => setForm({ ...form, cguContent: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
+                <span className="text-sm">Organisation active</span>
+              </label>
+
+              {!editing && (
+                <div className="border-t border-slate-200 pt-4 space-y-3">
+                  <p className="text-sm font-semibold text-slate-700">Administrateur initial (optionnel)</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Email admin" type="email" value={form.adminEmail} onChange={(v) => setForm({ ...form, adminEmail: v })} />
+                    <Field label="Mot de passe" type="password" value={form.adminPassword} onChange={(v) => setForm({ ...form, adminPassword: v })} />
+                    <Field label="Prénom" value={form.adminFirstName} onChange={(v) => setForm({ ...form, adminFirstName: v })} />
+                    <Field label="Nom" value={form.adminLastName} onChange={(v) => setForm({ ...form, adminLastName: v })} />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
+                <button type="button" onClick={close} className="px-4 py-2 text-sm rounded-lg hover:bg-slate-100">Annuler</button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium disabled:opacity-50"
+                >
+                  {saving ? 'Enregistrement...' : editing ? 'Enregistrer' : 'Créer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const Field = ({ label, value, onChange, type = 'text', required, hint }: any) => (
+  <div>
+    <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+    <input
+      type={type}
+      value={value}
+      required={required}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
+    />
+    {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
+  </div>
+);
+
+const ColorField = ({ label, value, onChange }: any) => (
+  <div>
+    <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+    <div className="flex items-center gap-2">
+      <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-12 h-10 border border-slate-300 rounded cursor-pointer" />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
+      />
+    </div>
+  </div>
+);
