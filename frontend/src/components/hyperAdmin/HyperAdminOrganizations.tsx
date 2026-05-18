@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { organizationsAPI } from '../../lib/api';
-import { Plus, Pencil, Trash2, Upload, X, Loader2, Building2, ExternalLink } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X, Loader2, Building2, ExternalLink, FileText, Image as ImageIcon, Check } from 'lucide-react';
 
 interface Organization {
   id: string;
@@ -11,6 +11,9 @@ interface Organization {
   primaryColor: string | null;
   secondaryColor: string | null;
   cguContent: string | null;
+  privacyContent?: string | null;
+  loginTitle?: string | null;
+  loginContent?: string | null;
   contactEmail: string | null;
   isActive: boolean;
   createdAt: string;
@@ -23,6 +26,9 @@ const emptyForm = {
   secondaryColor: '#0f172a',
   contactEmail: '',
   cguContent: '',
+  privacyContent: '',
+  loginTitle: '',
+  loginContent: '',
   isActive: true,
   adminEmail: '',
   adminPassword: '',
@@ -41,6 +47,11 @@ export default function HyperAdminOrganizations() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogoFor, setUploadingLogoFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const modalLogoRef = useRef<HTMLInputElement>(null);
+  const cguFileRef = useRef<HTMLInputElement>(null);
+  const privacyFileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -59,6 +70,8 @@ export default function HyperAdminOrganizations() {
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm);
+    setLogoFile(null);
+    setLogoPreview(null);
     setShowModal(true);
   };
 
@@ -72,22 +85,35 @@ export default function HyperAdminOrganizations() {
       secondaryColor: org.secondaryColor || '#0f172a',
       contactEmail: org.contactEmail || '',
       cguContent: org.cguContent || '',
+      privacyContent: org.privacyContent || '',
+      loginTitle: org.loginTitle || '',
+      loginContent: org.loginContent || '',
       isActive: org.isActive,
     });
+    setLogoFile(null);
+    setLogoPreview(org.logoUrl || null);
     setShowModal(true);
   };
 
-  const close = () => { setShowModal(false); setEditing(null); };
+  const close = () => { setShowModal(false); setEditing(null); setLogoFile(null); setLogoPreview(null); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
+      let targetId: string;
       if (editing) {
         const { adminEmail, adminPassword, adminFirstName, adminLastName, ...payload } = form;
         await organizationsAPI.update(editing.id, payload);
+        targetId = editing.id;
       } else {
-        await organizationsAPI.create(form);
+        const created = await organizationsAPI.create(form);
+        targetId = created.id;
+      }
+      if (logoFile && targetId) {
+        try { await organizationsAPI.uploadLogo(targetId, logoFile); } catch (err: any) {
+          alert('Organisation enregistrée, mais échec upload logo : ' + (err.message || ''));
+        }
       }
       close();
       await load();
@@ -127,9 +153,38 @@ export default function HyperAdminOrganizations() {
     }
   };
 
+  const onModalLogoSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const onTextFileSelected = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'cguContent' | 'privacyContent',
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const ext = file.name.toLowerCase().split('.').pop() || '';
+    if (!['txt', 'md', 'html', 'htm'].includes(ext)) {
+      alert('Format non supporté. Utilisez .txt, .md ou .html');
+      return;
+    }
+    const text = await file.text();
+    setForm((f) => ({ ...f, [field]: text }));
+  };
+
   return (
     <div className="space-y-6">
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
+      <input ref={modalLogoRef} type="file" accept="image/*" className="hidden" onChange={onModalLogoSelected} />
+      <input ref={cguFileRef} type="file" accept=".txt,.md,.html,.htm,text/plain,text/markdown,text/html" className="hidden" onChange={(e) => onTextFileSelected(e, 'cguContent')} />
+      <input ref={privacyFileRef} type="file" accept=".txt,.md,.html,.htm,text/plain,text/markdown,text/html" className="hidden" onChange={(e) => onTextFileSelected(e, 'privacyContent')} />
 
       <div className="flex items-center justify-between">
         <div>
