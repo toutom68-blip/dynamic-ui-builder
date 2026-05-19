@@ -8,8 +8,21 @@
 //   isCgu: boolean;
 // };
 
-export default function Cgu() {  
+import { useAuth } from '../contexts/AuthContext';
+
+export default function Cgu() {
+  const { organization } = useAuth();
+  if (organization?.cguContent && organization.cguContent.trim().length > 0) {
     return (
+      <div className="p-6 text-base leading-relaxed">
+        <h1 className="text-3xl font-bold mb-4">
+          Conditions Générales d'Utilisation – {organization.name}
+        </h1>
+        <div className="whitespace-pre-line">{organization.cguContent}</div>
+      </div>
+    );
+  }
+  return (
       <div className="p-6 space-y-10 text-base leading-relaxed">
         {/* CGU */}
         <section>
