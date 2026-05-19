@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { organizationsAPI } from '../../lib/api';
-import { Plus, Pencil, Trash2, Upload, X, Loader2, Building2, ExternalLink, FileText, Image as ImageIcon, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X, Loader2, Building2, ExternalLink, FileText, Image as ImageIcon, Check, Search } from 'lucide-react';
 
 interface Organization {
   id: string;
@@ -8,6 +8,8 @@ interface Organization {
   slug: string;
   logoS3Key: string | null;
   logoUrl?: string | null;
+  backgroundImageS3Key?: string | null;
+  backgroundImageUrl?: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
   cguContent: string | null;
@@ -52,6 +54,13 @@ export default function HyperAdminOrganizations() {
   const modalLogoRef = useRef<HTMLInputElement>(null);
   const cguFileRef = useRef<HTMLInputElement>(null);
   const privacyFileRef = useRef<HTMLInputElement>(null);
+  const [bgFile, setBgFile] = useState<File | null>(null);
+  const [bgPreview, setBgPreview] = useState<string | null>(null);
+  const modalBgRef = useRef<HTMLInputElement>(null);
+
+  // Filters
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const load = async () => {
     setLoading(true);
@@ -72,6 +81,8 @@ export default function HyperAdminOrganizations() {
     setForm(emptyForm);
     setLogoFile(null);
     setLogoPreview(null);
+    setBgFile(null);
+    setBgPreview(null);
     setShowModal(true);
   };
 
@@ -92,10 +103,19 @@ export default function HyperAdminOrganizations() {
     });
     setLogoFile(null);
     setLogoPreview(org.logoUrl || null);
+    setBgFile(null);
+    setBgPreview(org.backgroundImageUrl || null);
     setShowModal(true);
   };
 
-  const close = () => { setShowModal(false); setEditing(null); setLogoFile(null); setLogoPreview(null); };
+  const close = () => {
+    setShowModal(false);
+    setEditing(null);
+    setLogoFile(null);
+    setLogoPreview(null);
+    setBgFile(null);
+    setBgPreview(null);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +133,11 @@ export default function HyperAdminOrganizations() {
       if (logoFile && targetId) {
         try { await organizationsAPI.uploadLogo(targetId, logoFile); } catch (err: any) {
           alert('Organisation enregistrée, mais échec upload logo : ' + (err.message || ''));
+        }
+      }
+      if (bgFile && targetId) {
+        try { await organizationsAPI.uploadBackground(targetId, bgFile); } catch (err: any) {
+          alert('Organisation enregistrée, mais échec upload image de fond : ' + (err.message || ''));
         }
       }
       close();
@@ -163,6 +188,16 @@ export default function HyperAdminOrganizations() {
     reader.readAsDataURL(file);
   };
 
+  const onModalBgSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setBgFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setBgPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const onTextFileSelected = async (
     e: React.ChangeEvent<HTMLInputElement>,
     field: 'cguContent' | 'privacyContent',
@@ -179,10 +214,25 @@ export default function HyperAdminOrganizations() {
     setForm((f) => ({ ...f, [field]: text }));
   };
 
+  const filteredOrgs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return orgs.filter((o) => {
+      if (statusFilter === 'active' && !o.isActive) return false;
+      if (statusFilter === 'inactive' && o.isActive) return false;
+      if (!q) return true;
+      return (
+        o.name.toLowerCase().includes(q) ||
+        o.slug.toLowerCase().includes(q) ||
+        (o.contactEmail || '').toLowerCase().includes(q)
+      );
+    });
+  }, [orgs, search, statusFilter]);
+
   return (
     <div className="space-y-6">
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
       <input ref={modalLogoRef} type="file" accept="image/*" className="hidden" onChange={onModalLogoSelected} />
+      <input ref={modalBgRef} type="file" accept="image/*" className="hidden" onChange={onModalBgSelected} />
       <input ref={cguFileRef} type="file" accept=".txt,.md,.html,.htm,text/plain,text/markdown,text/html" className="hidden" onChange={(e) => onTextFileSelected(e, 'cguContent')} />
       <input ref={privacyFileRef} type="file" accept=".txt,.md,.html,.htm,text/plain,text/markdown,text/html" className="hidden" onChange={(e) => onTextFileSelected(e, 'privacyContent')} />
 
@@ -201,11 +251,37 @@ export default function HyperAdminOrganizations() {
 
       {error && <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">{error}</div>}
 
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher par nom, slug, email…"
+            className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+        >
+          <option value="all">Tous les statuts</option>
+          <option value="active">Actifs</option>
+          <option value="inactive">Inactifs</option>
+        </select>
+        <div className="text-sm text-slate-500 self-center">
+          {filteredOrgs.length} / {orgs.length}
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex items-center gap-2 text-slate-500"><Loader2 className="w-4 h-4 animate-spin" /> Chargement...</div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {orgs.map((org) => (
+          {filteredOrgs.map((org) => (
             <div key={org.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-4">
               <div className="flex items-start gap-4">
                 <div
@@ -269,7 +345,7 @@ export default function HyperAdminOrganizations() {
               </div>
             </div>
           ))}
-          {orgs.length === 0 && (
+          {filteredOrgs.length === 0 && (
             <div className="col-span-full text-center text-slate-400 py-12">Aucune organisation. Créez la première.</div>
           )}
         </div>
@@ -328,10 +404,59 @@ export default function HyperAdminOrganizations() {
                 <ColorField label="Couleur primaire" value={form.primaryColor} onChange={(v) => setForm({ ...form, primaryColor: v })} />
                 <ColorField label="Couleur secondaire" value={form.secondaryColor} onChange={(v) => setForm({ ...form, secondaryColor: v })} />
               </div>
-              <Field label="Email contact" type="email" value={form.contactEmail} onChange={(v) => setForm({ ...form, contactEmail: v })} />
+              <Field label="Email contact *" required type="email" value={form.contactEmail} onChange={(v) => setForm({ ...form, contactEmail: v })} />
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Image de fond (page de connexion)
+                  <span className="text-slate-400 font-normal"> – optionnel</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-32 h-20 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0"
+                    style={
+                      !bgPreview
+                        ? {
+                            background: `linear-gradient(135deg, ${form.secondaryColor} 0%, ${form.primaryColor} 100%)`,
+                          }
+                        : undefined
+                    }
+                  >
+                    {bgPreview ? (
+                      <img src={bgPreview} alt="bg" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] text-white/80">Couleur par défaut</span>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => modalBgRef.current?.click()}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded-lg"
+                    >
+                      <Upload className="w-4 h-4" /> {bgFile ? "Changer l'image" : 'Choisir une image'}
+                    </button>
+                    {bgFile && (
+                      <span className="text-xs text-slate-500 inline-flex items-center gap-1">
+                        <Check className="w-3 h-3 text-emerald-600" /> {bgFile.name}
+                      </span>
+                    )}
+                    {bgPreview && (
+                      <button
+                        type="button"
+                        onClick={() => { setBgFile(null); setBgPreview(null); }}
+                        className="text-xs text-red-600 hover:underline text-left"
+                      >
+                        Retirer
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-slate-700">CGU</label>
+                  <label className="block text-sm font-medium text-slate-700">CGU *</label>
                   <button
                     type="button"
                     onClick={() => cguFileRef.current?.click()}
@@ -342,6 +467,7 @@ export default function HyperAdminOrganizations() {
                 </div>
                 <textarea
                   rows={4}
+                  required
                   value={form.cguContent}
                   onChange={(e) => setForm({ ...form, cguContent: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
@@ -349,7 +475,7 @@ export default function HyperAdminOrganizations() {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-slate-700">Politique de confidentialité</label>
+                  <label className="block text-sm font-medium text-slate-700">Politique de confidentialité *</label>
                   <button
                     type="button"
                     onClick={() => privacyFileRef.current?.click()}
@@ -360,6 +486,7 @@ export default function HyperAdminOrganizations() {
                 </div>
                 <textarea
                   rows={4}
+                  required
                   value={form.privacyContent}
                   onChange={(e) => setForm({ ...form, privacyContent: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
@@ -369,15 +496,17 @@ export default function HyperAdminOrganizations() {
               <div className="border-t border-slate-200 pt-4 space-y-3">
                 <p className="text-sm font-semibold text-slate-700">Personnalisation de la page de connexion</p>
                 <Field
-                  label="Titre du portail"
+                  label="Titre du portail *"
+                  required
                   value={form.loginTitle}
                   onChange={(v) => setForm({ ...form, loginTitle: v })}
                   hint="Affiché sous le logo (ex: Portail de connexion EDF)"
                 />
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Texte d'accueil</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Texte d'accueil *</label>
                   <textarea
                     rows={3}
+                    required
                     value={form.loginContent}
                     onChange={(e) => setForm({ ...form, loginContent: e.target.value })}
                     placeholder="Message affiché sur la page de connexion personnalisée"
@@ -393,12 +522,12 @@ export default function HyperAdminOrganizations() {
 
               {!editing && (
                 <div className="border-t border-slate-200 pt-4 space-y-3">
-                  <p className="text-sm font-semibold text-slate-700">Administrateur initial (optionnel)</p>
+                  <p className="text-sm font-semibold text-slate-700">Administrateur initial</p>
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Email admin" type="email" value={form.adminEmail} onChange={(v) => setForm({ ...form, adminEmail: v })} />
-                    <Field label="Mot de passe" type="password" value={form.adminPassword} onChange={(v) => setForm({ ...form, adminPassword: v })} />
-                    <Field label="Prénom" value={form.adminFirstName} onChange={(v) => setForm({ ...form, adminFirstName: v })} />
-                    <Field label="Nom" value={form.adminLastName} onChange={(v) => setForm({ ...form, adminLastName: v })} />
+                    <Field label="Email admin *" required type="email" value={form.adminEmail} onChange={(v) => setForm({ ...form, adminEmail: v })} />
+                    <Field label="Mot de passe *" required type="password" value={form.adminPassword} onChange={(v) => setForm({ ...form, adminPassword: v })} />
+                    <Field label="Prénom *" required value={form.adminFirstName} onChange={(v) => setForm({ ...form, adminFirstName: v })} />
+                    <Field label="Nom *" required value={form.adminLastName} onChange={(v) => setForm({ ...form, adminLastName: v })} />
                   </div>
                 </div>
               )}

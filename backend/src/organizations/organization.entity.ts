@@ -22,6 +22,9 @@ export class Organization {
   @Column({ type: 'varchar', length: 500, nullable: true })
   logoS3Key: string | null;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  backgroundImageS3Key: string | null;
+
   @Column({ type: 'varchar', length: 32, nullable: true })
   primaryColor: string | null;
 

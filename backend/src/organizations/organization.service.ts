@@ -103,10 +103,38 @@ export class OrganizationService {
     return this.orgRepo.save(org);
   }
 
+  async setBackgroundImage(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<Organization> {
+    if (!file) throw new BadRequestException('Aucun fichier fourni');
+    const org = await this.findOne(id);
+
+    const prefix =
+      process.env.AWS_S3_BACKGROUNDS_PREFIX || 'organizations/backgrounds/';
+    const folder = `${prefix}${id}`.replace(/\/+$/, '');
+
+    const uploaded = await this.uploadService.uploadFile(file, folder);
+    org.backgroundImageS3Key = uploaded.key;
+    return this.orgRepo.save(org);
+  }
+
   async getLogoUrl(org: Organization): Promise<string | null> {
     if (!org.logoS3Key) return null;
     try {
       return await this.uploadService.getSignedUrl(org.logoS3Key, 3600);
+    } catch {
+      return null;
+    }
+  }
+
+  async getBackgroundImageUrl(org: Organization): Promise<string | null> {
+    if (!org.backgroundImageS3Key) return null;
+    try {
+      return await this.uploadService.getSignedUrl(
+        org.backgroundImageS3Key,
+        3600,
+      );
     } catch {
       return null;
     }

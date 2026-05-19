@@ -368,6 +368,21 @@ export const organizationsAPI = {
     }
     return response.json();
   },
+  uploadBackground: async (id: string, file: File) => {
+    const token = getAccessToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/hyper-admin/organizations/${id}/background`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || 'Upload failed');
+    }
+    return response.json();
+  },
 };
 
 export const hyperAdminAPI = {

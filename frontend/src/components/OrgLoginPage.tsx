@@ -9,6 +9,7 @@ interface OrgBranding {
   name: string;
   slug: string;
   logoUrl: string | null;
+  backgroundImageUrl?: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
   loginTitle?: string | null;
@@ -86,33 +87,48 @@ export default function OrgLoginPage() {
 
   const primary = org.primaryColor || '#1e40af';
   const secondary = org.secondaryColor || '#0f172a';
+  const bgGradient = `linear-gradient(135deg, ${secondary} 0%, ${primary} 100%)`;
+  const leftStyle: React.CSSProperties = org.backgroundImageUrl
+    ? {
+        backgroundImage: `linear-gradient(135deg, ${secondary}cc 0%, ${primary}cc 100%), url(${org.backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : { background: bgGradient };
 
   return (
-    <div
-      className="min-h-screen relative flex items-center justify-center p-4"
-      style={{ background: `linear-gradient(135deg, ${secondary} 0%, ${primary} 100%)` }}
-    >
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              {org.logoUrl ? (
-                <img src={org.logoUrl} alt={org.name} className="h-24 object-contain" />
-              ) : (
-                <div
-                  className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold"
-                  style={{ backgroundColor: primary }}
-                >
-                  {org.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">{org.name}</h1>
-            <p className="text-slate-600 text-sm">{org.loginTitle || 'Portail de connexion'}</p>
-            {org.loginContent && (
-              <p className="text-slate-500 text-sm mt-3 whitespace-pre-line">{org.loginContent}</p>
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left side – branding */}
+      <div
+        className="lg:w-1/2 flex items-center justify-center p-10 text-white relative"
+        style={leftStyle}
+      >
+        <div className="max-w-md text-center lg:text-left">
+          <div className="flex lg:justify-start justify-center mb-8">
+            {org.logoUrl ? (
+              <img src={org.logoUrl} alt={org.name} className="h-24 object-contain" />
+            ) : (
+              <div
+                className="w-24 h-24 rounded-full flex items-center justify-center bg-white/20 text-white text-3xl font-bold"
+              >
+                {org.name.charAt(0).toUpperCase()}
+              </div>
             )}
           </div>
+          <h1 className="text-4xl font-bold mb-3">
+            {org.loginTitle || 'Portail de connexion'}
+          </h1>
+          {org.loginContent && (
+            <p className="text-white/90 text-base whitespace-pre-line">{org.loginContent}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Right side – login form */}
+      <div className="lg:w-1/2 flex items-center justify-center p-6 bg-slate-50">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6 text-center">{org.name}</h2>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
@@ -170,8 +186,9 @@ export default function OrgLoginPage() {
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
+          </div>
+          <p className="text-center text-sm text-slate-500 mt-6">Système sécurisé conforme RGPD</p>
         </div>
-        <p className="text-center text-sm text-white/90 mt-6">Système sécurisé conforme RGPD</p>
       </div>
     </div>
   );

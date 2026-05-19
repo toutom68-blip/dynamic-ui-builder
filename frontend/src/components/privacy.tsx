@@ -8,7 +8,20 @@
 //   isCgu: boolean;
 // };
 
+import { useAuth } from '../contexts/AuthContext';
+
 export default function Privacy() {
+  const { organization } = useAuth();
+  if (organization?.privacyContent && organization.privacyContent.trim().length > 0) {
+    return (
+      <div className="p-6 text-base leading-relaxed">
+        <h1 className="text-3xl font-bold mb-4">
+          Politique de Confidentialité – {organization.name}
+        </h1>
+        <div className="whitespace-pre-line">{organization.privacyContent}</div>
+      </div>
+    );
+  }
   return (
     <div className="p-6 space-y-10 text-base leading-relaxed">
       {/* Politique de Confidentialité */}
