@@ -20,8 +20,13 @@ export interface Organization {
   name: string;
   slug: string;
   logoUrl: string | null;
+  backgroundImageUrl?: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
+  cguContent?: string | null;
+  privacyContent?: string | null;
+  loginTitle?: string | null;
+  loginContent?: string | null;
 }
 
 interface AuthContextType {
