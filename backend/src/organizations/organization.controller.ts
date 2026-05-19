@@ -31,15 +31,23 @@ export class OrganizationController {
   constructor(private readonly orgService: OrganizationService) {}
 
   @Get()
-  findAll() {
-    return this.orgService.findAll();
+  async findAll() {
+    const orgs = await this.orgService.findAll();
+    return Promise.all(
+      orgs.map(async (o) => ({
+        ...o,
+        logoUrl: await this.orgService.getLogoUrl(o),
+        backgroundImageUrl: await this.orgService.getBackgroundImageUrl(o),
+      })),
+    );
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const org = await this.orgService.findOne(id);
     const logoUrl = await this.orgService.getLogoUrl(org);
-    return { ...org, logoUrl };
+    const backgroundImageUrl = await this.orgService.getBackgroundImageUrl(org);
+    return { ...org, logoUrl, backgroundImageUrl };
   }
 
   @Post()
@@ -64,5 +72,14 @@ export class OrganizationController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.orgService.setLogo(id, file);
+  }
+
+  @Post(':id/background')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadBackground(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.orgService.setBackgroundImage(id, file);
   }
 }
