@@ -19,13 +19,19 @@ export class CurrentOrganizationController {
     const org = await this.orgService.findOne(user.organizationId).catch(() => null);
     if (!org) throw new NotFoundException('Organisation introuvable');
     const logoUrl = await this.orgService.getLogoUrl(org);
+    const backgroundImageUrl = await this.orgService.getBackgroundImageUrl(org);
     return {
       id: org.id,
       name: org.name,
       slug: org.slug,
       logoUrl,
+      backgroundImageUrl,
       primaryColor: org.primaryColor,
       secondaryColor: org.secondaryColor,
+      cguContent: org.cguContent,
+      privacyContent: org.privacyContent,
+      loginTitle: org.loginTitle,
+      loginContent: org.loginContent,
     };
   }
 }
