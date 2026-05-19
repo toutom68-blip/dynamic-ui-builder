@@ -78,6 +78,6 @@ export default function Cgu() {
           <p>toufik@yooowin.com – 5 rue du Banquier, 75013 Paris</p>
         </section>
       </div>
-    );  
+  );
 }
 
