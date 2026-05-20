@@ -7,6 +7,7 @@ import MissionDispatch from '../components/MissionDispatch';
 import ReportManagement from '../components/ReportManagement';
 import VisitManagement from '../components/VisitManagement';
 import ActivityLogs from '../components/ActivityLogs';
+import MailingListManagement from '../components/MailingListManagement';
 import LoginPage from '../components/LoginPage';
 import OrgLoginPage from '../components/OrgLoginPage';
 import HyperAdminLayout from '../components/hyperAdmin/HyperAdminLayout';
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: 'dispatch', element: <MissionDispatch /> },
       { path: 'visits', element: <VisitManagement /> },
       { path: 'reports', element: <ReportManagement /> },
+      { path: 'mailing-list', element: <MailingListManagement /> },
       { path: 'logs', element: <ActivityLogs /> },
       { path: 'privacy-policy', element: <Privacy /> },
       { path: 'cgu-terms', element: <Cgu /> },
