@@ -12,6 +12,7 @@ import {
   Activity,
   LogOut,
   Camera,
+  Mail,
 } from 'lucide-react';
 
 export default function Layout() {
@@ -49,6 +50,7 @@ export default function Layout() {
     { path: `${base}/dispatch`, name: 'Attribution', icon: Send, show: isAdmin },
     { path: `${base}/reports`, name: 'Rapports', icon: FileText, show: true },
     { path: `${base}/users`, name: 'Utilisateurs', icon: Users, show: isAdmin },
+    { path: `${base}/mailing-list`, name: 'Liste de diffusion', icon: Mail, show: true },
     { path: `${base}/logs`, name: 'Logs d\'activité', icon: Activity, show: false },
     { path: `${base}/cgu-terms`, name: 'CGU', icon: FileText, show: true },
     { path: `${base}/privacy-policy`, name: 'Politique de confidentialité', icon: FileText, show: true },

@@ -29,6 +29,7 @@ import { visitService } from '@/services/visitService';
 import { useAuth } from '@/contexts/AuthContext';
 
 import * as MailComposer from 'expo-mail-composer';
+import { mailingListService } from '../../services/mailingListService';
 import { uploadService } from '@/services/uploadService';
 import { Mission, missionService } from '../../services/missionService';
 import { useLocalSearchParams } from 'expo-router';
@@ -649,11 +650,13 @@ ${userProfile && `Coordonnateur: ${userProfile.firstName} ${userProfile.lastName
       }
 
       // 5️⃣ Préparer l’email avec texte pré-rempli et pièce jointe
-      const mailOptions = {
+      const ccEmails = await mailingListService.getCcEmails().catch(() => []);
+      const ccList = ccEmails.filter((e) => e && e.toLowerCase() !== clientEmail.toLowerCase());
+      const mailOptions: any = {
         recipients: [clientEmail],
+        ccRecipients: ccList.length ? ccList : undefined,
         subject: subject,
         body: body,
-
       };
 
       if (pdfPath) {

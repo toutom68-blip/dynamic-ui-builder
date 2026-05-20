@@ -262,6 +262,18 @@ export const reportsAPI = {
   },
 };
 
+export const mailingListAPI = {
+  getAll: async () => apiRequest('/mailing-list'),
+  create: async (data: { email: string; name?: string }) =>
+    apiRequest('/mailing-list', { method: 'POST', body: JSON.stringify(data) }),
+  update: async (id: string, data: { email?: string; name?: string }) =>
+    apiRequest(`/mailing-list/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: async (id: string) =>
+    apiRequest(`/mailing-list/${id}`, { method: 'DELETE' }),
+  bulkCreate: async (entries: Array<{ email: string; name?: string }>) =>
+    apiRequest('/mailing-list/bulk', { method: 'POST', body: JSON.stringify({ entries }) }),
+};
+
 export const visitsAPI = {
   getAll: async (missionId?: string) => {
     const url = missionId ? `/visits?missionId=${missionId}` : '/visits';

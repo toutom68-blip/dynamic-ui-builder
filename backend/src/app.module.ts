@@ -20,6 +20,7 @@ import { HyperAdminModule } from './hyper-admin/hyper-admin.module';
 import { APP_GUARD } from '@nestjs/core';
 import { OrganizationScopeGuard } from './common/guards/organization-scope.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
+import { MailingListModule } from './mailing-list/mailing-list.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     OrganizationModule,
     ClientModule,
     HyperAdminModule,
+    MailingListModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: OrganizationScopeGuard },
