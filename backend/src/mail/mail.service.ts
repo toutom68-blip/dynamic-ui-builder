@@ -9,10 +9,11 @@ export class MailService {
 
   private readonly logger = new Logger(MailService.name);
 
-  async sendPdfReport(to: string, subject: string, text: string, pdfBuffer: Readable, pdfName: string) {
+  async sendPdfReport(to: string, subject: string, text: string, pdfBuffer: Readable, pdfName: string, cc?: string[]) {
     try {
       let options: ISendMailOptions = {
         to,
+        cc: cc && cc.length ? cc : undefined,
         subject,
         text,
         attachments: [
