@@ -297,12 +297,12 @@ export default function HyperAdminOrganizations() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-slate-900 truncate">{org.name}</h3>
                   <a
-                    href={`/login/${org.slug}`}
+                    href={`/${org.slug}/login`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
                   >
-                    /login/{org.slug} <ExternalLink className="w-3 h-3" />
+                    /{org.slug}/login <ExternalLink className="w-3 h-3" />
                   </a>
                   <div className="mt-1">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${org.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
@@ -456,7 +456,9 @@ export default function HyperAdminOrganizations() {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-slate-700">CGU *</label>
+                  <label className="block text-sm font-medium text-slate-700">
+                    CGU <span className="text-slate-400 font-normal">– optionnel</span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => cguFileRef.current?.click()}
@@ -467,7 +469,6 @@ export default function HyperAdminOrganizations() {
                 </div>
                 <textarea
                   rows={4}
-                  required
                   value={form.cguContent}
                   onChange={(e) => setForm({ ...form, cguContent: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
@@ -475,7 +476,9 @@ export default function HyperAdminOrganizations() {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-slate-700">Politique de confidentialité *</label>
+                  <label className="block text-sm font-medium text-slate-700">
+                    Politique de confidentialité <span className="text-slate-400 font-normal">– optionnel</span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => privacyFileRef.current?.click()}
@@ -486,7 +489,6 @@ export default function HyperAdminOrganizations() {
                 </div>
                 <textarea
                   rows={4}
-                  required
                   value={form.privacyContent}
                   onChange={(e) => setForm({ ...form, privacyContent: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
@@ -496,17 +498,17 @@ export default function HyperAdminOrganizations() {
               <div className="border-t border-slate-200 pt-4 space-y-3">
                 <p className="text-sm font-semibold text-slate-700">Personnalisation de la page de connexion</p>
                 <Field
-                  label="Titre du portail *"
-                  required
+                  label="Titre du portail"
                   value={form.loginTitle}
                   onChange={(v) => setForm({ ...form, loginTitle: v })}
-                  hint="Affiché sous le logo (ex: Portail de connexion EDF)"
+                  hint="Optionnel — affiché sous le logo (ex: Portail de connexion EDF)"
                 />
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Texte d'accueil *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Texte d'accueil <span className="text-slate-400 font-normal">– optionnel</span>
+                  </label>
                   <textarea
                     rows={3}
-                    required
                     value={form.loginContent}
                     onChange={(e) => setForm({ ...form, loginContent: e.target.value })}
                     placeholder="Message affiché sur la page de connexion personnalisée"

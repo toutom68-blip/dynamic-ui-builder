@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, organization } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -27,9 +27,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      navigate(user.role === 'ROLE_HYPER_ADMIN' ? '/hyper-admin' : '/dashboard');
+      if (user.role === 'ROLE_HYPER_ADMIN') {
+        navigate('/hyper-admin');
+      } else if (organization?.slug) {
+        navigate(`/${organization.slug}/dashboard`);
+      }
     }
-  }, [user, navigate]);
+  }, [user, organization, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

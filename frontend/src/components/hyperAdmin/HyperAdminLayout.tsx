@@ -1,19 +1,21 @@
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Building2, LogOut, Users } from 'lucide-react';
+import { LayoutDashboard, Building2, LogOut, Users, FileText, Shield } from 'lucide-react';
 
 export default function HyperAdminLayout() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, organization, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (!loading) {
       if (!user) navigate('/login');
-      else if (user.role !== 'ROLE_HYPER_ADMIN') navigate('/dashboard');
+      else if (user.role !== 'ROLE_HYPER_ADMIN') {
+        navigate(organization?.slug ? `/${organization.slug}/dashboard` : '/login');
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, organization, loading, navigate]);
 
   if (loading || !user) {
     return (
@@ -24,9 +26,11 @@ export default function HyperAdminLayout() {
   }
 
   const nav = [
-    { path: '/hyper-admin', name: 'Vue globale', icon: LayoutDashboard, exact: true },
+    { path: '/hyper-admin', name: 'Tableau de bord', icon: LayoutDashboard, exact: true },
     { path: '/hyper-admin/organizations', name: 'Organisations', icon: Building2 },
     { path: '/hyper-admin/users', name: 'Admins & coordinateurs', icon: Users },
+    { path: '/hyper-admin/cgu', name: 'CGU', icon: FileText },
+    { path: '/hyper-admin/privacy', name: 'Confidentialité', icon: Shield },
   ];
 
   const handleSignOut = async () => {

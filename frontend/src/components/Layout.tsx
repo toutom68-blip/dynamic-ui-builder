@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
   LayoutDashboard,
@@ -18,17 +18,19 @@ export default function Layout() {
   const { user, profile, organization, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { slug = '' } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const orgLogo = organization?.logoUrl || '/logo_admin.png';
   const orgName = organization?.name || 'Report BTP';
+  const base = `/${slug}`;
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/login');
+      navigate(`${base}/login`);
     } else if (!loading && user && profile?.role === 'ROLE_HYPER_ADMIN') {
       navigate('/hyper-admin');
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, loading, navigate, base]);
 
   const isAdmin = profile?.role === 'ROLE_ADMIN';
 
@@ -41,20 +43,20 @@ export default function Layout() {
   }
 
   const navigation = [
-    { path: '/dashboard', name: 'Tableau de bord', icon: LayoutDashboard, show: true },
-    { path: '/missions', name: 'Chantiers', icon: Briefcase, show: true },
-    { path: '/visits', name: 'Visites', icon: Camera, show: true },
-    { path: '/dispatch', name: 'Attribution', icon: Send, show: isAdmin },
-    { path: '/reports', name: 'Rapports', icon: FileText, show: true },
-    { path: '/users', name: 'Utilisateurs', icon: Users, show: isAdmin },
-    { path: '/logs', name: 'Logs d\'activité', icon: Activity, show: false },
-    { path: '/cgu-terms', name: 'CGU', icon: FileText, show: true },
-    { path: '/privacy-policy', name: 'Politique de confidentialité', icon: FileText, show: true },
+    { path: `${base}/dashboard`, name: 'Tableau de bord', icon: LayoutDashboard, show: true },
+    { path: `${base}/missions`, name: 'Chantiers', icon: Briefcase, show: true },
+    { path: `${base}/visits`, name: 'Visites', icon: Camera, show: true },
+    { path: `${base}/dispatch`, name: 'Attribution', icon: Send, show: isAdmin },
+    { path: `${base}/reports`, name: 'Rapports', icon: FileText, show: true },
+    { path: `${base}/users`, name: 'Utilisateurs', icon: Users, show: isAdmin },
+    { path: `${base}/logs`, name: 'Logs d\'activité', icon: Activity, show: false },
+    { path: `${base}/cgu-terms`, name: 'CGU', icon: FileText, show: true },
+    { path: `${base}/privacy-policy`, name: 'Politique de confidentialité', icon: FileText, show: true },
   ];
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate(`${base}/login`);
   };
 
   if (!user) {

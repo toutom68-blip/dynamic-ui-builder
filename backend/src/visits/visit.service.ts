@@ -283,9 +283,10 @@ Date: ${new Date().toLocaleDateString('fr-FR')}`;
 
     const report = await this.reportService.create(user, createReportDto);
 
-    // Mark visit as report generated
-    visit.reportGenerated = true;
-    await this.visitRepository.save(visit);
+    // Mark visit as report generated without re-saving loaded relations.
+    // Re-saving the whole visit entity on first generation can cause TypeORM
+    // to null the inverse one-to-one relation and emit `reports.visitId = null`.
+    await this.visitRepository.update(visit.id, { reportGenerated: true });
 
     return report;
   }

@@ -18,9 +18,10 @@ import Cgu from '../components/cgu';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  { path: '/login/:slug', element: <OrgLoginPage /> },
-  { path: 'privacy', element: <Privacy /> },
-  { path: 'cgu', element: <Cgu /> },
+  { path: '/privacy', element: <Privacy /> },
+  { path: '/cgu', element: <Cgu /> },
+  // Backwards compat redirect: /login/:slug -> /:slug/login
+  { path: '/login/:slug', element: <Navigate to="/" replace /> },
   {
     path: '/hyper-admin',
     element: <HyperAdminLayout />,
@@ -28,13 +29,17 @@ export const router = createBrowserRouter([
       { index: true, element: <HyperAdminDashboard /> },
       { path: 'organizations', element: <HyperAdminOrganizations /> },
       { path: 'users', element: <HyperAdminUsers /> },
+      { path: 'cgu', element: <Cgu /> },
+      { path: 'privacy', element: <Privacy /> },
     ],
   },
+  // Org-scoped routes: /:slug/...
+  { path: '/:slug/login', element: <OrgLoginPage /> },
   {
-    path: '/',
+    path: '/:slug',
     element: <Layout />,
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'users', element: <UserManagement /> },
       { path: 'missions', element: <MissionManagement /> },
@@ -46,4 +51,5 @@ export const router = createBrowserRouter([
       { path: 'cgu-terms', element: <Cgu /> },
     ],
   },
+  { path: '/', element: <Navigate to="/login" replace /> },
 ]);

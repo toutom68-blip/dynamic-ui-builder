@@ -158,11 +158,22 @@ export class UploadService {
     try {
       let key: string;
 
-      if (publicUrl.includes(`https://${this.bucketName}.s3.${this.region}.amazonaws.com/`)) {
-        key = publicUrl.split('.amazonaws.com/')[1];
+      // Strip query string (e.g. signed URL params) before deriving the key
+      const cleanUrl = publicUrl.split('?')[0];
+
+      if (cleanUrl.includes(`https://${this.bucketName}.s3.${this.region}.amazonaws.com/`)) {
+        key = cleanUrl.split('.amazonaws.com/')[1];
+      } else if (cleanUrl.includes('.amazonaws.com/')) {
+        key = cleanUrl.split('.amazonaws.com/')[1];
       } else {
-        key = `${publicUrl}`;
+        key = cleanUrl;
       }
+
+      // Decode URL-encoded characters in the key
+      try {
+        key = decodeURIComponent(key);
+      } catch {}
+
       this.logger.log('Derived S3 key for download:', key);
 
       if (!key) {

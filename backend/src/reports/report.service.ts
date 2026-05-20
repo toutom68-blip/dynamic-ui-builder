@@ -140,9 +140,16 @@ export class ReportService {
       await this.missionService.update(mission.id, user, missionDto);
     }
 
-    Object.assign(report, updateReportDto);
-    console.log('Updated report:', report);
-    return this.reportRepository.save(report);
+    // Strip relation objects to avoid TypeORM nulling join columns on save
+    const { visit, mission, user: _u, ...rest } = report as any;
+    Object.assign(rest, updateReportDto);
+    // Ensure required FK columns are preserved
+    rest.visitId = report.visitId;
+    rest.missionId = report.missionId;
+    rest.userId = report.userId;
+    console.log('Updated report:', rest);
+    await this.reportRepository.save(rest);
+    return this.findOne(id, user);
   }
 
   async delete(id: string, user: User): Promise<void> {
