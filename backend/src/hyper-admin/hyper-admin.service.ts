@@ -47,20 +47,57 @@ export class HyperAdminService {
 
   async globalDashboard() {
     const orgs = await this.orgRepo.find({ order: { createdAt: 'DESC' } });
+
+    const groupCounts = async (
+      repo: Repository<any>,
+      orgId: string,
+      column = 'status',
+    ): Promise<Record<string, number>> => {
+      const rows = await repo
+        .createQueryBuilder('e')
+        .select(`e.${column}`, 'key')
+        .addSelect('COUNT(*)', 'count')
+        .where('e.organizationId = :orgId', { orgId })
+        .groupBy(`e.${column}`)
+        .getRawMany();
+      const out: Record<string, number> = {};
+      for (const r of rows) out[r.key ?? 'unknown'] = parseInt(r.count, 10);
+      return out;
+    };
+
     const perOrg = await Promise.all(
-      orgs.map(async (org) => ({
-        organization: org,
-        admins: await this.userRepo.count({
-          where: { organizationId: org.id, role: UserRole.ADMIN },
-        }),
-        coordinators: await this.userRepo.count({
-          where: { organizationId: org.id, role: UserRole.USER },
-        }),
-        missions: await this.missionRepo.count({ where: { organizationId: org.id } }),
-        visits: await this.visitRepo.count({ where: { organizationId: org.id } }),
-        reports: await this.reportRepo.count({ where: { organizationId: org.id } }),
-        clients: await this.clientRepo.count({ where: { organizationId: org.id } }),
-      })),
+      orgs.map(async (org) => {
+        const [
+          admins,
+          coordinators,
+          missions,
+          visits,
+          reports,
+          clients,
+          missionStatuses,
+          reportStatuses,
+        ] = await Promise.all([
+          this.userRepo.count({ where: { organizationId: org.id, role: UserRole.ADMIN } }),
+          this.userRepo.count({ where: { organizationId: org.id, role: UserRole.USER } }),
+          this.missionRepo.count({ where: { organizationId: org.id } }),
+          this.visitRepo.count({ where: { organizationId: org.id } }),
+          this.reportRepo.count({ where: { organizationId: org.id } }),
+          this.clientRepo.count({ where: { organizationId: org.id } }),
+          groupCounts(this.missionRepo, org.id, 'status'),
+          groupCounts(this.reportRepo, org.id, 'status'),
+        ]);
+        return {
+          organization: org,
+          admins,
+          coordinators,
+          missions,
+          visits,
+          reports,
+          clients,
+          missionStatuses,
+          reportStatuses,
+        };
+      }),
     );
 
     return {

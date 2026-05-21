@@ -10,6 +10,8 @@ interface OrgRow {
   visits: number;
   reports: number;
   clients: number;
+  missionStatuses?: Record<string, number>;
+  reportStatuses?: Record<string, number>;
 }
 
 interface Dashboard {
@@ -35,6 +37,48 @@ const Stat = ({ icon: Icon, label, value, color }: any) => (
     </div>
   </div>
 );
+
+const MISSION_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  planifiee: { label: 'Planifiée', color: 'bg-blue-100 text-blue-700' },
+  assignee: { label: 'Assignée', color: 'bg-indigo-100 text-indigo-700' },
+  en_cours: { label: 'En cours', color: 'bg-amber-100 text-amber-700' },
+  terminee: { label: 'Terminée', color: 'bg-emerald-100 text-emerald-700' },
+  validee: { label: 'Validée', color: 'bg-green-100 text-green-700' },
+  archivee: { label: 'Archivée', color: 'bg-slate-200 text-slate-600' },
+};
+
+const REPORT_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  brouillon: { label: 'Brouillon', color: 'bg-slate-100 text-slate-700' },
+  envoye: { label: 'Envoyé', color: 'bg-blue-100 text-blue-700' },
+  valide: { label: 'Validé', color: 'bg-emerald-100 text-emerald-700' },
+  refuse: { label: 'Refusé', color: 'bg-rose-100 text-rose-700' },
+  archive: { label: 'Archivé', color: 'bg-slate-200 text-slate-600' },
+  envoye_au_client: { label: 'Envoyé client', color: 'bg-violet-100 text-violet-700' },
+  annule: { label: 'Annulé', color: 'bg-rose-100 text-rose-700' },
+};
+
+const StatusBreakdown = ({
+  counts,
+  labels,
+}: {
+  counts?: Record<string, number>;
+  labels: Record<string, { label: string; color: string }>;
+}) => {
+  const entries = Object.entries(counts || {}).filter(([, v]) => v > 0);
+  if (entries.length === 0) return <span className="text-xs text-slate-400">—</span>;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {entries.map(([k, v]) => {
+        const meta = labels[k] || { label: k, color: 'bg-slate-100 text-slate-700' };
+        return (
+          <span key={k} className={`text-[10px] px-2 py-0.5 rounded-full ${meta.color}`}>
+            {meta.label}: <strong>{v}</strong>
+          </span>
+        );
+      })}
+    </div>
+  );
+};
 
 export default function HyperAdminDashboard() {
   const [data, setData] = useState<Dashboard | null>(null);
@@ -78,27 +122,34 @@ export default function HyperAdminDashboard() {
             <thead className="bg-slate-50 text-slate-600 text-xs uppercase">
               <tr>
                 <th className="px-6 py-3 text-left">Organisation</th>
-                <th className="px-4 py-3 text-left">Slug</th>
                 <th className="px-4 py-3 text-right">Admins</th>
-                <th className="px-4 py-3 text-right">Coordinateurs</th>
-                <th className="px-4 py-3 text-right">Chantiers</th>
-                <th className="px-4 py-3 text-right">Visites</th>
-                <th className="px-4 py-3 text-right">Rapports</th>
+                <th className="px-4 py-3 text-right">Coord.</th>
                 <th className="px-4 py-3 text-right">Clients</th>
+                <th className="px-4 py-3 text-right">Visites</th>
+                <th className="px-4 py-3 text-left">Chantiers (par statut)</th>
+                <th className="px-4 py-3 text-left">Rapports (par statut)</th>
                 <th className="px-4 py-3 text-center">Statut</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {data.perOrganization.map((row) => (
                 <tr key={row.organization.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-3 font-medium text-slate-900">{row.organization.name}</td>
-                  <td className="px-4 py-3 text-slate-500">/login/{row.organization.slug}</td>
+                  <td className="px-6 py-3">
+                    <div className="font-medium text-slate-900">{row.organization.name}</div>
+                    <div className="text-xs text-slate-400">/login/{row.organization.slug}</div>
+                  </td>
                   <td className="px-4 py-3 text-right">{row.admins}</td>
                   <td className="px-4 py-3 text-right">{row.coordinators}</td>
-                  <td className="px-4 py-3 text-right">{row.missions}</td>
-                  <td className="px-4 py-3 text-right">{row.visits}</td>
-                  <td className="px-4 py-3 text-right">{row.reports}</td>
                   <td className="px-4 py-3 text-right">{row.clients}</td>
+                  <td className="px-4 py-3 text-right">{row.visits}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-xs text-slate-500 mb-1">Total: <strong className="text-slate-900">{row.missions}</strong></div>
+                    <StatusBreakdown counts={row.missionStatuses} labels={MISSION_STATUS_LABELS} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-xs text-slate-500 mb-1">Total: <strong className="text-slate-900">{row.reports}</strong></div>
+                    <StatusBreakdown counts={row.reportStatuses} labels={REPORT_STATUS_LABELS} />
+                  </td>
                   <td className="px-4 py-3 text-center">
                     <span className={`text-xs px-2 py-1 rounded-full ${row.organization.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
                       {row.organization.isActive ? 'Actif' : 'Inactif'}
@@ -107,7 +158,7 @@ export default function HyperAdminDashboard() {
                 </tr>
               ))}
               {data.perOrganization.length === 0 && (
-                <tr><td colSpan={9} className="px-6 py-8 text-center text-slate-400">Aucune organisation</td></tr>
+                <tr><td colSpan={8} className="px-6 py-8 text-center text-slate-400">Aucune organisation</td></tr>
               )}
             </tbody>
           </table>
