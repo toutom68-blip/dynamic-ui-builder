@@ -102,6 +102,41 @@ export default function HyperAdminDashboard() {
   if (error) return <div className="text-red-600">{error}</div>;
   if (!data) return null;
 
+  // Aggregate data for charts
+  const missionStatusTotals: Record<string, number> = {};
+  const reportStatusTotals: Record<string, number> = {};
+  for (const row of data.perOrganization) {
+    for (const [k, v] of Object.entries(row.missionStatuses || {})) {
+      missionStatusTotals[k] = (missionStatusTotals[k] || 0) + v;
+    }
+    for (const [k, v] of Object.entries(row.reportStatuses || {})) {
+      reportStatusTotals[k] = (reportStatusTotals[k] || 0) + v;
+    }
+  }
+
+  const PIE_COLORS = ['#3b82f6', '#6366f1', '#f59e0b', '#10b981', '#22c55e', '#94a3b8', '#a855f7', '#ef4444'];
+
+  const missionPieData = Object.entries(missionStatusTotals).map(([k, v]) => ({
+    name: MISSION_STATUS_LABELS[k]?.label || k, value: v,
+  }));
+  const reportPieData = Object.entries(reportStatusTotals).map(([k, v]) => ({
+    name: REPORT_STATUS_LABELS[k]?.label || k, value: v,
+  }));
+
+  const perOrgBarData = data.perOrganization.map((r) => ({
+    name: r.organization.name.length > 14 ? r.organization.name.slice(0, 14) + '…' : r.organization.name,
+    Chantiers: r.missions,
+    Visites: r.visits,
+    Rapports: r.reports,
+    Clients: r.clients,
+  }));
+
+  const activeOrgs = data.perOrganization.filter((r) => r.organization.isActive).length;
+  const orgStatusPie = [
+    { name: 'Actives', value: activeOrgs },
+    { name: 'Inactives', value: data.totals.organizations - activeOrgs },
+  ];
+
   return (
     <div className="space-y-8">
       <div>
@@ -117,6 +152,97 @@ export default function HyperAdminDashboard() {
         <Stat icon={FileText} label="Rapports" value={data.totals.reports} color="bg-rose-500" />
         <Stat icon={UserCircle} label="Clients" value={data.totals.clients} color="bg-slate-700" />
       </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h3 className="font-semibold text-slate-900 mb-3">Chantiers par statut</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={missionPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {missionPieData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h3 className="font-semibold text-slate-900 mb-3">Rapports par statut</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={reportPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={80} label>
+                  {reportPieData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[(i + 2) % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h3 className="font-semibold text-slate-900 mb-3">Organisations actives / inactives</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={orgStatusPie} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  <Cell fill="#10b981" />
+                  <Cell fill="#94a3b8" />
+                </Pie>
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <h3 className="font-semibold text-slate-900 mb-3">Volumes par organisation</h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={perOrgBarData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="Chantiers" fill="#10b981" />
+              <Bar dataKey="Visites" fill="#8b5cf6" />
+              <Bar dataKey="Rapports" fill="#f43f5e" />
+              <Bar dataKey="Clients" fill="#0ea5e9" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {data.perOrganization.length >= 3 && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h3 className="font-semibold text-slate-900 mb-3">Comparatif radar (par organisation)</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={perOrgBarData}>
+                <PolarGrid stroke="#e2e8f0" />
+                <PolarAngleAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <PolarRadiusAxis tick={{ fontSize: 10 }} />
+                <Radar name="Chantiers" dataKey="Chantiers" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+                <Radar name="Rapports" dataKey="Rapports" stroke="#f43f5e" fill="#f43f5e" fillOpacity={0.3} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Tooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200">
