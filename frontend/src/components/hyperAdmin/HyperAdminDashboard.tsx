@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { hyperAdminAPI } from '../../lib/api';
 import { Building2, Users, Briefcase, Camera, FileText, UserCircle, Loader2 } from 'lucide-react';
+import {
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+} from 'recharts';
 
 interface OrgRow {
   organization: { id: string; name: string; slug: string; isActive: boolean };
