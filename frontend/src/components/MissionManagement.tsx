@@ -458,7 +458,7 @@ export default function MissionManagement() {
                 <tr
                   key={mission.id}
                   onClick={() => handleRowClick(mission)}
-                  className={`transition-colors ${isAdmin ? 'hover:bg-slate-50 cursor-pointer' : ''}`}
+                  className="transition-colors hover:bg-slate-50 cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div>
