@@ -762,7 +762,7 @@ export default function VisitManagement() {
         };
       });
 
-      await generatePdfService.generateReportPDF({
+      const ok = await generatePdfService.downloadReportPDF({
         title: visitReport.title || selectedVisit.mission?.title || 'Rapport',
         mission: selectedVisit.mission?.title || '',
         client: selectedVisit.mission?.client || '',
@@ -773,8 +773,12 @@ export default function VisitManagement() {
         footer: visitReport.footer || editedFooter || '',
         observations: visitReport.observations || editedObservations || '',
         photos: photosForPdf,
-      });
-      Swal.fire({ icon: 'success', title: 'PDF généré', timer: 2000, showConfirmButton: false });
+      }, `${selectedVisit.mission?.title || 'rapport'}_CSPS`);
+      if (ok) {
+        Swal.fire({ icon: 'success', title: 'PDF téléchargé', timer: 2000, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });

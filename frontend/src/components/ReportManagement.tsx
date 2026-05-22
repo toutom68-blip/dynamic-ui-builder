@@ -308,8 +308,12 @@ export default function ReportManagement() {
         photos: photosForPdf,
       };
 
-      await generatePdfService.generateReportPDF(pdfData);
-      Swal.fire({ icon: 'success', title: 'PDF généré', text: 'Le PDF a été ouvert dans un nouvel onglet', timer: 2000, showConfirmButton: false });
+      const ok = await generatePdfService.downloadReportPDF(pdfData, `${pdfData.mission || pdfData.title || 'rapport'}_CSPS`);
+      if (ok) {
+        Swal.fire({ icon: 'success', title: 'PDF téléchargé', timer: 2000, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
