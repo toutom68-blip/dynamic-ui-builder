@@ -59,6 +59,7 @@ export default function MissionReportModal({ mission, onClose, initialReportId }
   const [adminRemarks, setAdminRemarks] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [sendingToClient, setSendingToClient] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [initialReportOpened, setInitialReportOpened] = useState(false);
 
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
