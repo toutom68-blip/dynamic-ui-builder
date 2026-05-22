@@ -556,6 +556,15 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
                   Retour
                 </button>
 
+                <button
+                  onClick={handleDownloadGeneratedPdf}
+                  disabled={generatingPdf}
+                  className="flex items-center gap-2 bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors font-medium disabled:opacity-50"
+                >
+                  <Download className="w-4 h-4" />
+                  {generatingPdf ? 'Génération...' : 'Télécharger PDF'}
+                </button>
+
                 {selectedReport.status !== 'envoye_au_client' && selectedReport.status !== 'annule' && selectedReport.missionStatus !== 'terminee' && (
                   <>
                     {isEditing ? (
