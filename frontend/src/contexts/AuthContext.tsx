@@ -61,6 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const org = await currentOrgAPI.get();
       setOrganization(org);
       (window as any).__currentOrganization = org;
+      // Persist the user's organization slug so they can be redirected
+      // automatically to their org login portal on future visits.
+      if (org?.slug) {
+        try { localStorage.setItem('lastOrgSlug', org.slug); } catch {}
+      }
     } catch (e) {
       console.warn('Failed to load organization', e);
       setOrganization(null);
