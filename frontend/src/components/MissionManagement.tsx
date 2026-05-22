@@ -194,8 +194,6 @@ export default function MissionManagement() {
   };
 
   const handleRowClick = (mission: Mission) => {
-    if (!isAdmin) return;
-
     if (mission.status == 'terminee' || mission.status == 'archivee') return;
 
     setSelectedMission(mission);
