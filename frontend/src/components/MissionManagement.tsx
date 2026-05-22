@@ -219,7 +219,7 @@ export default function MissionManagement() {
 
   const handleUpdateMission = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAdmin || !selectedMission) return;
+    if (!selectedMission) return;
 
     if (selectedMission.status == 'terminee' || selectedMission.status == 'archivee') return;
 
