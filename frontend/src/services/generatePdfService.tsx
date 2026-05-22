@@ -613,13 +613,8 @@ export const generatePdfService = {
   },
 
   async generateWebPDF(htmlContent: string, filename: string) {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      // printWindow.print();
-      return 'web-print';
-    }
+    // Aperçu dans un nouvel onglet désactivé — utilisez `downloadReportPDF`
+    // pour télécharger directement le fichier PDF.
     return null;
   },
 
@@ -665,11 +660,38 @@ export const generatePdfService = {
   async generateReportPDF(reportData: any) {
     try {
       const htmlContent = await this.generateHTMLContent(reportData);
-      await this.generateWebPDF(htmlContent, reportData.title);
       return htmlContent;
     } catch (error) {
       console.error('Error generating PDF:', error);
       return null;
+    }
+  },
+
+  async downloadReportPDF(reportData: any, filename?: string): Promise<boolean> {
+    try {
+      const htmlContent = await this.generateHTMLContent(reportData);
+      const element = document.createElement('div');
+      element.innerHTML = htmlContent;
+      document.body.appendChild(element);
+
+      const safeName = (filename || reportData?.title || reportData?.mission || 'rapport')
+        .toString()
+        .replace(/[^a-zA-Z0-9-_]+/g, '_');
+
+      const options = {
+        margin: 10,
+        filename: `${safeName}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
+      };
+
+      await html2pdf().set(options).from(element).save();
+      document.body.removeChild(element);
+      return true;
+    } catch (err) {
+      console.error('Erreur génération PDF:', err);
+      return false;
     }
   },
 

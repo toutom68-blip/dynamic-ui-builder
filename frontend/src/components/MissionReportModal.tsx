@@ -59,6 +59,7 @@ export default function MissionReportModal({ mission, onClose, initialReportId }
   const [adminRemarks, setAdminRemarks] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [sendingToClient, setSendingToClient] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [initialReportOpened, setInitialReportOpened] = useState(false);
 
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
@@ -309,6 +310,60 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
   };
 
   const downloadReportFile = async (fileUrl: string) => {
+    // continue ...
+    return _downloadReportFile(fileUrl);
+  };
+
+  const handleDownloadGeneratedPdf = async () => {
+    if (!selectedReport) return;
+    setGeneratingPdf(true);
+    try {
+      const visitPhotos = selectedReport.visit?.photos || reportPhotos || [];
+      const riskLevelMap: Record<string, string> = { faible: 'low', moyen: 'medium', eleve: 'high', low: 'low', medium: 'medium', high: 'high' };
+      const photosForPdf = visitPhotos.map((photo: any) => {
+        const obs = photo.analysis?.observation || [];
+        const recs = photo.analysis?.recommendation || [];
+        const refs = photo.analysis?.references || [];
+        return {
+          ...photo,
+          aiAnalysis: photo.analysis ? {
+            observations: Array.isArray(obs) ? obs : [obs],
+            recommendations: Array.isArray(recs) ? recs : [recs],
+            references: Array.isArray(refs) ? refs : [refs],
+            riskLevel: riskLevelMap[photo.analysis.riskLevel] || 'low',
+            confidence: photo.analysis.confidence || 0,
+          } : undefined,
+          comment: photo.comment || '',
+        };
+      });
+
+      const ok = await generatePdfService.downloadReportPDF({
+        title: selectedReport.title || mission.title,
+        mission: mission.title,
+        client: mission.client,
+        date: selectedReport.createdAt || '',
+        conformity: selectedReport.conformityPercentage,
+        header: selectedReport.header || editedHeader || '',
+        content: selectedReport.content || editedContent || '',
+        footer: selectedReport.footer || editedFooter || '',
+        observations: selectedReport.observations || editedObservations || '',
+        photos: photosForPdf,
+      }, `${mission.title || 'rapport'}_CSPS`);
+
+      if (ok) {
+        Swal.fire({ icon: 'success', title: 'PDF téléchargé', timer: 1800, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+      }
+    } catch (err) {
+      console.error('PDF download error:', err);
+      Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  const _downloadReportFile = async (fileUrl: string) => {
     try {
       const response = await filesService.downloadFile(fileUrl, 'reports', true);
       const { base64, contentType, fileName } = response.data;
@@ -499,6 +554,15 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
                   className="px-6 py-3 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors font-medium"
                 >
                   Retour
+                </button>
+
+                <button
+                  onClick={handleDownloadGeneratedPdf}
+                  disabled={generatingPdf}
+                  className="flex items-center gap-2 bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors font-medium disabled:opacity-50"
+                >
+                  <Download className="w-4 h-4" />
+                  {generatingPdf ? 'Génération...' : 'Télécharger PDF'}
                 </button>
 
                 {selectedReport.status !== 'envoye_au_client' && selectedReport.status !== 'annule' && selectedReport.missionStatus !== 'terminee' && (
