@@ -525,8 +525,8 @@ export default function MissionManagement() {
                     </div>
                   </td>
                   {/* Status change column */}
-                  <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
-                    {isAdmin && (
+                  {isAdmin && (
+                    <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={mission.status}
                         onChange={(e) => handleStatusChange(mission, e.target.value, e)}
@@ -542,8 +542,8 @@ export default function MissionManagement() {
                         <option value="refusee">Refusé</option>
                         <option value="annulee">Annulé</option>
                       </select>
-                    )}
-                  </td>
+                    </td>
+                  )}
                   {/* Visits column */}
                   <td className="px-4 py-4 text-center">
                     <button
