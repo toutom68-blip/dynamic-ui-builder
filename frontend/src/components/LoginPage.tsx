@@ -26,6 +26,16 @@ export default function LoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false);
 
   useEffect(() => {
+    // If a previous org slug is saved, always redirect the user to their org portal.
+    if (!user) {
+      try {
+        const savedSlug = localStorage.getItem('lastOrgSlug');
+        if (savedSlug) {
+          navigate(`/${savedSlug}/login`, { replace: true });
+          return;
+        }
+      } catch {}
+    }
     if (user) {
       if (user.role === 'ROLE_HYPER_ADMIN') {
         navigate('/hyper-admin');
