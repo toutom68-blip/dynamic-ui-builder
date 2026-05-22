@@ -448,7 +448,9 @@ export default function MissionManagement() {
                 <th className="text-left px-6 py-3 text-sm font-semibold text-slate-900">Type</th>
                 <th className="text-left px-6 py-3 text-sm font-semibold text-slate-900">Coordonnateur</th>
                 <th className="text-left px-6 py-3 text-sm font-semibold text-slate-900">Statut</th>
-                <th className="text-center px-4 py-3 text-sm font-semibold text-slate-900">Changer statut</th>
+                {isAdmin && (
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-slate-900">Changer statut</th>
+                )}
                 <th className="text-center px-4 py-3 text-sm font-semibold text-slate-900">Visites</th>
                 <th className="text-center px-4 py-3 text-sm font-semibold text-slate-900">Rapports</th>
               </tr>
