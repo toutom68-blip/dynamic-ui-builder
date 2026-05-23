@@ -174,18 +174,6 @@ export class MissionService {
         throw new NotFoundException('Mission not found');
       }
 
-      const relatedReports = await this.reportService.findByMission(id, user);
-      if (relatedReports?.length > 0) {
-        const filtredReports = relatedReports.filter(r => r.status != ReportStatus.SENT_TO_CLIENT);
-        if (filtredReports.length > 0) {
-          await Promise.all(filtredReports.map(async (report) => {
-            report.status = ReportStatus.CANCELLED;
-            await this.reportService.save(report, user);
-            return report;
-          }));
-        }
-      }
-
       Object.assign(mission, updateMissionDto);
       return this.missionRepository.save(mission);
     } catch (error) {
