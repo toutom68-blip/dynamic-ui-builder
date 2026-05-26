@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Mail, Plus, Pencil, Trash2, Upload, Search, X, Loader2 } from 'lucide-react';
+import { Mail, Plus, Pencil, Trash2, Upload, Search, X, Loader2, Download, FileSpreadsheet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { mailingListAPI } from '../lib/api';
 
@@ -125,6 +125,19 @@ export default function MailingListManagement() {
     }
   };
 
+  const downloadTemplate = () => {
+    const wb = XLSX.utils.book_new();
+    const data = [
+      ['email', 'nom'],
+      ['exemple@domaine.com', 'Jean Dupont'],
+      ['contact@societe.fr', 'Marie Martin'],
+      ['admin@entreprise.com', 'Pierre Durand'],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, 'template_liste_diffusion.xlsx');
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -146,6 +159,12 @@ export default function MailingListManagement() {
               onChange={onFileSelected}
               className="hidden"
             />
+            <button
+              onClick={downloadTemplate}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 text-emerald-700 text-sm"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Télécharger template
+            </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 text-sm"

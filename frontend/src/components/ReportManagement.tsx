@@ -57,6 +57,7 @@ export default function ReportManagement() {
   const [cursorPos, setCursorPos] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
 
   const editedContentRef = useRef(null);
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
@@ -266,6 +267,59 @@ export default function ReportManagement() {
     } catch (error) {
       console.error('Error submitting report:', error);
       Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la soumission' });
+    }
+  };
+
+  const handleDownloadRowPdf = async (report: Report, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDownloadingReportId(report.id);
+    try {
+      const visitPhotos = report.visit?.photos || [];
+      const riskLevelMap: Record<string, string> = {
+        faible: 'low', moyen: 'medium', eleve: 'high',
+        low: 'low', medium: 'medium', high: 'high'
+      };
+      const photosForPdf = visitPhotos.map((photo: any) => {
+        const obs = photo.analysis?.observation || [];
+        const recs = photo.analysis?.recommendation || [];
+        const refs = photo.analysis?.references || [];
+        return {
+          ...photo,
+          aiAnalysis: photo.analysis ? {
+            observations: Array.isArray(obs) ? obs : [obs],
+            recommendations: Array.isArray(recs) ? recs : [recs],
+            references: Array.isArray(refs) ? refs : [refs],
+            riskLevel: riskLevelMap[photo.analysis.riskLevel] || 'low',
+            confidence: photo.analysis.confidence || 0,
+          } : undefined,
+          comment: photo.comment || '',
+        };
+      });
+
+      const pdfData = {
+        title: report.title,
+        mission: report.mission,
+        client: report.client,
+        date: report.createdAt || '',
+        conformity: report.conformityPercentage,
+        header: report.header || '',
+        content: report.content || '',
+        footer: report.footer || '',
+        observations: report.observations || '',
+        photos: photosForPdf,
+      };
+
+      const ok = await generatePdfService.downloadReportPDF(pdfData, `${pdfData.mission || pdfData.title || 'rapport'}_CSPS`);
+      if (ok) {
+        Swal.fire({ icon: 'success', title: 'PDF téléchargé', timer: 2000, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
@@ -928,9 +982,18 @@ ${currentUser && `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName
                     </span>
                   </td>
                   <td className="px-6 py-4 items-center" style={{ display: 'flex', justifyContent: 'center' }}>
-                    {report.reportFileUrl && report.reportFileUrl.trim() != '' && <button onClick={() => downloadReportFile(report.reportFileUrl)}>
-                      <FileText className="w-6 h-6 text-red-600 hover:scale-110 transition cursor-pointer" />
-                    </button>}
+                    <button
+                      onClick={(e) => handleDownloadRowPdf(report, e)}
+                      disabled={downloadingReportId === report.id}
+                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+                      title="Télécharger PDF"
+                    >
+                      {downloadingReportId === report.id ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Download className="w-5 h-5 text-blue-600 hover:scale-110 transition cursor-pointer" />
+                      )}
+                    </button>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">

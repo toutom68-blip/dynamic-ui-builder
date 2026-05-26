@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, FileText, Calendar, CheckCircle, Clock, Send, AlertTriangle, Image as ImageIcon, Eye, Edit2, Download } from 'lucide-react';
+import { X, FileText, Calendar, CheckCircle, Clock, Send, AlertTriangle, Image as ImageIcon, Eye, Edit2, Download, Loader2 } from 'lucide-react';
 import { reportsAPI, missionsAPI } from '../lib/api';
 import { visitService } from '../services/visitService';
 import { filesService } from '../services/filesService';
@@ -314,6 +314,55 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
     return _downloadReportFile(fileUrl);
   };
 
+  const handleDownloadReportPdf = async (report: Report, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setGeneratingPdf(true);
+    try {
+      const visitPhotos = report.visit?.photos || [];
+      const riskLevelMap: Record<string, string> = { faible: 'low', moyen: 'medium', eleve: 'high', low: 'low', medium: 'medium', high: 'high' };
+      const photosForPdf = visitPhotos.map((photo: any) => {
+        const obs = photo.analysis?.observation || [];
+        const recs = photo.analysis?.recommendation || [];
+        const refs = photo.analysis?.references || [];
+        return {
+          ...photo,
+          aiAnalysis: photo.analysis ? {
+            observations: Array.isArray(obs) ? obs : [obs],
+            recommendations: Array.isArray(recs) ? recs : [recs],
+            references: Array.isArray(refs) ? refs : [refs],
+            riskLevel: riskLevelMap[photo.analysis.riskLevel] || 'low',
+            confidence: photo.analysis.confidence || 0,
+          } : undefined,
+          comment: photo.comment || '',
+        };
+      });
+
+      const ok = await generatePdfService.downloadReportPDF({
+        title: report.title || mission.title,
+        mission: mission.title,
+        client: mission.client,
+        date: report.createdAt || '',
+        conformity: report.conformityPercentage,
+        header: report.header || '',
+        content: report.content || '',
+        footer: report.footer || '',
+        observations: report.observations || '',
+        photos: photosForPdf,
+      }, `${mission.title || 'rapport'}_CSPS`);
+
+      if (ok) {
+        Swal.fire({ icon: 'success', title: 'PDF téléchargé', timer: 1800, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+      }
+    } catch (err) {
+      console.error('PDF download error:', err);
+      Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
   const handleDownloadGeneratedPdf = async () => {
     if (!selectedReport) return;
     setGeneratingPdf(true);
@@ -454,14 +503,13 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-bold text-slate-900 text-lg">{selectedReport.title || mission.title}</h3>
                   <div className="flex items-center gap-2">
-                    {selectedReport.reportFileUrl && (
-                      <button
-                        onClick={() => downloadReportFile(selectedReport.reportFileUrl!)}
-                        className="flex items-center gap-1 text-s text-red-600 hover:underline"
-                      >
-                        <Download className="w-4 h-4" /> PDF
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDownloadReportPdf(selectedReport)}
+                      disabled={generatingPdf}
+                      className="flex items-center gap-1 text-s text-blue-600 hover:underline disabled:opacity-50"
+                    >
+                      {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} PDF
+                    </button>
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-s font-medium border ${getStatusColor(selectedReport.status)}`}>
                       {getStatusLabel(selectedReport.status)}
                     </span>
@@ -648,15 +696,14 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {report.reportFileUrl && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); downloadReportFile(report.reportFileUrl!); }}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Télécharger PDF"
-                        >
-                          <FileText className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDownloadReportPdf(report, e); }}
+                        disabled={generatingPdf}
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Télécharger PDF"
+                      >
+                        {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                      </button>
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-s font-medium border ${getStatusColor(report.status)}`}>
                         {getStatusLabel(report.status)}
                       </span>
