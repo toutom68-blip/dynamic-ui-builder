@@ -160,6 +160,12 @@ export default function MailingListManagement() {
               className="hidden"
             />
             <button
+              onClick={downloadTemplate}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 text-emerald-700 text-sm"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Télécharger template
+            </button>
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 text-sm"
             >
