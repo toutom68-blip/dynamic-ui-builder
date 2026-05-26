@@ -57,6 +57,7 @@ export default function ReportManagement() {
   const [cursorPos, setCursorPos] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
 
   const editedContentRef = useRef(null);
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
