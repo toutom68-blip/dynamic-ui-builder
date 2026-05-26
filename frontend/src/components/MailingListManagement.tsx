@@ -125,6 +125,19 @@ export default function MailingListManagement() {
     }
   };
 
+  const downloadTemplate = () => {
+    const wb = XLSX.utils.book_new();
+    const data = [
+      ['email', 'nom'],
+      ['exemple@domaine.com', 'Jean Dupont'],
+      ['contact@societe.fr', 'Marie Martin'],
+      ['admin@entreprise.com', 'Pierre Durand'],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, 'template_liste_diffusion.xlsx');
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
