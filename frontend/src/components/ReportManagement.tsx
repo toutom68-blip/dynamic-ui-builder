@@ -270,6 +270,59 @@ export default function ReportManagement() {
     }
   };
 
+  const handleDownloadRowPdf = async (report: Report, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDownloadingReportId(report.id);
+    try {
+      const visitPhotos = report.visit?.photos || [];
+      const riskLevelMap: Record<string, string> = {
+        faible: 'low', moyen: 'medium', eleve: 'high',
+        low: 'low', medium: 'medium', high: 'high'
+      };
+      const photosForPdf = visitPhotos.map((photo: any) => {
+        const obs = photo.analysis?.observation || [];
+        const recs = photo.analysis?.recommendation || [];
+        const refs = photo.analysis?.references || [];
+        return {
+          ...photo,
+          aiAnalysis: photo.analysis ? {
+            observations: Array.isArray(obs) ? obs : [obs],
+            recommendations: Array.isArray(recs) ? recs : [recs],
+            references: Array.isArray(refs) ? refs : [refs],
+            riskLevel: riskLevelMap[photo.analysis.riskLevel] || 'low',
+            confidence: photo.analysis.confidence || 0,
+          } : undefined,
+          comment: photo.comment || '',
+        };
+      });
+
+      const pdfData = {
+        title: report.title,
+        mission: report.mission,
+        client: report.client,
+        date: report.createdAt || '',
+        conformity: report.conformityPercentage,
+        header: report.header || '',
+        content: report.content || '',
+        footer: report.footer || '',
+        observations: report.observations || '',
+        photos: photosForPdf,
+      };
+
+      const ok = await generatePdfService.downloadReportPDF(pdfData, `${pdfData.mission || pdfData.title || 'rapport'}_CSPS`);
+      if (ok) {
+        Swal.fire({ icon: 'success', title: 'PDF téléchargé', timer: 2000, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Swal.fire({ icon: 'error', title: 'Erreur', text: 'Erreur lors de la génération du PDF' });
+    } finally {
+      setDownloadingReportId(null);
+    }
+  };
+
   const handleDownloadPdf = async () => {
     if (!selectedReport) return;
     setGeneratingPdf(true);
