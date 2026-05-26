@@ -318,7 +318,7 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
     e?.stopPropagation();
     setGeneratingPdf(true);
     try {
-      const visitPhotos = report.visit?.photos || reportPhotos || [];
+      const visitPhotos = report.visit?.photos || [];
       const riskLevelMap: Record<string, string> = { faible: 'low', moyen: 'medium', eleve: 'high', low: 'low', medium: 'medium', high: 'high' };
       const photosForPdf = visitPhotos.map((photo: any) => {
         const obs = photo.analysis?.observation || [];
