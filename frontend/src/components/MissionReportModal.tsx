@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, FileText, Calendar, CheckCircle, Clock, Send, AlertTriangle, Image as ImageIcon, Eye, Edit2, Download } from 'lucide-react';
+import { X, FileText, Calendar, CheckCircle, Clock, Send, AlertTriangle, Image as ImageIcon, Eye, Edit2, Download, Loader2 } from 'lucide-react';
 import { reportsAPI, missionsAPI } from '../lib/api';
 import { visitService } from '../services/visitService';
 import { filesService } from '../services/filesService';
