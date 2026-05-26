@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Mail, Plus, Pencil, Trash2, Upload, Search, X, Loader2 } from 'lucide-react';
+import { Mail, Plus, Pencil, Trash2, Upload, Search, X, Loader2, Download, FileSpreadsheet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { mailingListAPI } from '../lib/api';
 
