@@ -697,15 +697,14 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {report.reportFileUrl && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); downloadReportFile(report.reportFileUrl!); }}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Télécharger PDF"
-                        >
-                          <FileText className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDownloadReportPdf(report, e); }}
+                        disabled={generatingPdf}
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Télécharger PDF"
+                      >
+                        {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                      </button>
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-s font-medium border ${getStatusColor(report.status)}`}>
                         {getStatusLabel(report.status)}
                       </span>
