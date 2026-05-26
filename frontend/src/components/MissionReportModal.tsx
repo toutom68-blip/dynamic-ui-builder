@@ -503,14 +503,13 @@ ${currentUser ? `Coordonnateur: ${currentUser.firstName} ${currentUser.lastName}
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-bold text-slate-900 text-lg">{selectedReport.title || mission.title}</h3>
                   <div className="flex items-center gap-2">
-                    {selectedReport.reportFileUrl && (
-                      <button
-                        onClick={() => downloadReportFile(selectedReport.reportFileUrl!)}
-                        className="flex items-center gap-1 text-s text-red-600 hover:underline"
-                      >
-                        <Download className="w-4 h-4" /> PDF
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDownloadReportPdf(selectedReport)}
+                      disabled={generatingPdf}
+                      className="flex items-center gap-1 text-s text-blue-600 hover:underline disabled:opacity-50"
+                    >
+                      {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} PDF
+                    </button>
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-s font-medium border ${getStatusColor(selectedReport.status)}`}>
                       {getStatusLabel(selectedReport.status)}
                     </span>
